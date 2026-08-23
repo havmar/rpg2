@@ -1,5 +1,6 @@
 RPG2 MAP -- day 26
-the party is at Tergal > Kyiv > Kyiv
+the party is at Tergal > Kyiv > Kyiv >
+  the burned plains > shrine path
 
             111111111122222222223
    123456789012345678901234567890
@@ -69,3 +70,10 @@ Tergal known: Chagan R09C26, Enkhar
     R10C27, Kubai R09C27, Namuruk
     R10C29, Ordaki R09C25, Sargul
     R10C26, +4 more
+
+-- quests in hand (where they lead) --
+
+[q54] Rebel Shamans (L6) @ Eshkar
+  - the burned plains (L6): here, room
+    2/2
+  - R10C27: here

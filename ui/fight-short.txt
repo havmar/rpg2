@@ -1,139 +1,60 @@
-=== Guard the Cultists ===
-the outer camp (L15),
-room 1/1: outer watch
-2x Master Swordfighter -- schweizersäbel
-DEX 8  STR 6  STA 8  HP 16/16
-drilled +2,
-takes spoils, leaves the fallen
+=== Rebel Shamans ===
+the burned plains (L6),
+room 1/2: shrine path
+2x Ice Shaman -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
 Round 1:
-The lines meet -- steel range.
-Gruk's flash-freeze splashes wide.
-Grushka's fire bolt
-edges past Master Swordfighter 14,
-deals 2 dmg! [11 Power left]
-Round 2:
+The lines close.
 Gruk's flash-freeze
-overwhelms Master Swordfighter 14,
-deals 6 dmg!!! [6 Power left]
-Master Swordfighter 14 is rimed with frost.
-Master Swordfighter 14 is frozen fast --
+overwhelms Ice Shaman 16, deals 6 dmg!!!
+[10 Power left]
+Ice Shaman 16 is rimed with frost.
+Ice Shaman 16 is frozen fast --
 they lose their next action!
-Ownka: Feint --
-Master Swordfighter 14's guard opens.
-Ownka overwhelms Master Swordfighter 14,
-deals 6 dmg!!!
 Grushka's fire bolt
-overwhelms Master Swordfighter 14,
-deals 6 dmg!!! [10 Power left]
-Master Swordfighter 14 is SLAIN.
-Master Swordfighter 14 struggles up -- no action.
-Master Swordfighter 15 overwhelms Ownka,
-but Bulwark blunts it: deals 4 dmg!!
-Ownka takes a wound: three ribs broken.
-Round 3:
-Gruk's flash-freeze is warded off.
-Ownka: Pommel Strike
-at Master Swordfighter 15!
-Ownka (12/16)
-attacks Master Swordfighter 15, parried.
+overwhelms Ice Shaman 16, deals 6 dmg!!!
+[12 Power left]
+Ice Shaman 16 is SLAIN.
+Ice Shaman 16 struggles up -- no action.
+Ice Shaman 17's ice bolt
+outmaneuvers Gruk, deals 2 dmg!
+[7 Power left]
+Gruk is rimed with frost.
+Gruk takes a wound:
+a shallow cut along the ribs.
+Round 2:
+The lines meet -- steel range.
+Gruk's flash-freeze
+overwhelms Ice Shaman 17, deals 6 dmg!!!
+[6 Power left]
+Ice Shaman 17 is rimed with frost.
+Ice Shaman 17 is frozen fast --
+they lose their next action!
 Grushka's fire bolt
-edges past Master Swordfighter 15,
-deals 2 dmg! [9 Power left]
-Master Swordfighter 15 (14/16)
-overwhelms Ownka, but Bulwark blunts it:
-deals 4 dmg!!
-Ownka takes a wound:
-a gut wound, still seeping.
-== Ownka is badly cut up ==
-Round 4:
-Ownka downs a healing potion (1 left).
-Gruk's ice bolt is warded off.
-Grushka's fire bolt splashes wide.
-Master Swordfighter 15 (14/16)
-overwhelms Ownka, but Bulwark blunts it:
-deals 4 dmg!!
-Ownka takes a wound:
-a deep gash across the back.
-Round 5:
-Gruk's ice bolt
-edges past Master Swordfighter 15,
-deals 1 dmg. [0 Power left]
-Master Swordfighter 15 is rimed with frost.
-Ownka: Thrust at Master Swordfighter 15!
-Ownka (8/16)
-overwhelms Master Swordfighter 15,
-deals 4 dmg!!
-Grushka's fire bolt
-overwhelms Master Swordfighter 15,
-deals 6 dmg!!! [7 Power left]
-Master Swordfighter 15 (3/16)
-attacks Ownka, parried.
-The beaten foes break and run!
-Ownka (8/16)
-overwhelms Master Swordfighter 15,
-deals 4 dmg!! It falls.
+overwhelms Ice Shaman 17, deals 6 dmg!!!
+[11 Power left]
+Ice Shaman 17 is SLAIN.
+Ice Shaman 17 struggles up -- no action.
 The party catches its breath (+1 STA)
-Gruk +188 XP (encounter) [259/1500]
-Ownka +188 XP (encounter) [1448/1400]
-*** Ownka reaches level 15!
-(3 skill points unspent) ***
-Grushka +188 XP (encounter) [1448/1400]
-*** Grushka reaches level 15!
-(7 skill points unspent) ***
-(dark work: +282 sin -- sin 282/1500; heat 0 -- lying low)
-Loot: 5 silver (purse 321s).
+Gruk +66 XP (encounter) [648/1500]
+Ownka +66 XP (encounter) [437/1500]
+Grushka +66 XP (encounter) [437/1500]
+(penance: -99 sin -- sin 668/1500; heat 0 -- lying low)
 Left among the dead:
-2x schweizersäbel (+1 atk/+1 sev, 60s).
-
-*** QUEST COMPLETE:
-Guard the Cultists -- the outer camp.
-Reward: 466 silver. ***
-Gruk talks the pay up:
-+93s (559s in all).
-The party purse holds 880 silver.
-Gruk +323 XP (quest) [582/1500]
-Ownka +323 XP (quest) [371/1500]
-Grushka +323 XP (quest) [371/1500]
-Ownka: satisfaction 8 -> 9/10
-(a job paid out)
-(dark work: +485 sin -- sin 767/1500; heat 0 -- lying low)
-(QUICK turn-in: day 22, due day 28 --
-x1.15 on the lump)
-(turn in to
-Imsh, the masked collector --
-narrate the scene)
-EPILOGUE (day 22): A demon appears. It attacks the cultists. Hell calls the job complete.
-(THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next is pinned to PC level 17.)
-Ownka: +1 max HP (HP 9/17)
-[2 point(s) left]
-Ownka: +1 max STA (STA 10/10)
-[1 point(s) left]
-Ownka: +1 max POWER (Power 7/13)
-[0 point(s) left]
-Grushka: +1 max HP (HP 17/17)
-[6 point(s) left]
-Grushka: +1 max STA (STA 8/12)
-[5 point(s) left]
-Grushka: +1 max POWER (Power 8/13)
-[4 point(s) left]
-The party shares out its potions:
-Gruk: 2 healing, 1 stamina;
-Ownka: 2 healing, 1 stamina;
-Grushka: 1 healing, 1 stamina.
+2x dagger (+0 atk/-1 sev, 2s).
 
 -- the party --
-Gruk: Unhurt STA 8/12 Power 0/14
-  - a gash above the knee (sev 1)
+Gruk: Scratched STA 11/12 Power 6/14
+  - a shallow cut along the ribs (sev 1)
   (HP ceiling 15/16 until they mend)
   (healing x2, stamina x1)
-Ownka: Scratched STA 10/10 Power 7/13
-  (hurt -2 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  - a gut wound, still seeping (sev 2)
-  (HP ceiling 11/17 until they mend)
+Ownka: Unhurt STA 12/12 Power 13/13
   (stamina x1, healing x2)
-Grushka: Unhurt STA 8/12 Power 8/13
+Grushka: Unhurt STA 11/12 Power 11/13
   (stamina x1, healing x1)
-Purse 880s; day 22.
-Sin: sin 767/1500; heat 0 -- lying low.
+Purse 800s; day 26.
+Sin: sin 668/1500; heat 0 -- lying low.
+Ahead: 1 fight(s) at the burned plains; the work done pays 196 XP in the field, and the turn-in pays 199s, 114 XP at the giver.
+  (due day 30 -- 4 days left; quick pay, x1.15)

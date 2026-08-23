@@ -1,126 +1,57 @@
-=== Guard the Cultists -- the outer camp (L15), room 1/1: outer watch ===
-  2x Master Swordfighter -- schweizersäbel
-  DEX 8  STR 6  STA 8  HP 16/16
-  drilled +2,
-  takes spoils, leaves the fallen
+=== Rebel Shamans -- the burned plains (L6), room 1/2: shrine path ===
+  2x Ice Shaman -- dagger
+  DEX 4  STR 2  STA 6  HP 10/10
+  takes spoils, leaves the fallen,
+  caster: ice 2; 8 Power
   Round 1:
-    Ownka, Master Swordfighter 14, Master Swordfighter 15 close the distance -- the lines meet!
-    Gruk and Master Swordfighter 14 -- the flash-freeze splashes wide; neither yields.
-        pressure: Gruk: 21 (2d6=10, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 21 (2d6=11, +8 DEX, +2 training) [flash-freeze: -4 Power, 10 left]
-    Grushka's fire bolt edges past Master Swordfighter 14 -- a solid wound! [Master Swordfighter 14: 14/16 HP, -1 to rolls]
-        pressure: Grushka: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 17 (2d6=7, +8 DEX, +2 training) [fire bolt: -1 Power, 11 left]
-        severity: 3 = margin 1 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
-    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Master Swordfighter 14 8/8, Master Swordfighter 15 8/8
+    Ownka close the distance (the gap narrows to 1).
+    Gruk's flash-freeze overwhelms Ice Shaman 16 -- a crippling blow! [Ice Shaman 16: 4/10 HP, -3 to rolls]
+        pressure: Gruk: 20 (2d6=8, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 16: 8 (2d6=4, +4 DEX) [flash-freeze: -4 Power, 10 left]
+        severity: 15 = margin 12 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
+    Ice Shaman 16 is rimed with frost (-2 DEX for this fight)
+    Ice Shaman 16 is frozen fast -- they lose their next action!
+    Grushka's fire bolt overwhelms Ice Shaman 16 -- a crippling blow! [Ice Shaman 16: 0/10 HP, -5 to rolls]
+        pressure: Grushka: 17 (2d6=6, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 16: 2 (2d6=3, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 12 left]
+        severity: 21 = margin 15 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Ice Shaman 16 is SLAIN. ***
+    Ice Shaman 16 struggles back to their footing -- no action this round.
+    Ice Shaman 17's ice bolt outmaneuvers Gruk -- a solid wound! [Gruk: 14/16 HP, -0 to rolls]
+        pressure: Ice Shaman 17: 18 (2d6=8, +8 AIM, +2 proficiency) vs Gruk: 15 (2d6=7, +5 DEX, +3 training) [ice bolt: -1 Power, 7 left]
+        severity: 3 = margin 3 +2 ice bolt +2 spell rank -4 soak -> wound (-2 HP)
+    Gruk is rimed with frost (-1 DEX for this fight)
+    Gruk takes a wound: a shallow cut along the ribs (severity 1; HP ceiling 15/16)
+    stamina: Gruk 11/12, Ownka 12/12, Grushka 11/12 | Ice Shaman 17 5/6
   Round 2:
-    Gruk's flash-freeze overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 8/16 HP, -4 to rolls]
-        pressure: Gruk: 21 (2d6=10, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 13 (2d6=4, +8 DEX, +2 training, -1 wounds) [flash-freeze: -4 Power, 6 left]
-        severity: 7 = margin 8 +2 flash-freeze +3 spell rank -6 soak -> crippling blow (-6 HP)
-    Master Swordfighter 14 is rimed with frost (-2 DEX for this fight)
-    Master Swordfighter 14 is frozen fast -- they lose their next action!
-    Ownka feints -- Master Swordfighter 14's guard opens for the next pass. (+1 STA)
-    Ownka overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 2/16 HP, -7 to rolls]
-        pressure: Ownka: 19 (2d6=8, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency) vs Master Swordfighter 14: 12 (2d6=8, +8 DEX, -2 chilled, +2 training, -4 wounds)
-        severity: 9 = margin 7 +4 STR +1 schweizersäbel +3 proficiency -6 soak -> crippling blow (-6 HP)
-    Grushka's fire bolt overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 0/16 HP, -8 to rolls]
-        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 9 (2d6=8, +8 DEX, -2 chilled, +2 training, -7 wounds) [fire bolt: -1 Power, 10 left]
-        severity: 12 = margin 10 +5 fire bolt +3 spell rank -6 soak -> crippling blow (-6 HP)
-    *** Master Swordfighter 14 is SLAIN. ***
-    Master Swordfighter 14 struggles back to their footing -- no action this round.
-    Master Swordfighter 15 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 12/16 HP, -1 to rolls; 10 Power left]
-        pressure: Master Swordfighter 15: 21 (2d6=10, +8 DEX, +2 training, +1 schweizersäbel) vs Ownka: 16 (2d6=9, +4 DEX, +3 training)
-        severity: 8 = margin 5 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
-    Ownka takes a wound: three ribs broken (severity 2; HP ceiling 14/16)
-    stamina: Gruk 10/12, Ownka 9/9, Grushka 9/11 | Master Swordfighter 15 7/8
-  Round 3:
-    Gruk sends flash-freeze at Master Swordfighter 15 -- warded off.
-        pressure: Gruk: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 17 (2d6=7, +8 DEX, +2 training) [flash-freeze: -4 Power, 2 left]
-    Ownka rolls a pommel strike into Master Swordfighter 15. (+1 STA)
-    Ownka attacks Master Swordfighter 15 -- parried.
-        pressure: Ownka: 16 (2d6=6, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, -1 wounds) vs Master Swordfighter 15: 19 (2d6=9, +8 DEX, +2 training)
-    Grushka's fire bolt edges past Master Swordfighter 15 -- a solid wound! [Master Swordfighter 15: 14/16 HP, -1 to rolls]
-        pressure: Grushka: 22 (2d6=11, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 21 (2d6=11, +8 DEX, +2 training) [fire bolt: -1 Power, 9 left]
-        severity: 3 = margin 1 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
-    Master Swordfighter 15 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 8/16 HP, -2 to rolls; 8 Power left]
-        pressure: Master Swordfighter 15: 22 (2d6=12, +8 DEX, +2 training, +1 schweizersäbel, -1 wounds) vs Ownka: 8 (2d6=2, +4 DEX, +3 training, -1 wounds)
-        severity: 17 = margin 14 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
-    Ownka takes a wound: a gut wound, still seeping (severity 2; HP ceiling 12/16)
-    stamina: Gruk 9/12, Ownka 9/9, Grushka 8/11 | Master Swordfighter 15 6/8
-    == Ownka is badly cut up (HP 8/16) -- the fight hangs for a heartbeat. ==
-  Round 4:
-    Ownka downs a healing potion mid-fight (HP 8 -> 12/16, now -1 to rolls; 1 left) -- no attack this round, -2 defending while they drink
-    Gruk sends ice bolt at Master Swordfighter 15 -- warded off.
-        pressure: Gruk: 17 (2d6=6, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 20 (2d6=11, +8 DEX, +2 training, -1 wounds) [ice bolt: -1 Power, 1 left]
-    Grushka and Master Swordfighter 15 -- the fire bolt splashes wide; neither yields.
-        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 19 (2d6=10, +8 DEX, +2 training, -1 wounds) [fire bolt: -1 Power, 8 left]
-    Master Swordfighter 15 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 8/16 HP, -2 to rolls; 6 Power left]
-        pressure: Master Swordfighter 15: 14 (2d6=4, +8 DEX, +2 training, +1 schweizersäbel, -1 wounds) vs Ownka: 9 (2d6=5, +4 DEX, +3 training, -1 wounds, -2 drinking)
-        severity: 9 = margin 5 +6 STR +1 schweizersäbel -3 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
-    Ownka takes a wound: a deep gash across the back (severity 2; HP ceiling 10/16)
-    stamina: Gruk 8/12, Ownka 9/9, Grushka 7/11 | Master Swordfighter 15 5/8
-  Round 5:
-    Gruk's ice bolt edges past Master Swordfighter 15 -- a graze! [Master Swordfighter 15: 13/16 HP, -1 to rolls]
-        pressure: Gruk: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 16 (2d6=7, +8 DEX, +2 training, -1 wounds) [ice bolt: -1 Power, 0 left]
-        severity: 1 = margin 2 +2 ice bolt +3 spell rank -6 soak -> graze (-1 HP)
-    Master Swordfighter 15 is rimed with frost (-1 DEX for this fight)
-    Ownka lunges into a driving thrust at Master Swordfighter 15. (+1 STA)
-    Ownka overwhelms Master Swordfighter 15 -- a grievous injury! [Master Swordfighter 15: 9/16 HP, -3 to rolls]
-        pressure: Ownka: 19 (2d6=8, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, +2 Thrust, -2 wounds) vs Master Swordfighter 15: 14 (2d6=6, +8 DEX, -1 chilled, +2 training, -1 wounds)
-        severity: 6 = margin 5 +3 STR +1 schweizersäbel +3 proficiency -6 soak -> grievous (-4 HP)
-    Grushka's fire bolt overwhelms Master Swordfighter 15 -- a crippling blow! [Master Swordfighter 15: 3/16 HP, -6 to rolls]
-        pressure: Grushka: 22 (2d6=11, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 14 (2d6=8, +8 DEX, -1 chilled, +2 training, -3 wounds) [fire bolt: -1 Power, 7 left]
-        severity: 10 = margin 8 +5 fire bolt +3 spell rank -6 soak -> crippling blow (-6 HP)
-    Master Swordfighter 15 attacks Ownka -- parried.
-        pressure: Master Swordfighter 15: 8 (2d6=4, +8 DEX, -1 chilled, +2 training, +1 schweizersäbel, -6 wounds) vs Ownka: 14 (2d6=9, +4 DEX, +3 training, -2 wounds)
-    stamina: Gruk 7/12, Ownka 9/9, Grushka 6/11 | Master Swordfighter 15 4/8
-    The beaten foe line breaks and runs!
-    Ownka overwhelms Master Swordfighter 15 -- a grievous injury! [Master Swordfighter 15: 0/16 HP, -8 to rolls]
-        pressure: Ownka: 16 (2d6=7, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, -2 wounds) vs Master Swordfighter 15: 9 (2d6=8, +8 DEX, -1 chilled, +2 training, -6 wounds, -2 fleeing)
-        severity: 8 = margin 7 +3 STR +1 schweizersäbel +3 proficiency -6 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Master Swordfighter 15 falls. ***
+    Ownka close the distance -- the lines meet!
+    Gruk's flash-freeze overwhelms Ice Shaman 17 -- a crippling blow! [Ice Shaman 17: 4/10 HP, -3 to rolls]
+        pressure: Gruk: 24 (2d6=12, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 17: 13 (2d6=9, +4 DEX) [flash-freeze: -4 Power, 6 left]
+        severity: 14 = margin 11 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
+    Ice Shaman 17 is rimed with frost (-2 DEX for this fight)
+    Ice Shaman 17 is frozen fast -- they lose their next action!
+    Grushka's fire bolt overwhelms Ice Shaman 17 -- a crippling blow! [Ice Shaman 17: 0/10 HP, -5 to rolls]
+        pressure: Grushka: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 17: 4 (2d6=5, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 11 left]
+        severity: 20 = margin 14 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Ice Shaman 17 is SLAIN. ***
+    Ice Shaman 17 struggles back to their footing -- no action this round.
+    stamina: Gruk 10/12, Ownka 12/12, Grushka 10/12
     The party catches its breath (+1 STA)
-    Gruk gains 188 XP (encounter) [259/1500]
-    Ownka gains 188 XP (encounter) [1448/1400]
-    *** Ownka reaches level 15! (+3 skill points, 3 unspent) ***
-    Grushka gains 188 XP (encounter) [1448/1400]
-    *** Grushka reaches level 15! (+3 skill points, 7 unspent) ***
-    (dark work: +282 sin -- sin 282/1500; heat 0 -- lying low)
-    Loot: 5 silver (purse 321s).
+    Gruk gains 66 XP (encounter) [648/1500]
+    Ownka gains 66 XP (encounter) [437/1500]
+    Grushka gains 66 XP (encounter) [437/1500]
+    (penance: -99 sin -- sin 668/1500; heat 0 -- lying low)
 Left among the dead:
-2x schweizersäbel (+1 atk/+1 sev, 60s).
-
-  *** QUEST COMPLETE: Guard the Cultists -- the outer camp. Reward: 466 silver. ***
-    Gruk talks the pay up: +93s (CHA 5 -- 559s in all).
-    The party purse holds 880 silver.
-    Gruk gains 323 XP (quest) [582/1500]
-    Ownka gains 323 XP (quest) [371/1500]
-    Grushka gains 323 XP (quest) [371/1500]
-    Ownka: satisfaction 8 -> 9/10 (a job paid out)
-    (dark work: +485 sin -- sin 767/1500; heat 0 -- lying low)
-  (turned in QUICK -- day 22 against a deadline of day 28: x1.15 on the turn-in)
-  (turn in to Imsh, the masked collector -- narrate the scene)
-  EPILOGUE (day 22): A demon appears. It attacks the cultists. Hell calls the job complete.
-  (THE ASSIGNMENT IS DONE -- hell is pleased; the ledger reads 1 completed. The next is pinned to PC level 17.)
-    Ownka hardens the body: +1 max HP (HP 9/17; +7/10 bought) [2 point(s) left]
-    Ownka hardens the body: +1 max STA (STA 10/10; +7/10 bought) [1 point(s) left]
-    Ownka hardens the body: +1 max POWER (Power 7/13; +7/10 bought) [0 point(s) left]
-    Grushka hardens the body: +1 max HP (HP 17/17; +7/10 bought) [6 point(s) left]
-    Grushka hardens the body: +1 max STA (STA 8/12; +7/10 bought) [5 point(s) left]
-    Grushka hardens the body: +1 max POWER (Power 8/13; +7/10 bought) [4 point(s) left]
-    The party shares out its potions -- Gruk: 2 healing, 1 stamina; Ownka: 2 healing, 1 stamina; Grushka: 1 healing, 1 stamina.
+2x dagger (+0 atk/-1 sev, 2s).
 
 -- the party --
-Gruk: Unhurt STA 8/12 Power 0/14
-  - a gash above the knee (sev 1)
+Gruk: Scratched STA 11/12 Power 6/14
+  - a shallow cut along the ribs (sev 1)
   (HP ceiling 15/16 until they mend)
   (healing x2, stamina x1)
-Ownka: Scratched STA 10/10 Power 7/13
-  (hurt -2 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  - a gut wound, still seeping (sev 2)
-  (HP ceiling 11/17 until they mend)
+Ownka: Unhurt STA 12/12 Power 13/13
   (stamina x1, healing x2)
-Grushka: Unhurt STA 8/12 Power 8/13
+Grushka: Unhurt STA 11/12 Power 11/13
   (stamina x1, healing x1)
-Purse 880s; day 22.
-Sin: sin 767/1500; heat 0 -- lying low.
+Purse 800s; day 26.
+Sin: sin 668/1500; heat 0 -- lying low.
+Ahead: 1 fight(s) at the burned plains; the work done pays 196 XP in the field, and the turn-in pays 199s, 114 XP at the giver.
+  (due day 30 -- 4 days left; quick pay, x1.15)

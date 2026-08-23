@@ -34,8 +34,8 @@ day 22: HELL'S ASSIGNMENT 1 served:
 
 -- THE TALLY OF SIN --
   (no crime committed yet)
-  sin 767/1500; heat 0 -- lying low
-  lifetime sin 767 / penance 2022
+  sin 668/1500; heat 0 -- lying low
+  lifetime sin 767 / penance 2121
 
 -- SUGGESTIONS --
   taxcart -- Rob the Tax Collector: The

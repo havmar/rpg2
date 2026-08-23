@@ -1,43 +1,59 @@
-## turn 23 (day 26)
+## turn 24 (day 26)
 
-> thinking about working for Muzgash or Ghorza, but in exchange for political support, a way to power. talking to them to see which one could give a good opportunity.
+> take Muzgash's job in exchange for support
 
-Ghorza is easy to find. She is in the taproom with her back to the wall and eleven men who are not sitting with her but are all watching the door she is watching.
-
-She hears you out and does not pretend to be offended. She says she has no politics and that this is the whole reason anyone hires her. What she has is a company: eleven now, forty when there is money, and she knows every road and every gate on this side of the plain and which of them are held by six tired men. She says the plain is full of places a man could sit down in and be lord of, and that nobody in Kyiv would ride out for a month, and that when they did ride out it would be her they hired to do it. She would want paying first, every time, and she would take the same job against you the following spring. She is very clear about that.
-
-Muzgash is at Eshkar, a village an hour off across the same ground. He is the high chief's shaman and he is losing. Half his people have gone to the rebels in one season, and he is standing in a burnt village square posting work for strangers because he has nobody left to send.
-
-He says the thing you already worked out in Kyiv: Drog holds the plain because the Sky says so, and the shamans are the ones who say what the Sky says. That is the whole of the constitution. He also says Drog is sixty-three and has no heir, and that when the chief dies the clan mothers will seat the next one, and the shamans will say whether the Sky agrees. He does not offer silver for support. He offers the thing he actually has: he will say you are the Sky's, out loud, to the people who decide. He needs the rebels dead first, because a shaman who has lost half his followers cannot vouch for anybody.
+Muzgash agrees to it standing up, in front of four of his own people, which is the part that matters. He says it back so there is no mistake later: the rebels dead, and he will say the Sky is with you, by name, to the clan mothers and to anyone else who asks. Then he tells you where they are. They are not hiding. They are on burned ground an hour out of Kyiv, working a shrine on the old path.
 
 ```
-  GHORZA -- force, for hire
-    a company: 11 now, 40 with pay.
-    knows which gates are thin.
-    no allegiance, and none to you.
-    what it buys: ground you take
-    and hold. `conquer` + `garrison`.
-  MUZGASH -- legitimacy, on credit
-    the chief's own shaman, losing.
-    the shamans read the mandate.
-    Drog is 63 with no heir; the
-    clan mothers seat the next one.
-    what it buys: a voice that says
-    the Sky is with you. he needs
-    the rebels dead first.
-  q54 Rebel Shamans -- L6, 1 site,
-    2 fights, 173s, 4 days left.
-    at Eshkar, a free step.
+=== Rebel Shamans ===
+the burned plains (L6),
+room 1/2: shrine path
+2x Ice Shaman -- dagger
+DEX 4  STR 2  STA 6  HP 10/10
+takes spoils, leaves the fallen,
+caster: ice 2; 8 Power
 ```
 
-Grushka says the shaman is telling the truth and is going to lose anyway. Ownka says the mercenary is the honest one and asks whether anyone has counted eleven men against a village gate lately.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
+
+They are ice like you. The first one is dead in the opening exchange, frozen by your cast and burned down by Grushka's before he can move. The second gets one bolt out -- it opens your ribs -- and then goes the same way in the second round. Neither of them was going to beat three people.
 
 ```
-  day 26. purse 800s. all whole.
-  options: take Muzgash's job,
-    hire Ghorza's company, find
-    the clan mothers first, both,
-    neither
+The party catches its breath (+1 STA)
+Gruk +66 XP (encounter) [648/1500]
+Ownka +66 XP (encounter) [437/1500]
+Grushka +66 XP (encounter) [437/1500]
+(penance: -99 sin -- sin 668/1500;
+  heat 0 -- lying low)
+Left among the dead:
+2x dagger (+0 atk/-1 sev, 2s).
+
+-- the party --
+Gruk: Scratched STA 11/12 Power 6/14
+  - a shallow cut along the ribs (sev 1)
+  (HP ceiling 15/16 until they mend)
+  (healing x2, stamina x1)
+Ownka: Unhurt STA 12/12 Power 13/13
+  (stamina x1, healing x2)
+Grushka: Unhurt STA 11/12 Power 11/13
+  (stamina x1, healing x1)
+Purse 800s; day 26.
+Sin: sin 668/1500; heat 0 -- lying low.
+Ahead: 1 fight(s) at the burned plains;
+  the work done pays 196 XP in the
+  field, and the turn-in pays 199s, 114
+  XP at the giver.
+  (due day 30 -- 4 days left; quick pay,
+    x1.15)
+```
+
+Honest work burns off what hell put on the meter. Ninety-nine of it, for two dead shamans.
+
+The path goes on up the ridge to an outer altar with more of them on it. Grushka says they are the same rank as the two you just killed and asks why the chief's man could not do this himself.
+
+```
+  options: press on to the altar,
+    camp first, back to the city
 ```
 
 Where to?

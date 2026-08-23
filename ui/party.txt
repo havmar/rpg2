@@ -1,13 +1,14 @@
 RPG2 PARTY SHEET -- day 26, at Tergal >
-  Kyiv > Kyiv
+  Kyiv > Kyiv > the burned plains >
+  shrine path
 purse: 800s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L15  training 3  XP 582/1500  points 0
+  L15  training 3  XP 648/1500  points 0
   DEX 5  STR 4  MIND 6  CHA 5
-  HP 16/16  STA 12/12  Power 14/14
+  HP 14/15 of 16  STA 11/12  Power 6/14
   true rapier, prof 1 | healingx2,
     staminax1
   spells: fire 1, ice 3, scry 1
@@ -15,9 +16,11 @@ party: 2/2 companion slot(s) filled (CHA
   pools bought: hp +6, power +10, sta +6
   drilled, not in hand: rapier 1
   speaks: Latin, Tergal
+  - a shallow cut along the ribs (sev 1)
+  wound load 1 -> HP ceiling 15/16
 
 (companion) Ownka -- tergal f, age 37
-  L15  training 3  XP 371/1500  points 0
+  L15  training 3  XP 437/1500  points 0
   DEX 4  STR 4  MIND 3  CHA 5
   HP 17/17  STA 12/12  Power 13/13
   schweizersäbel, prof 3 | staminax1,
@@ -31,9 +34,9 @@ party: 2/2 companion slot(s) filled (CHA
     verbose; looks: beautiful
 
 (companion) Grushka -- tergal f, age 30
-  L15  training 3  XP 371/1500  points 4
+  L15  training 3  XP 437/1500  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 17/17  STA 12/12  Power 13/13
+  HP 17/17  STA 11/12  Power 11/13
   wooden staff | staminax1, healingx1
   spells: fire 3
   pools bought: hp +7, power +7, sta +7
@@ -42,9 +45,10 @@ party: 2/2 companion slot(s) filled (CHA
   quirk: patriotic; voice: whispering;
     looks: pockmarked
 
-active quest [q46] Guard the Cultists is
-  COMPLETE
-sin: sin 767/1500; heat 0 -- lying low
+active quest: [q54] L6 Rebel Shamans --
+  next: the burned plains (L6), room 2/2
+  due day 30 -- 4 days left
+sin: sin 668/1500; heat 0 -- lying low
 THE PACT: no current assignment (the
   next is pinned to PC level 17).
   (1 assignment(s) completed -- the
