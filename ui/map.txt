@@ -1,5 +1,6 @@
-RPG2 MAP -- day 9
-the party is at Tergal > R10C26 > Sargul
+RPG2 MAP -- day 10
+the party is at Tergal > Kyiv > Kyiv
+  Riverlands
 
             111111111122222222223
    123456789012345678901234567890
@@ -11,8 +12,8 @@ the party is at Tergal > R10C26 > Sargul
 06 .#..C#.......##......#########
 07 ...####....#......#########C##
 08 ........##C#####~####T#######^
-09 ...######C~#####~C#####~##~##^
-10 ....######~######^^^###~#@C##^
+09 ...######C~#####~C#####~##!##^
+10 ....######~######^^^###~#v@##^
 11 .....######^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
 13 .#CC^#T#....##...###.........#
@@ -26,15 +27,17 @@ the party is at Tergal > R10C26 > Sargul
 @ party  ! job  C city  T town  v
   village
 
-HERE: R10C26 -- Tergal, plains
+HERE: Kyiv (R10C27) -- Tergal, plains
   horse country
-  ground: pasture, steppe
+  ground: river, riverside, pasture,
+    steppe, coast
   last harvest: ordinary
   goods: horses
-  R10C26 Countryside (fields)
-  Sargul (village)  <- the party, 2
-    job(s)
-  Ukhta (hamlet)  0 job(s)
+  Kyiv Riverlands (river)  <- the party
+  Kyiv (city)  5 job(s)
+  Guratai (village)  0 job(s)
+  Kharnam (village)  0 job(s)
+  Eshkar (village)  2 job(s)
 
 -- Tergal --
   [NORMAL]
@@ -61,5 +64,15 @@ Umaia cities: Qurtuba R14C04, Jerusalem
     R16C27, Carthage R17C12, Cairo
     R18C24*
 Tergal cities: Kyiv R10C27*
-Tergal known: Sargul R10C26, Ukhta
-    R10C26
+Tergal known: Eshkar R10C27, Guratai
+    R10C27, Kharnam R10C27, Sargul
+    R10C26, Ukhta R10C26
+
+-- quests in hand (where they lead) --
+
+[q23] The Great Hunt (L2) @ Sargul
+  - the hunting grounds (L2): here, room
+    1/1
+  - the beast den (L2): not yet (1
+    room(s))
+  - R09C27: 2 road day(s)

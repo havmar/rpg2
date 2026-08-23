@@ -1,5 +1,5 @@
-RPG2 PARTY SHEET -- day 9, at Tergal >
-  R10C26 > Sargul
+RPG2 PARTY SHEET -- day 10, at Tergal >
+  Kyiv > Kyiv Riverlands
 purse: 0s
 party: 2/2 companion slot(s) filled (CHA
   5)
@@ -20,7 +20,7 @@ party: 2/2 companion slot(s) filled (CHA
 (companion) Ownka -- tergal f, age 37
   L14  training 3  XP 508/1400  points 0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 15/16  STA 11/11  Power 12/12
+  HP 16/16  STA 11/11  Power 12/12
   schweizersäbel, prof 3 | staminax1
   abilities: bulwark
   moves: feint, pommel, thrust
@@ -42,7 +42,10 @@ party: 2/2 companion slot(s) filled (CHA
   quirk: patriotic; voice: whispering;
     looks: pockmarked
 
-active quest [q01] Rival Warband is
-  COMPLETE
+active quest: [q23] L2 The Great Hunt --
+  next: the hunting grounds (L2), room
+  1/1
+  due day 14 -- 4 days left
 THE PACT: no current assignment (the
   next is pinned to PC level 15).
+sighted: L3: 2x Dire Wolf
