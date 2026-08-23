@@ -1,56 +1,83 @@
-## turn 19 (day 22)
+## turn 20 (day 22)
 
-> take hell's job
+> ownka drinks a potion, fight on
 
-Imsh is at the horse market with the mask on, standing where everyone can see him and nobody looks. He hands over the place and the day and says hell is not paying for the cultists' lives, only for their time. Then he buys a horse he does not need and walks away leading it.
-
-Two days east through steady rain and a hard frost. The ritual is on a rise at the end of the third wet day: a ring of stones, fires in it, twenty people in a circle who have been chanting long enough to have gone hoarse. Nobody there speaks to you. The outer camp is below them on the road, and two men in good coats are already coming up it with their sabres out. They are not bandits. They came here to stop this.
-
-```
-=== Guard the Cultists ===
-the outer camp (L15),
-room 1/1: outer watch
-2x Master Swordfighter -- schweizersäbel
-DEX 8  STR 6  STA 8  HP 16/16
-drilled +2,
-takes spoils, leaves the fallen
-```
+Ownka drinks and he opens her back for it. She holds him two more rounds while Grushka works on him from behind you, and when he finally breaks and runs she is close enough to take him going away.
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
 
-Your ice catches the first one in the second round and freezes him where he stands; Ownka's feint opens him and Grushka burns him down before he can move again. The second one is untouched by any of that. He has put two into Ownka through her guard -- ribs, then the gut -- and Bulwark blunted both.
+Behind you the chanting stops. Something is standing in the ring that was not there a minute ago, and the twenty people who called it are the closest living things to it. You do not stay to watch the whole of that. Hell calls the job done before you are off the rise.
 
 ```
-*** FIGHT PAUSED (after round 3): Ownka
-  is badly cut up. ***
-  Facing: Master Swordfighter 15 (14/16
-    HP)
-  Gruk: Unhurt HP 15/15 (max 16) STA
-    9/12 Power 2/14
-    - a gash above the knee (sev 1)
-    healing x2, stamina x1
-  Ownka: Bloodied HP 8/12 (max 16) STA
-    9/9 Power 8/12
-    (hurt -2 to rolls)
-    - three ribs broken (sev 2)
-    - a gut wound, still seeping (sev 2)
-    healing x2, stamina x1
-  Grushka: Unhurt HP 16/16 STA 8/11
-    Power 9/12
-    healing x2, stamina x1
-  The player's call (a pause action
-    costs the round: defend at -2):
-    resume
-      fight on
-    resume --drink HERO
-      stamina draught, +4 STA now
-    resume --heal HERO
-      healing potion, +5 HP now (the
-        wound penalty lightens)
-    retreat
-      parting blows from foes still fit
-        to swing, then one group chase
-        roll
+The party catches its breath (+1 STA)
+Gruk +188 XP (encounter) [259/1500]
+Ownka +188 XP (encounter) [1448/1400]
+*** Ownka reaches level 15! ***
+Grushka +188 XP (encounter) [1448/1400]
+*** Grushka reaches level 15! ***
+(dark work: +282 sin -- sin 282/1500)
+Loot: 5 silver.
+Left among the dead:
+2x schweizersäbel (+1 atk/+1 sev, 60s).
+
+*** QUEST COMPLETE:
+Guard the Cultists. Reward: 466 silver.
+***
+Gruk talks the pay up:
++93s (559s in all).
+The party purse holds 880 silver.
+Ownka: satisfaction 8 -> 9/10
+(dark work: +485 sin -- sin 767/1500;
+  heat 0 -- lying low)
+(QUICK turn-in: day 22, due day 28 --
+x1.15 on the lump)
+EPILOGUE (day 22): A demon appears. It
+  attacks the cultists. Hell calls the
+  job complete.
+(THE ASSIGNMENT IS DONE -- the ledger
+  reads 1 completed. The next is pinned
+  to PC level 17.)
+
+-- the party --
+Gruk: Unhurt STA 8/12 Power 0/14
+  - a gash above the knee (sev 1)
+  (HP ceiling 15/16 until they mend)
+Ownka: Scratched STA 10/10 Power 7/13
+  (hurt -2 to rolls)
+  - three ribs broken (sev 2)
+  - a deep gash across the back (sev 2)
+  - a gut wound, still seeping (sev 2)
+  (HP ceiling 11/17 until they mend)
+Grushka: Unhurt STA 8/12 Power 8/13
+Purse 880s; day 22.
+Sin: sin 767/1500; heat 0 -- lying low.
 ```
+
+Two good sabres on the road where the swordfighters fell, sixty silver apiece new. Ownka carries one already.
+
+Grushka wants to know what the men were. You tell her they came to stop the summoning and that hell paid you to stand in front of them, and she says nothing at all for the rest of the walk down.
+
+Ownka has three open wounds and is losing morale every night she carries them. Namuruk is a village on this same ground, a free walk: its healer closes two severities a visit at twenty each. Kyiv is two days back and its healer would close all six in one day.
+
+```
+  day 22. purse 880s.
+  Ownka: 6 severity, HP ceiling
+    11/17. satisfaction 9.
+  Grushka: 4 skill points banked --
+    companions never buy abilities
+    on their own; `learn Grushka X`
+    works.
+  hell: paid, quiet until level 17.
+```
+
+```
+  options: Namuruk (free step, its
+    healer), Kyiv (2 days, healer +
+    spellbook 120s + masterwork
+    300s), take the sabres, the
+    board, hunt
+```
+
+Where to?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/history.txt)

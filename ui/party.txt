@@ -1,14 +1,13 @@
 RPG2 PARTY SHEET -- day 22, at Tergal >
-  R10C29 > R10C29 Countryside > the
-  outer camp > outer watch
-purse: 316s
+  R10C29 > R10C29 Countryside
+purse: 880s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L15  training 3  XP 71/1500  points 0
+  L15  training 3  XP 582/1500  points 0
   DEX 4  STR 4  MIND 6  CHA 5
-  HP 15/15 of 16  STA 9/12  Power 2/14
+  HP 15/15 of 16  STA 8/12  Power 0/14
   true rapier, prof 1 | healingx2,
     staminax1
   spells: fire 1, ice 3, scry 1
@@ -20,42 +19,39 @@ party: 2/2 companion slot(s) filled (CHA
   wound load 1 -> HP ceiling 15/16
 
 (companion) Ownka -- tergal f, age 37
-  L14  training 3  XP 1260/1400  points
-    0
+  L15  training 3  XP 371/1500  points 0
   DEX 4  STR 3  MIND 3  CHA 5
-  HP 8/12 of 16  STA 9/9  Power 8/12
+  HP 9/11 of 17  STA 10/10  Power 7/13
   schweizersäbel, prof 3 | staminax1,
     healingx2
   abilities: bulwark
   moves: feint, pommel, thrust
-  pools bought: hp +6, power +6, sta +6
+  pools bought: hp +7, power +7, sta +7
   speaks: Latin, Tergal
-  satisfaction 8/10
+  satisfaction 9/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
   - three ribs broken (sev 2)
+  - a deep gash across the back (sev 2)
   - a gut wound, still seeping (sev 2)
-  wound load 4 -> HP ceiling 12/16
+  wound load 6 -> HP ceiling 11/17
 
 (companion) Grushka -- tergal f, age 30
-  L14  training 3  XP 1260/1400  points
-    4
+  L15  training 3  XP 371/1500  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 16/16  STA 8/11  Power 9/12
-  wooden staff | staminax1, healingx2
+  HP 17/17  STA 8/12  Power 8/13
+  wooden staff | staminax1, healingx1
   spells: fire 3
-  pools bought: hp +6, power +6, sta +6
+  pools bought: hp +7, power +7, sta +7
   speaks: Latin, Tergal
   satisfaction 10/10
   quirk: patriotic; voice: whispering;
     looks: pockmarked
 
-active quest: [q46] L15 Guard the
-  Cultists -- next: the outer camp
-  (L15), room 1/1
-  due day 28 -- 6 days left
-THE PACT: assignment [q46] Guard the
-  Cultists at Kyiv (taken; hell wants it
-  by day 28).
-*** A FIGHT IS PAUSED -- resume or
-  retreat ***
+active quest [q46] Guard the Cultists is
+  COMPLETE
+sin: sin 767/1500; heat 0 -- lying low
+THE PACT: no current assignment (the
+  next is pinned to PC level 17).
+  (1 assignment(s) completed -- the
+    curriculum ledger; see `task`)

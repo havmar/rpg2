@@ -18,17 +18,24 @@ day 19: [q41] Giants in the Pass (L14)
   -- done.
   The giants are dead. Carts use the
     mountain pass again.
+day 22: [q46] Guard the Cultists (L15)
+  [DARK] -- done.
+  A demon appears. It attacks the
+    cultists. Hell calls the job
+    complete.
 
 -- REMARKABLE --
 day 1: DEFEAT at L14: the party went
   down and lived -- a humanoid roster
   took its price. The level's one mercy
   is spent.
+day 22: HELL'S ASSIGNMENT 1 served:
+  Guard the Cultists.
 
 -- THE TALLY OF SIN --
   (no crime committed yet)
-  clean; heat 0
-  lifetime sin 0 / penance 2022
+  sin 767/1500; heat 0 -- lying low
+  lifetime sin 767 / penance 2022
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`
