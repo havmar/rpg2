@@ -2,7 +2,10 @@ RPG2 HISTORY -- day 7
 (what this campaign has done)
 
 -- QUESTS DONE --
-  (no job finished yet)
+day 7: [q01] Rival Warband (L14) --
+  done.
+  The rival warband is defeated. The
+    herd trails are safe again.
 
 -- REMARKABLE --
 day 1: DEFEAT at L14: the party went
@@ -13,7 +16,7 @@ day 1: DEFEAT at L14: the party went
 -- THE TALLY OF SIN --
   (no crime committed yet)
   clean; heat 0
-  lifetime sin 0 / penance 845
+  lifetime sin 0 / penance 972
 
 -- SUGGESTIONS --
   (hell is not advertising -- `case`

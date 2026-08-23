@@ -1,15 +1,14 @@
 RPG2 PARTY SHEET -- day 7, at Tergal >
-  R10C26 > Sargul > the raided trail >
-  campfire
+  R10C26 > Sargul > the raided trail
 purse: 5s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L14  training 3  XP 634/1400  points 4
+  L14  training 3  XP 719/1400  points 4
   DEX 3  STR 3  MIND 6  CHA 5
   HP 10/10 of 16  STA 9/12  Power 0/10
-  longsword | staminax1
+  schweizersäbel | staminax1
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
@@ -21,7 +20,7 @@ party: 2/2 companion slot(s) filled (CHA
   wound load 6 -> HP ceiling 10/16
 
 (companion) Ownka -- tergal f, age 37
-  L14  training 3  XP 423/1400  points 0
+  L14  training 3  XP 508/1400  points 0
   DEX 4  STR 4  MIND 3  CHA 5
   HP 12/12 of 16  STA 11/11  Power 8/12
   schweizersäbel, prof 3 | staminax1
@@ -29,7 +28,7 @@ party: 2/2 companion slot(s) filled (CHA
   moves: feint, pommel, thrust
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 7/10
+  satisfaction 8/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
   - three ribs broken (sev 2)
@@ -37,20 +36,18 @@ party: 2/2 companion slot(s) filled (CHA
   wound load 4 -> HP ceiling 12/16
 
 (companion) Grushka -- tergal f, age 30
-  L14  training 3  XP 423/1400  points 4
+  L14  training 3  XP 508/1400  points 4
   DEX 4  STR 3  MIND 6  CHA 6
   HP 16/16  STA 6/11  Power 6/12
   wooden staff | staminax1
   spells: fire 3
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 7/10
+  satisfaction 8/10
   quirk: patriotic; voice: whispering;
     looks: pockmarked
 
-active quest [q01] Rival Warband: THE
-  WORK IS DONE -- return to Varg at
-  Sargul (`turnin q01`)
-  due day 6 -- LATE (2 day(s) of grace)
+active quest [q01] Rival Warband is
+  COMPLETE
 THE PACT: no current assignment (the
   next is pinned to PC level 15).
