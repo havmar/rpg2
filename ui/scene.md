@@ -1,73 +1,43 @@
-## turn 22 (day 26)
+## turn 23 (day 26)
 
-> we go to Kyiv to gather information. the goal is to gain political power. what are the major power centers in Tergal, and what is one where people are dissatisfied with the leadership.
+> thinking about working for Muzgash or Ghorza, but in exchange for political support, a way to power. talking to them to see which one could give a good opportunity.
 
-Two days west in grey weather and you come into Kyiv in steady rain. You spend the day in the hall, the horse market and the taproom, and you buy a lot of drinks.
+Ghorza is easy to find. She is in the taproom with her back to the wall and eleven men who are not sitting with her but are all watching the door she is watching.
 
-This is what the country is.
+She hears you out and does not pretend to be offended. She says she has no politics and that this is the whole reason anyone hires her. What she has is a company: eleven now, forty when there is money, and she knows every road and every gate on this side of the plain and which of them are held by six tired men. She says the plain is full of places a man could sit down in and be lord of, and that nobody in Kyiv would ride out for a month, and that when they did ride out it would be her they hired to do it. She would want paying first, every time, and she would take the same job against you the following spring. She is very clear about that.
 
-One man holds the whole plain. Drog is high chief, sixty-three, and he holds it under the mandate of the Sky, which is the argument that the warbands no longer ride by clan. He came to it by birth and nobody argued at the time. He is called a reformer, he is called arbitrary, and everyone agrees he never stops working. He has no heir.
+Muzgash is at Eshkar, a village an hour off across the same ground. He is the high chief's shaman and he is losing. Half his people have gone to the rebels in one season, and he is standing in a burnt village square posting work for strangers because he has nobody left to send.
 
-Under that there are three things that are actually power.
-
-The clan mothers. They seat the chiefs and they unseat them; that is the old law and Drog's whole reform is aimed at making it not matter. It has not stopped mattering. Every argument in Tergal about who governs is a version of this argument.
-
-The shamans. The chief keeps his own, and the country keeps two kinds -- the white ones everybody loves and the black ones who camp outside the ring of tents and get paid double. Some of them have gone over. That is the thing that is going badly right now.
-
-The soldiers. Border commanders, a general in the hall, and captains like Ghorza who is drinking in the same room as you and hiring for anyone with silver. The border is not holding.
-
-Where people are unhappy is the shamans, and it is not close.
+He says the thing you already worked out in Kyiv: Drog holds the plain because the Sky says so, and the shamans are the ones who say what the Sky says. That is the whole of the constitution. He also says Drog is sixty-three and has no heir, and that when the chief dies the clan mothers will seat the next one, and the shamans will say whether the Sky agrees. He does not offer silver for support. He offers the thing he actually has: he will say you are the Sky's, out loud, to the people who decide. He needs the rebels dead first, because a shaman who has lost half his followers cannot vouch for anybody.
 
 ```
-  (day 21) The rebel shamans burned
-    the plains black. The old shaman
-    has lost half the followers.
-  (day 21) The giant took another
-    fort. The border line has been
-    pulled back ten miles.
+  GHORZA -- force, for hire
+    a company: 11 now, 40 with pay.
+    knows which gates are thin.
+    no allegiance, and none to you.
+    what it buys: ground you take
+    and hold. `conquer` + `garrison`.
+  MUZGASH -- legitimacy, on credit
+    the chief's own shaman, losing.
+    the shamans read the mandate.
+    Drog is 63 with no heir; the
+    clan mothers seat the next one.
+    what it buys: a voice that says
+    the Sky is with you. he needs
+    the rebels dead first.
+  q54 Rebel Shamans -- L6, 1 site,
+    2 fights, 173s, 4 days left.
+    at Eshkar, a free step.
 ```
 
-Neega the star-reader is fifty-five and reads the sky for the hall, and she says it plainly with her hands around a cup: the chief's own shaman has lost half his people to the rebels in one season, the border has moved backwards ten miles in the same season, and a chief holds the plain because the Sky says so and the Sky is currently saying something else. Then she says she did not say that.
-
-There is a job on the board from the high chief's own shaman, at Eshkar, a village on this tile: Muzgash wants the rebel shamans dealt with, level six, a hundred and seventy-three silver, four days. That is the chief's faction asking strangers for help in front of everybody, which tells you what it is worth.
-
-```
-  TERGAL -- who holds what
-  constitution: THE GREAT CHIEF
-    one chief, the Sky's mandate,
-    no clan warbands
-  the tension: the chiefs against
-    the clan mothers
-    -- the mothers seat chiefs and
-       unseat them
-  Drog, high chief, 63: reformer,
-    arbitrary, tireless. NO HEIR.
-  Neega, star-reader, 55.
-  Ghorza, mercenary captain, 39.
-  weak point: the shamans. the
-    chief's man is losing and the
-    border is going backwards.
-```
+Grushka says the shaman is telling the truth and is going to lose anyway. Ownka says the mercenary is the honest one and asks whether anyone has counted eleven men against a village gate lately.
 
 ```
   day 26. purse 800s. all whole.
-  q54 Rebel Shamans -- L6, 173s,
-    4 days, at Eshkar (this tile,
-    free step). Muzgash, the high
-    chief's shaman.
-  in Kyiv: spellbook 120s,
-    masterwork steel 300s, tavern.
-  `conquer` takes a settlement by
-    its garrison and holds it for
-    tribute -- the engine's own
-    road to holding ground.
-```
-
-```
   options: take Muzgash's job,
-    find the clan mothers, talk to
-    Ghorza, buy a spellbook,
-    the tavern
+    hire Ghorza's company, find
+    the clan mothers first, both,
+    neither
 ```
 
 Where to?
