@@ -1,13 +1,13 @@
-RPG2 PARTY SHEET -- day 22, at Tergal >
-  R10C29 > R10C29 Countryside
-purse: 880s
+RPG2 PARTY SHEET -- day 24, at Tergal >
+  R10C29 > Namuruk
+purse: 800s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
   L15  training 3  XP 582/1500  points 0
-  DEX 4  STR 4  MIND 6  CHA 5
-  HP 15/15 of 16  STA 8/12  Power 0/14
+  DEX 5  STR 4  MIND 6  CHA 5
+  HP 16/16  STA 12/12  Power 14/14
   true rapier, prof 1 | healingx2,
     staminax1
   spells: fire 1, ice 3, scry 1
@@ -15,31 +15,25 @@ party: 2/2 companion slot(s) filled (CHA
   pools bought: hp +6, power +10, sta +6
   drilled, not in hand: rapier 1
   speaks: Latin, Tergal
-  - a gash above the knee (sev 1)
-  wound load 1 -> HP ceiling 15/16
 
 (companion) Ownka -- tergal f, age 37
   L15  training 3  XP 371/1500  points 0
-  DEX 4  STR 3  MIND 3  CHA 5
-  HP 9/11 of 17  STA 10/10  Power 7/13
+  DEX 4  STR 4  MIND 3  CHA 5
+  HP 13/17  STA 12/12  Power 13/13
   schweizersäbel, prof 3 | staminax1,
     healingx2
   abilities: bulwark
   moves: feint, pommel, thrust
   pools bought: hp +7, power +7, sta +7
   speaks: Latin, Tergal
-  satisfaction 9/10
+  satisfaction 5/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  - a gut wound, still seeping (sev 2)
-  wound load 6 -> HP ceiling 11/17
 
 (companion) Grushka -- tergal f, age 30
   L15  training 3  XP 371/1500  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 17/17  STA 8/12  Power 8/13
+  HP 17/17  STA 12/12  Power 13/13
   wooden staff | staminax1, healingx1
   spells: fire 3
   pools bought: hp +7, power +7, sta +7

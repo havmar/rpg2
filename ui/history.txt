@@ -1,4 +1,4 @@
-RPG2 HISTORY -- day 22
+RPG2 HISTORY -- day 24
 (what this campaign has done)
 
 -- QUESTS DONE --
@@ -38,5 +38,11 @@ day 22: HELL'S ASSIGNMENT 1 served:
   lifetime sin 767 / penance 2022
 
 -- SUGGESTIONS --
-  (hell is not advertising -- `case`
-    lists everything anyway)
+  heist -- The Vault Heist: The vault
+    opens between patrols, or it does
+    not open.
+  arson -- Arson: Straw, lamp oil, an
+    open door, and a long walk.
+  debt -- Strong-Arm Debt Collection:
+    They owe. Explain the interest with
+    both hands.

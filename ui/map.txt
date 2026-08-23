@@ -1,6 +1,6 @@
-RPG2 MAP -- day 22
-the party is at Tergal > R10C29 > R10C29
-  Countryside
+RPG2 MAP -- day 24
+the party is at Tergal > R10C29 >
+  Namuruk
 
             111111111122222222223
    123456789012345678901234567890
@@ -32,16 +32,15 @@ HERE: R10C29 -- Tergal, plains
   ground: pasture, steppe, mountain-foot
   last harvest: ordinary
   goods: horses
-  R10C29 Countryside (fields)  <- the
-    party
-  Namuruk (village)  0 job(s)
+  R10C29 Countryside (fields)
+  Namuruk (village)  <- the party, 0
+    job(s)
   Tolui (hamlet)  0 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: steady rain -- the 3rd wet
-    day running.
+  WEATHER: clear skies.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London

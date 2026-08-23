@@ -1,81 +1,66 @@
-## turn 20 (day 22)
+## turn 21 (day 24)
 
-> ownka drinks a potion, fight on
+> do healing in namaruk, then in Kyiv
 
-Ownka drinks and he opens her back for it. She holds him two more rounds while Grushka works on him from behind you, and when he finally breaks and runs she is close enough to take him going away.
+Namuruk is Sargul again with a different name: a well, corrals, low houses, the same grass in every direction. The healer works out of his own front room and can do two severities a day and no more.
 
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
-
-Behind you the chanting stops. Something is standing in the ring that was not there a minute ago, and the twenty people who called it are the closest living things to it. You do not stay to watch the whole of that. Hell calls the job done before you are off the rise.
+He takes two days and eighty silver. The first day he closes Ownka's ribs. The second he opens the gut wound and cleans it out, and the cut along her ribs closes on its own that night.
 
 ```
-The party catches its breath (+1 STA)
-Gruk +188 XP (encounter) [259/1500]
-Ownka +188 XP (encounter) [1448/1400]
-*** Ownka reaches level 15! ***
-Grushka +188 XP (encounter) [1448/1400]
-*** Grushka reaches level 15! ***
-(dark work: +282 sin -- sin 282/1500)
-Loot: 5 silver.
-Left among the dead:
-2x schweizersäbel (+1 atk/+1 sev, 60s).
-
-*** QUEST COMPLETE:
-Guard the Cultists. Reward: 466 silver.
-***
-Gruk talks the pay up:
-+93s (559s in all).
-The party purse holds 880 silver.
-Ownka: satisfaction 8 -> 9/10
-(dark work: +485 sin -- sin 767/1500;
-  heat 0 -- lying low)
-(QUICK turn-in: day 22, due day 28 --
-x1.15 on the lump)
-EPILOGUE (day 22): A demon appears. It
-  attacks the cultists. Hell calls the
-  job complete.
-(THE ASSIGNMENT IS DONE -- the ledger
-  reads 1 completed. The next is pinned
-  to PC level 17.)
-
--- the party --
-Gruk: Unhurt STA 8/12 Power 0/14
-  - a gash above the knee (sev 1)
-  (HP ceiling 15/16 until they mend)
-Ownka: Scratched STA 10/10 Power 7/13
-  (hurt -2 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  - a gut wound, still seeping (sev 2)
-  (HP ceiling 11/17 until they mend)
-Grushka: Unhurt STA 8/12 Power 8/13
-Purse 880s; day 22.
-Sin: sin 767/1500; heat 0 -- lying low.
+The healer works on Ownka: three ribs
+  broken -- closed.
+2 severity treated for 40s.
+  It costs the day.
+Ownka: satisfaction 9 -> 5/10
+(carrying untended wounds)
+The healer works on Ownka: a gut wound,
+  still seeping -- closed.
+2 severity treated for 40s
+  (purse: 800s).
+Ownka: a shallow cut along the ribs
+  -- closed.
 ```
 
-Two good sabres on the road where the swordfighters fell, sixty silver apiece new. Ownka carries one already.
-
-Grushka wants to know what the men were. You tell her they came to stop the summoning and that hell paid you to stand in front of them, and she says nothing at all for the rest of the walk down.
-
-Ownka has three open wounds and is losing morale every night she carries them. Namuruk is a village on this same ground, a free walk: its healer closes two severities a visit at twenty each. Kyiv is two days back and its healer would close all six in one day.
+Nobody is carrying a wound now, which has not been true since the north trail. That is what the Kyiv healer was for, so there is nothing left for him to do.
 
 ```
-  day 22. purse 880s.
-  Ownka: 6 severity, HP ceiling
-    11/17. satisfaction 9.
-  Grushka: 4 skill points banked --
-    companions never buy abilities
-    on their own; `learn Grushka X`
-    works.
-  hell: paid, quiet until level 17.
+  day 24. purse 800s.
+  Gruk: 16/16, Power 14/14.
+  Ownka: 13/17, no wounds. sat 5.
+  Grushka: 17/17, no wounds. sat 10,
+    4 skill points banked.
+```
+
+There is no work in Namuruk and none in Tolui up the road. On the second evening the general store's boy hands you a slate with four things written on it in a hand that is much too good for a village boy, and takes it back without waiting for an answer.
+
+```
+*** A SUGGESTION FROM BELOW ***
+  Rob the Tax Collector (`case taxcart`)
+  The Vault Heist (`case heist`)
+  Arson (`case arson`)
+  Strong-Arm Debt Collection
+    (`case debt`)
+```
+
+What there is instead is word off the road.
+
+```
+  1 DAY WEST -- Tumengal (R10C28):
+    q49 Rival Warband -- L5, 7 days
+    q50 Rebel Shamans -- L4, 3 days
+  2 DAYS WEST -- Kyiv:
+    q44 The Renegade Wizard -- L2
+    q47 The Dragon's Tribute -- L20
+    q51 Dragon on the Mountain -- L20
+    (also: spellbook 120s, masterwork
+     steel 300s, the tavern)
 ```
 
 ```
-  options: Namuruk (free step, its
-    healer), Kyiv (2 days, healer +
-    spellbook 120s + masterwork
-    300s), take the sabres, the
-    board, hunt
+  options: travel to Kyiv, Tumengal
+    on the way, case one of hell's
+    four, hunt, spend Grushka's 4
+    points
 ```
 
 Where to?
