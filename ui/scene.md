@@ -1,66 +1,73 @@
-## turn 21 (day 24)
+## turn 22 (day 26)
 
-> do healing in namaruk, then in Kyiv
+> we go to Kyiv to gather information. the goal is to gain political power. what are the major power centers in Tergal, and what is one where people are dissatisfied with the leadership.
 
-Namuruk is Sargul again with a different name: a well, corrals, low houses, the same grass in every direction. The healer works out of his own front room and can do two severities a day and no more.
+Two days west in grey weather and you come into Kyiv in steady rain. You spend the day in the hall, the horse market and the taproom, and you buy a lot of drinks.
 
-He takes two days and eighty silver. The first day he closes Ownka's ribs. The second he opens the gut wound and cleans it out, and the cut along her ribs closes on its own that night.
+This is what the country is.
 
-```
-The healer works on Ownka: three ribs
-  broken -- closed.
-2 severity treated for 40s.
-  It costs the day.
-Ownka: satisfaction 9 -> 5/10
-(carrying untended wounds)
-The healer works on Ownka: a gut wound,
-  still seeping -- closed.
-2 severity treated for 40s
-  (purse: 800s).
-Ownka: a shallow cut along the ribs
-  -- closed.
-```
+One man holds the whole plain. Drog is high chief, sixty-three, and he holds it under the mandate of the Sky, which is the argument that the warbands no longer ride by clan. He came to it by birth and nobody argued at the time. He is called a reformer, he is called arbitrary, and everyone agrees he never stops working. He has no heir.
 
-Nobody is carrying a wound now, which has not been true since the north trail. That is what the Kyiv healer was for, so there is nothing left for him to do.
+Under that there are three things that are actually power.
+
+The clan mothers. They seat the chiefs and they unseat them; that is the old law and Drog's whole reform is aimed at making it not matter. It has not stopped mattering. Every argument in Tergal about who governs is a version of this argument.
+
+The shamans. The chief keeps his own, and the country keeps two kinds -- the white ones everybody loves and the black ones who camp outside the ring of tents and get paid double. Some of them have gone over. That is the thing that is going badly right now.
+
+The soldiers. Border commanders, a general in the hall, and captains like Ghorza who is drinking in the same room as you and hiring for anyone with silver. The border is not holding.
+
+Where people are unhappy is the shamans, and it is not close.
 
 ```
-  day 24. purse 800s.
-  Gruk: 16/16, Power 14/14.
-  Ownka: 13/17, no wounds. sat 5.
-  Grushka: 17/17, no wounds. sat 10,
-    4 skill points banked.
+  (day 21) The rebel shamans burned
+    the plains black. The old shaman
+    has lost half the followers.
+  (day 21) The giant took another
+    fort. The border line has been
+    pulled back ten miles.
 ```
 
-There is no work in Namuruk and none in Tolui up the road. On the second evening the general store's boy hands you a slate with four things written on it in a hand that is much too good for a village boy, and takes it back without waiting for an answer.
+Neega the star-reader is fifty-five and reads the sky for the hall, and she says it plainly with her hands around a cup: the chief's own shaman has lost half his people to the rebels in one season, the border has moved backwards ten miles in the same season, and a chief holds the plain because the Sky says so and the Sky is currently saying something else. Then she says she did not say that.
+
+There is a job on the board from the high chief's own shaman, at Eshkar, a village on this tile: Muzgash wants the rebel shamans dealt with, level six, a hundred and seventy-three silver, four days. That is the chief's faction asking strangers for help in front of everybody, which tells you what it is worth.
 
 ```
-*** A SUGGESTION FROM BELOW ***
-  Rob the Tax Collector (`case taxcart`)
-  The Vault Heist (`case heist`)
-  Arson (`case arson`)
-  Strong-Arm Debt Collection
-    (`case debt`)
-```
-
-What there is instead is word off the road.
-
-```
-  1 DAY WEST -- Tumengal (R10C28):
-    q49 Rival Warband -- L5, 7 days
-    q50 Rebel Shamans -- L4, 3 days
-  2 DAYS WEST -- Kyiv:
-    q44 The Renegade Wizard -- L2
-    q47 The Dragon's Tribute -- L20
-    q51 Dragon on the Mountain -- L20
-    (also: spellbook 120s, masterwork
-     steel 300s, the tavern)
+  TERGAL -- who holds what
+  constitution: THE GREAT CHIEF
+    one chief, the Sky's mandate,
+    no clan warbands
+  the tension: the chiefs against
+    the clan mothers
+    -- the mothers seat chiefs and
+       unseat them
+  Drog, high chief, 63: reformer,
+    arbitrary, tireless. NO HEIR.
+  Neega, star-reader, 55.
+  Ghorza, mercenary captain, 39.
+  weak point: the shamans. the
+    chief's man is losing and the
+    border is going backwards.
 ```
 
 ```
-  options: travel to Kyiv, Tumengal
-    on the way, case one of hell's
-    four, hunt, spend Grushka's 4
-    points
+  day 26. purse 800s. all whole.
+  q54 Rebel Shamans -- L6, 173s,
+    4 days, at Eshkar (this tile,
+    free step). Muzgash, the high
+    chief's shaman.
+  in Kyiv: spellbook 120s,
+    masterwork steel 300s, tavern.
+  `conquer` takes a settlement by
+    its garrison and holds it for
+    tribute -- the engine's own
+    road to holding ground.
+```
+
+```
+  options: take Muzgash's job,
+    find the clan mothers, talk to
+    Ghorza, buy a spellbook,
+    the tavern
 ```
 
 Where to?

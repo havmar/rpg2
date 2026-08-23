@@ -1,5 +1,5 @@
-RPG2 PARTY SHEET -- day 24, at Tergal >
-  R10C29 > Namuruk
+RPG2 PARTY SHEET -- day 26, at Tergal >
+  Kyiv > Kyiv
 purse: 800s
 party: 2/2 companion slot(s) filled (CHA
   5)
@@ -19,7 +19,7 @@ party: 2/2 companion slot(s) filled (CHA
 (companion) Ownka -- tergal f, age 37
   L15  training 3  XP 371/1500  points 0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 13/17  STA 12/12  Power 13/13
+  HP 17/17  STA 12/12  Power 13/13
   schweizersäbel, prof 3 | staminax1,
     healingx2
   abilities: bulwark

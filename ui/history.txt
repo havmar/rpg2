@@ -1,4 +1,4 @@
-RPG2 HISTORY -- day 24
+RPG2 HISTORY -- day 26
 (what this campaign has done)
 
 -- QUESTS DONE --
@@ -38,11 +38,11 @@ day 22: HELL'S ASSIGNMENT 1 served:
   lifetime sin 767 / penance 2022
 
 -- SUGGESTIONS --
+  taxcart -- Rob the Tax Collector: The
+    crown's own coin, in one box, on one
+    road.
   heist -- The Vault Heist: The vault
     opens between patrols, or it does
     not open.
   arson -- Arson: Straw, lamp oil, an
     open door, and a long walk.
-  debt -- Strong-Arm Debt Collection:
-    They owe. Explain the interest with
-    both hands.

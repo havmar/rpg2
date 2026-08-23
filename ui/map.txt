@@ -1,6 +1,5 @@
-RPG2 MAP -- day 24
-the party is at Tergal > R10C29 >
-  Namuruk
+RPG2 MAP -- day 26
+the party is at Tergal > Kyiv > Kyiv
 
             111111111122222222223
    123456789012345678901234567890
@@ -13,7 +12,7 @@ the party is at Tergal > R10C29 >
 07 ...####....#......#########C##
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~v#v##^
-10 ....######~######^^^###~#vCv@^
+10 ....######~######^^^###~#v@vv^
 11 .....######^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
 13 .#CC^#T#....##...###.........#
@@ -27,20 +26,22 @@ the party is at Tergal > R10C29 >
 @ party  ! job  C city  T town  v
   village
 
-HERE: R10C29 -- Tergal, plains
+HERE: Kyiv (R10C27) -- Tergal, plains
   horse country
-  ground: pasture, steppe, mountain-foot
+  ground: river, riverside, pasture,
+    steppe, coast
   last harvest: ordinary
   goods: horses
-  R10C29 Countryside (fields)
-  Namuruk (village)  <- the party, 0
-    job(s)
-  Tolui (hamlet)  0 job(s)
+  Kyiv Riverlands (river)
+  Kyiv (city)  <- the party, 5 job(s)
+  Guratai (village)  0 job(s)
+  Kharnam (village)  0 job(s)
+  Eshkar (village)  2 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: clear skies.
+  WEATHER: steady rain.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London
