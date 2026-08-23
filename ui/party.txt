@@ -1,41 +1,40 @@
-RPG2 PARTY SHEET -- day 17, at Tergal >
-  R10C26 > Sargul
-purse: 42s
+RPG2 PARTY SHEET -- day 19, at Tergal >
+  Kyiv > Kyiv
+purse: 69s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L14  training 3  XP 992/1400  points 4
+  L14  training 3  XP 1018/1400  points
+    4
   DEX 3  STR 4  MIND 6  CHA 5
-  HP 13/13 of 16  STA 12/12  Power 10/10
-  true rapier | healingx1, staminax1
+  HP 16/14 of 16  STA 13/12  Power 10/10
+  true rapier | staminax1
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  wound load 3 -> HP ceiling 13/16
+  wound load 2 -> HP ceiling 14/16
 
 (companion) Ownka -- tergal f, age 37
-  L14  training 3  XP 781/1400  points 0
+  L14  training 3  XP 807/1400  points 0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 14/16  STA 11/11  Power 12/12
+  HP 18/16  STA 12/11  Power 12/12
   schweizersäbel, prof 3 | staminax1
   abilities: bulwark
   moves: feint, pommel, thrust
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 6/10
+  satisfaction 7/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
-  [a cold -2 HP ceiling]
 
 (companion) Grushka -- tergal f, age 30
-  L14  training 3  XP 781/1400  points 4
+  L14  training 3  XP 807/1400  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 14/16  STA 11/11  Power 12/12
-  wooden staff | staminax1
+  HP 16/16  STA 12/11  Power 12/12
+  wooden staff | staminax1, healingx1
   spells: fire 3
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal

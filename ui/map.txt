@@ -1,5 +1,5 @@
-RPG2 MAP -- day 17
-the party is at Tergal > R10C26 > Sargul
+RPG2 MAP -- day 19
+the party is at Tergal > Kyiv > Kyiv
 
             111111111122222222223
    123456789012345678901234567890
@@ -12,7 +12,7 @@ the party is at Tergal > R10C26 > Sargul
 07 ...####....#......#########C##
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~v#v##^
-10 ....######~######^^^###~#@C##^
+10 ....######~######^^^###~#v@##^
 11 .....######^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
 13 .#CC^#T#....##...###.........#
@@ -26,20 +26,22 @@ the party is at Tergal > R10C26 > Sargul
 @ party  ! job  C city  T town  v
   village
 
-HERE: R10C26 -- Tergal, plains
+HERE: Kyiv (R10C27) -- Tergal, plains
   horse country
-  ground: pasture, steppe
+  ground: river, riverside, pasture,
+    steppe, coast
   last harvest: ordinary
   goods: horses
-  R10C26 Countryside (fields)
-  Sargul (village)  <- the party, 2
-    job(s)
-  Ukhta (hamlet)  0 job(s)
+  Kyiv Riverlands (river)
+  Kyiv (city)  <- the party, 5 job(s)
+  Guratai (village)  0 job(s)
+  Kharnam (village)  0 job(s)
+  Eshkar (village)  2 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: clear skies.
+  WEATHER: steady rain.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London

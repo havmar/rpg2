@@ -1,73 +1,72 @@
-## turn 15 (day 17)
+## turn 16 (day 19)
 
-> go through both quests, do them
+> Gruk takes the staff. go to kyev and spend a night in a tavern
 
-You leave the wolves on the bank and go north.
-
-The road into the river country is held by a cutthroat and a wolf of his own, and they are dead inside two rounds. The hunting grounds are a stretch of reed and mud where a boar has been killing dogs; Grushka burns it and it runs and you put ice in its back before it reaches the water. The den is an hour further, under a cut bank, and the beast in it is a dire wolf. Ownka kills it in the mouth of the hole. You take the hide.
-
-Then two days west along the top of the row, to a plain that has been burned in strips. One fire shaman is still working at a shrine on the ridge. He is level three and there are three of you.
-
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
+You keep the rapier and sell Krusk's staff over the counter at the store for thirty. An archer and another wolf try the road an hour short of the city and last three rounds between them.
 
 ```
-Gruk +47 XP (encounter) [905/1400]
-Ownka +47 XP (encounter) [694/1400]
-Grushka +47 XP (encounter) [694/1400]
+purse: 72s.
+Gruk +26 XP (encounter) [1018/1400]
 Left among the dead:
-a dagger (+0 atk/-1 sev, 2s).
-
-*** THE JOB IS DONE: Rebel Shamans --
-the burned plains. ***
+a shortbow (+0 atk/+4 sev, 8s).
 ```
 
-Three days back to Sargul, the last two of them in steady rain. Ownka and Grushka both take a chill on the road and cough their way in through the corrals on day seventeen.
+Kyiv is the high chief's seat: a walled rise over the grass, the great hall at the top of it, broad roads running down to the horse market and the east gate. The market is the loud part of the city and it is all horses. Ownka takes a cold off the night before and sweats it out on the road; Grushka still has hers.
 
-Ront has the hide up on the lodge wall before you are out of the room. He is three days past his own deadline and pays six tenths of what he posted, then talks the price back up when you point out what the den was.
-
-Krusk hears the shrine is out and does not pay in coin at all. He gives you a staff: iron-shod, a caster's tool, worth about sixty silver on a counter.
+The Open Hearth takes three silver for the three of you. You sleep warm for the first time since the well at Sargul.
 
 ```
-*** QUEST COMPLETE: The Great Hunt --
-  Reward: 35 silver. ***
-  Gruk talks the pay up: +7s (CHA 5 --
-    42s in all).
-  Ownka: satisfaction 4 -> 5/10
-  Grushka: satisfaction 8 -> 9/10
-(turned in LATE -- day 17 against a
-  deadline of day 14: x0.6)
-EPILOGUE: The hide hangs in the lodge
-  hall. The hunters honor the party.
+The party takes beds at the tavern
+(3s -- purse 69s).
+Gruk: a shallow cut along the ribs
+-- closed.
+Gruk wakes overcharged: HP 16/16
+STA 13/12
+Ownka wakes overcharged: HP 18/16
+STA 12/11
+Grushka wakes overcharged: HP 16/16
+STA 12/11
+Ownka: satisfaction 6 -> 7/10
+(a warm bed and a hot meal)
+```
 
-*** QUEST COMPLETE: Rebel Shamans --
-  Reward: 0 silver. ***
-  Ownka: satisfaction 5 -> 6/10
-  Grushka: satisfaction 9 -> 10/10
-  The pay is the wooden staff itself --
-    `claim HERO` takes it up.
-EPILOGUE: The rebels are defeated.
-  Their ritual fire is put out.
+In the morning you ask around the hall. Three jobs are worth hearing about.
+
+Henk keeps the mountain pass east of the city and has not been able to open it. Giants moved into a mine working in the boulder field on this side of it and have been killing carters. He wants the cave found and cleared. He has no silver -- the pass tolls have not come in -- but he has a zweihander with iron letters down the blade that a smith made for somebody's grandfather.
+
+Ketha is the border captain a day east and has the same trouble Varg had: another warband on her trails. Small work.
+
+Dench runs the lodge three days north and east, and wants a beast killed and its hide brought back, the way Ront did.
+
+```
+  q41 Giants in the Pass -- L14
+    Henk, the pass keeper.
+    1 site, 1 fight. HERE on this
+    tile -- no travel day.
+    pays an iron zweihander
+    (+2 STR, 2s a kill), 660 XP.
+    4 days left.
+  q43 Rival Warband -- L2
+    Ketha, 1 day east. 58s. 8 days.
+  q39 The Great Hunt -- L3
+    Dench, 3 days off. 86s, wants
+    the hide. 8 days.
 ```
 
 ```
-  day 17. purse 42s.
-  Gruk: 13/16, 3 light wounds,
-    992/1400 XP -- 408 short of 15.
-  Ownka: 14/16, a cold. sat 6.
-  Grushka: 14/16, a cold. sat 10.
-  the staff is unclaimed. Grushka
-    already carries one.
-  the healer here breaks a cold.
+  day 19. purse 69s. Kyiv is a
+    capital: healer (Grushka's cold),
+    spellbook 120s, masterwork
+    steel 300s, alchemist.
+  Gruk 1018/1400 -- the giants
+    would carry him past 15.
   8 skill points still banked.
 ```
 
-Ownka has not stopped talking about the wolf in the hole since the river.
-
 ```
-  options: claim the staff (say
-    who), the healer for the colds,
-    the board, hunt, spend the
-    skill points
+  options: take one of the three,
+    the healer, the shops, spend
+    the skill points
 ```
 
 Where to?

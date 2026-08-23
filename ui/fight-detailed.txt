@@ -1,35 +1,50 @@
-=== Rebel Shamans -- the burned plains (L3), room 1/1: shrine path ===
-  Fire Shaman 10 -- dagger
-  DEX 4  STR 2  STA 7  HP 12/12
-  takes spoils, leaves the fallen,
-  its fire clings, caster: fire 2; 8 Power
+=== On the road at Kyiv (a level-2 encounter) ===
+  Archer 11 -- shortbow
+  DEX 5  STR 2  STA 5  HP 6/6
+  shoots to range 2,
+  takes spoils, leaves the fallen
+  Dire Wolf 12 -- fangs
+  DEX 6  STR 3  STA 10  HP 9/9
+  breaks when beaten
   Round 1:
-    Ownka close the distance (the gap narrows to 1).
-    Gruk's flash-freeze overwhelms Fire Shaman 10 -- a crippling blow! [Fire Shaman 10: 6/12 HP, -3 to rolls]
-        pressure: Gruk: 17 (2d6=7, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Fire Shaman 10: 7 (2d6=3, +4 DEX) [flash-freeze: -4 Power, 6 left]
-        severity: 13 = margin 10 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
-    Fire Shaman 10 is rimed with frost (-2 DEX for this fight)
-    Fire Shaman 10 is frozen fast -- they lose their next action!
-    Grushka's fire bolt overwhelms Fire Shaman 10 -- a crippling blow! [Fire Shaman 10: 0/12 HP, -6 to rolls]
-        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Fire Shaman 10: 2 (2d6=3, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 11 left]
-        severity: 23 = margin 17 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Fire Shaman 10 is SLAIN. ***
-    Fire Shaman 10 struggles back to their footing -- no action this round.
-    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11
+    Ownka, Dire Wolf 12 close the distance (the gap narrows to 1).
+    Gruk's flash-freeze outmaneuvers Dire Wolf 12 -- a grievous injury! [Dire Wolf 12: 5/9 HP, -4 to rolls]
+        pressure: Gruk: 15 (2d6=5, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Dire Wolf 12: 11 (2d6=5, +6 DEX) [flash-freeze: -4 Power, 6 left]
+        severity: 6 = margin 4 +2 flash-freeze +3 spell rank -3 soak -> grievous (-4 HP)
+    Dire Wolf 12 is rimed with frost (-2 DEX for this fight)
+    Dire Wolf 12 is frozen fast -- they lose their next action!
+    Grushka's fire bolt overwhelms Dire Wolf 12 -- a crippling blow! [Dire Wolf 12: 0/9 HP, -9 to rolls]
+        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Dire Wolf 12: 7 (2d6=7, +6 DEX, -2 chilled, -4 wounds) [fire bolt: -1 Power, 11 left]
+        severity: 17 = margin 12 +5 fire bolt +3 spell rank -3 soak -> crippling blow (-6 HP)
+    *** Dire Wolf 12 is SLAIN. ***
+    Dire Wolf 12 struggles back to their footing -- no action this round.
+    Archer 11 sends an arrow at Ownka -- who twists away.
+        pressure: Archer 11: 12 (2d6=8, +4 AIM) vs Ownka: 13 (2d6=6, +4 DEX, +3 training) [arrows: 7 left]
+    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Archer 11 4/5
+  Round 2:
+    Ownka, Gruk, Grushka close the distance (the gap narrows to 1).
+    Archer 11 works the shortbow's reload.
+    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Archer 11 4/5
+  Round 3:
+    Ownka close the distance -- the lines meet!
+    Gruk's flash-freeze overwhelms Archer 11 -- a crippling blow! [Archer 11: 0/6 HP, -3 to rolls]
+        pressure: Gruk: 18 (2d6=8, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Archer 11: 12 (2d6=7, +5 DEX) [flash-freeze: -4 Power, 2 left]
+        severity: 9 = margin 6 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Archer 11 is SLAIN. ***
+    Archer 11 looses point-blank into Ownka's charge!
+    (Archer 11 strikes even as they fall)
+    Archer 11 sends an arrow at Ownka -- who twists away.
+        pressure: Archer 11: 11 (2d6=7, +4 AIM) vs Ownka: 15 (2d6=8, +4 DEX, +3 training) [arrows: 6 left]
+    stamina: Gruk 10/12, Ownka 11/11, Grushka 10/11
     The party catches its breath (+1 STA)
-    Gruk gains 47 XP (encounter) [905/1400]
-    Ownka gains 47 XP (encounter) [694/1400]
-    Grushka gains 47 XP (encounter) [694/1400]
+    Gruk gains 26 XP (encounter) [1018/1400]
+    Ownka gains 26 XP (encounter) [807/1400]
+    Grushka gains 26 XP (encounter) [807/1400]
 Left among the dead:
-a dagger (+0 atk/-1 sev, 2s).
-
-  *** THE JOB IS DONE: Rebel Shamans -- the burned plains. Return to Krusk at Sargul -- due day 21: `turnin q30`. ***
-    Gruk gains 47 XP (the work done) [952/1400]
-    Ownka gains 47 XP (the work done) [741/1400]
-    Grushka gains 47 XP (the work done) [741/1400]
+a shortbow (+0 atk/+4 sev, 8s).
 
 -- the party --
-Gruk: Unhurt STA 12/12 Power 6/10
+Gruk: Unhurt STA 11/12 Power 2/10
   (hurt -1 to rolls)
   - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
@@ -39,7 +54,6 @@ Gruk: Unhurt STA 12/12 Power 6/10
 Ownka: Unhurt STA 11/11 Power 12/12
   (stamina x1)
 Grushka: Unhurt STA 11/11 Power 11/12
+  [a cold -2 HP ceiling]
   (stamina x1)
-Purse 0s; day 14.
-The work is done: return to Krusk at Sargul -- the turn-in pays 0s, 35 XP (`turnin q30`).
-  (due day 21 -- 7 days left; on time pay, x1)
+Purse 72s; day 18.

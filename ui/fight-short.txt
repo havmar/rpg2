@@ -1,41 +1,45 @@
-=== Rebel Shamans ===
-the burned plains (L3),
-room 1/1: shrine path
-Fire Shaman 10 -- dagger
-DEX 4  STR 2  STA 7  HP 12/12
-takes spoils, leaves the fallen,
-its fire clings, caster: fire 2; 8 Power
+=== On the road at Kyiv ===
+(a level-2 encounter)
+Archer 11 -- shortbow
+DEX 5  STR 2  STA 5  HP 6/6
+shoots to range 2,
+takes spoils, leaves the fallen
+Dire Wolf 12 -- fangs
+DEX 6  STR 3  STA 10  HP 9/9
+breaks when beaten
 Round 1:
 The lines close.
 Gruk's flash-freeze
-overwhelms Fire Shaman 10,
-deals 6 dmg!!! [6 Power left]
-Fire Shaman 10 is rimed with frost.
-Fire Shaman 10 is frozen fast --
+outmaneuvers Dire Wolf 12, deals 4 dmg!!
+[6 Power left]
+Dire Wolf 12 is rimed with frost.
+Dire Wolf 12 is frozen fast --
 they lose their next action!
 Grushka's fire bolt
-overwhelms Fire Shaman 10,
-deals 6 dmg!!! [11 Power left]
-Fire Shaman 10 is SLAIN.
-Fire Shaman 10 struggles up -- no action.
+overwhelms Dire Wolf 12, deals 6 dmg!!!
+[11 Power left]
+Dire Wolf 12 is SLAIN.
+Dire Wolf 12 struggles up -- no action.
+Archer 11's arrow misses Ownka.
+Round 2: nothing lands.
+Round 3:
+The lines meet -- steel range.
+Gruk's flash-freeze
+overwhelms Archer 11, deals 6 dmg!!!
+[2 Power left]
+Archer 11 is SLAIN.
+Archer 11 looses point-blank
+into Ownka's charge!
+Archer 11's arrow misses Ownka.
 The party catches its breath (+1 STA)
-Gruk +47 XP (encounter) [905/1400]
-Ownka +47 XP (encounter) [694/1400]
-Grushka +47 XP (encounter) [694/1400]
+Gruk +26 XP (encounter) [1018/1400]
+Ownka +26 XP (encounter) [807/1400]
+Grushka +26 XP (encounter) [807/1400]
 Left among the dead:
-a dagger (+0 atk/-1 sev, 2s).
-
-*** THE JOB IS DONE: Rebel Shamans --
-the burned plains. Return to Krusk
-at Sargul -- due day 21:
-`turnin q30`. ***
-Gruk +47 XP (the work done) [952/1400]
-Ownka +47 XP (the work done) [741/1400]
-Grushka +47 XP (the work done)
-[741/1400]
+a shortbow (+0 atk/+4 sev, 8s).
 
 -- the party --
-Gruk: Unhurt STA 12/12 Power 6/10
+Gruk: Unhurt STA 11/12 Power 2/10
   (hurt -1 to rolls)
   - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
@@ -45,7 +49,6 @@ Gruk: Unhurt STA 12/12 Power 6/10
 Ownka: Unhurt STA 11/11 Power 12/12
   (stamina x1)
 Grushka: Unhurt STA 11/11 Power 11/12
+  [a cold -2 HP ceiling]
   (stamina x1)
-Purse 0s; day 14.
-The work is done: return to Krusk at Sargul -- the turn-in pays 0s, 35 XP (`turnin q30`).
-  (due day 21 -- 7 days left; on time pay, x1)
+Purse 72s; day 18.
