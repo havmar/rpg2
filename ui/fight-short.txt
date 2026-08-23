@@ -1,54 +1,66 @@
-=== On the road at Kyiv ===
-(a level-2 encounter)
-Archer 11 -- shortbow
-DEX 5  STR 2  STA 5  HP 6/6
-shoots to range 2,
-takes spoils, leaves the fallen
-Dire Wolf 12 -- fangs
-DEX 6  STR 3  STA 10  HP 9/9
-breaks when beaten
+=== Giants in the Pass ===
+the boulder field (L14),
+room 1/1: mine entrance
+Giant 13 -- giant's club
+DEX 6  STR 9  STA 10  HP 26/26
+barely feels pain, breaks when beaten,
+spell-warded 1, a great sweeping blow
 Round 1:
-The lines close.
-Gruk's flash-freeze
-outmaneuvers Dire Wolf 12, deals 4 dmg!!
-[6 Power left]
-Dire Wolf 12 is rimed with frost.
-Dire Wolf 12 is frozen fast --
+The lines meet -- steel range.
+Gruk's flash-freeze overwhelms Giant 13,
+deals 1 dmg. [6 Power left]
+Giant 13 is rimed with frost.
+Giant 13 is frozen fast --
 they lose their next action!
 Grushka's fire bolt
-overwhelms Dire Wolf 12, deals 6 dmg!!!
+outmaneuvers Giant 13, deals 2 dmg!
 [11 Power left]
-Dire Wolf 12 is SLAIN.
-Dire Wolf 12 struggles up -- no action.
-Archer 11's arrow misses Ownka.
-Round 2: nothing lands.
+Giant 13 struggles up -- no action.
+Round 2:
+Gruk's flash-freeze overwhelms Giant 13,
+deals 2 dmg! [2 Power left]
+Giant 13 is rimed with frost.
+Giant 13 is frozen fast --
+they lose their next action!
+Ownka: Feint -- Giant 13's guard opens.
+Ownka overwhelms Giant 13, deals 4 dmg!!
+Grushka's fire bolt overwhelms Giant 13,
+deals 6 dmg!!! [10 Power left]
+Giant 13 struggles up -- no action.
 Round 3:
-The lines meet -- steel range.
-Gruk's flash-freeze
-overwhelms Archer 11, deals 6 dmg!!!
-[2 Power left]
-Archer 11 is SLAIN.
-Archer 11 looses point-blank
-into Ownka's charge!
-Archer 11's arrow misses Ownka.
+Gruk's ice bolt overwhelms Giant 13,
+deals 6 dmg!!! [1 Power left]
+Giant 13 is rimed with frost.
+Ownka overwhelms Giant 13,
+deals 6 dmg!!! SLAIN.
+Giant 13 strikes as they fall:
+Ownka parries.
 The party catches its breath (+1 STA)
-Gruk +26 XP (encounter) [1018/1400]
-Ownka +26 XP (encounter) [807/1400]
-Grushka +26 XP (encounter) [807/1400]
-Left among the dead:
-a shortbow (+0 atk/+4 sev, 8s).
+Gruk +176 XP (encounter) [1194/1400]
+Ownka +176 XP (encounter) [983/1400]
+Grushka +176 XP (encounter) [983/1400]
+
+*** THE JOB IS DONE:
+Giants in the Pass -- the boulder field.
+Return to Henk at Kyiv -- due day 23:
+`turnin q41`. ***
+Gruk +176 XP (the work done) [1370/1400]
+Ownka +176 XP (the work done)
+[1159/1400]
+Grushka +176 XP (the work done)
+[1159/1400]
 
 -- the party --
-Gruk: Unhurt STA 11/12 Power 2/10
-  (hurt -1 to rolls)
-  - a shallow cut along the ribs (sev 1)
+Gruk: Unhurt STA 11/12 Power 1/10
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  (HP ceiling 13/16 until they mend)
-  (healing x1, stamina x1)
+  (HP ceiling 14/16 until they mend)
+  (healing x2, stamina x1)
 Ownka: Unhurt STA 11/11 Power 12/12
-  (stamina x1)
-Grushka: Unhurt STA 11/11 Power 11/12
+  (stamina x1, healing x2)
+Grushka: Unhurt STA 11/11 Power 10/12
   [a cold -2 HP ceiling]
-  (stamina x1)
-Purse 72s; day 18.
+  (stamina x1, healing x2)
+Purse 19s; day 19.
+The work is done: return to Henk at Kyiv -- the turn-in pays 0s, 152 XP (`turnin q41`).
+  (due day 23 -- 4 days left; quick pay, x1.15)

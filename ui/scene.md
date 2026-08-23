@@ -1,72 +1,92 @@
-## turn 16 (day 19)
+## turn 17 (day 19)
 
-> Gruk takes the staff. go to kyev and spend a night in a tavern
+> buy healing potions, do the giants
 
-You keep the rapier and sell Krusk's staff over the counter at the store for thirty. An archer and another wolf try the road an hour short of the city and last three rounds between them.
+Five healing potions at the general shop, ten silver each, dealt two to a head.
 
-```
-purse: 72s.
-Gruk +26 XP (encounter) [1018/1400]
-Left among the dead:
-a shortbow (+0 atk/+4 sev, 8s).
-```
-
-Kyiv is the high chief's seat: a walled rise over the grass, the great hall at the top of it, broad roads running down to the horse market and the east gate. The market is the loud part of the city and it is all horses. Ownka takes a cold off the night before and sweats it out on the road; Grushka still has hers.
-
-The Open Hearth takes three silver for the three of you. You sleep warm for the first time since the well at Sargul.
+The boulder field is an hour out of the city on the pass road: broken rock, a cart on its side with the axle snapped, and a mine working driven into the slope. One giant is at the mouth of it.
 
 ```
-The party takes beds at the tavern
-(3s -- purse 69s).
-Gruk: a shallow cut along the ribs
--- closed.
-Gruk wakes overcharged: HP 16/16
-STA 13/12
-Ownka wakes overcharged: HP 18/16
-STA 12/11
-Grushka wakes overcharged: HP 16/16
-STA 12/11
-Ownka: satisfaction 6 -> 7/10
-(a warm bed and a hot meal)
+=== Giants in the Pass ===
+the boulder field (L14),
+room 1/1: mine entrance
+Giant 13 -- giant's club
+DEX 6  STR 9  STA 10  HP 26/26
+barely feels pain, breaks when beaten,
+spell-warded 1, a great sweeping blow
 ```
 
-In the morning you ask around the hall. Three jobs are worth hearing about.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
 
-Henk keeps the mountain pass east of the city and has not been able to open it. Giants moved into a mine working in the boulder field on this side of it and have been killing carters. He wants the cave found and cleared. He has no silver -- the pass tolls have not come in -- but he has a zweihander with iron letters down the blade that a smith made for somebody's grandfather.
+Your ice takes it in the first round and it goes over on the rock; it gets up and Grushka burns it and it goes over again. It never swings. Ownka opens its guard with a feint in the third round and kills it against the mine wall. Twenty-six hit points and it did not touch anybody.
 
-Ketha is the border captain a day east and has the same trouble Varg had: another warband on her trails. Small work.
-
-Dench runs the lodge three days north and east, and wants a beast killed and its hide brought back, the way Ront did.
+Henk comes down to the boulder field himself to look, then walks you back up to the hall and gets the sword out of a chest under his bench: a zweihander with iron letters set down the blade. He says the pass tolls will come in now and he still will not have the silver, and he seems to think this is funnier than you do.
 
 ```
-  q41 Giants in the Pass -- L14
-    Henk, the pass keeper.
-    1 site, 1 fight. HERE on this
-    tile -- no travel day.
-    pays an iron zweihander
-    (+2 STR, 2s a kill), 660 XP.
-    4 days left.
-  q43 Rival Warband -- L2
-    Ketha, 1 day east. 58s. 8 days.
-  q39 The Great Hunt -- L3
-    Dench, 3 days off. 86s, wants
-    the hide. 8 days.
+*** QUEST COMPLETE: Giants in the Pass
+  -- Reward: 0 silver. ***
+  Gruk gains 101 XP (quest) [1471/1400]
+  *** Gruk reaches level 15! ***
+  Ownka: satisfaction 7 -> 8/10
+(turned in QUICK -- day 19 against a
+  deadline of day 23: x1.15)
+The pay is the iron zweihander itself
+  -- `claim HERO` takes it up.
+EPILOGUE: The giants are dead. Carts
+  use the mountain pass again.
+```
+
+The blade is worth about nine hundred and sixty silver and there is nobody in Kyiv who could pay that for a sword. It is a thing to carry or to swing, not to sell. Ownka can take it -- she would lose the three ranks she has drilled on her sabre for +2 STR and two silver a kill.
+
+That night something else arrives. Fifteen is an odd level, and hell counts in odd levels.
+
+```
+THE PACT: the level-15 pin is due -- it
+  lands at the next settlement.
+Lifetime: 0 assignments completed.
 ```
 
 ```
-  day 19. purse 69s. Kyiv is a
-    capital: healer (Grushka's cold),
-    spellbook 120s, masterwork
-    steel 300s, alchemist.
-  Gruk 1018/1400 -- the giants
-    would carry him past 15.
-  8 skill points still banked.
+*** Gruk reached level 15 ***
+Gruk -- L15, 7 point(s) banked, XP
+  71/1500 to L16
+POOLS -- train Gruk hp|sta|power
+* +1 max HP/STA/Power (cap +10)    1 ea
+TRAINING -- train Gruk combat
+  combat rank 3 -> 4                  8
+SPELLS -- train Gruk SPELL
+* fire rank 1 -> 2                    2
+* scry rank 1 -> 2                    2
+  ice rank 3                        CAP
+  (a spellbook teaches a new one --
+   120s here, buy Gruk book SPELL)
+WEAPON -- train Gruk weapon
+* rapier rank 0 -> 1                  1
+    +1 atk & sev; drops on switch
+ALCHEMY -- train Gruk alchemy
+* alchemy rank 0 -> 1                 2
+MOVES -- train Gruk move NAME (0/4)
+* thrust 1, feint 1, pommel 1,
+  disarm 1, kick 1, trip 1,
+  riposte 1, finisher 2
+ABILITIES -- learn Gruk NAME
+* berserk 1, first_blood 2,
+  war_breath 2, rage 2, storyteller 2,
+  survivalist 2, arrow_parry 2,
+  bulwark 3, field_medic 3
 ```
 
 ```
-  options: take one of the three,
-    the healer, the shops, spend
-    the skill points
+  day 19. purse 19s. all three whole.
+  Grushka still has her cold.
+  Grushka also has 4 points banked.
+```
+
+```
+  options: spend the 7 points, claim
+    the zweihander (say who), the
+    healer, wait for hell's letter,
+    the board
 ```
 
 Where to?

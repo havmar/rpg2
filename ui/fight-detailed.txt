@@ -1,59 +1,69 @@
-=== On the road at Kyiv (a level-2 encounter) ===
-  Archer 11 -- shortbow
-  DEX 5  STR 2  STA 5  HP 6/6
-  shoots to range 2,
-  takes spoils, leaves the fallen
-  Dire Wolf 12 -- fangs
-  DEX 6  STR 3  STA 10  HP 9/9
-  breaks when beaten
+=== Giants in the Pass -- the boulder field (L14), room 1/1: mine entrance ===
+  Giant 13 -- giant's club
+  DEX 6  STR 9  STA 10  HP 26/26
+  barely feels pain, breaks when beaten,
+  spell-warded 1, a great sweeping blow
   Round 1:
-    Ownka, Dire Wolf 12 close the distance (the gap narrows to 1).
-    Gruk's flash-freeze outmaneuvers Dire Wolf 12 -- a grievous injury! [Dire Wolf 12: 5/9 HP, -4 to rolls]
-        pressure: Gruk: 15 (2d6=5, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Dire Wolf 12: 11 (2d6=5, +6 DEX) [flash-freeze: -4 Power, 6 left]
-        severity: 6 = margin 4 +2 flash-freeze +3 spell rank -3 soak -> grievous (-4 HP)
-    Dire Wolf 12 is rimed with frost (-2 DEX for this fight)
-    Dire Wolf 12 is frozen fast -- they lose their next action!
-    Grushka's fire bolt overwhelms Dire Wolf 12 -- a crippling blow! [Dire Wolf 12: 0/9 HP, -9 to rolls]
-        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Dire Wolf 12: 7 (2d6=7, +6 DEX, -2 chilled, -4 wounds) [fire bolt: -1 Power, 11 left]
-        severity: 17 = margin 12 +5 fire bolt +3 spell rank -3 soak -> crippling blow (-6 HP)
-    *** Dire Wolf 12 is SLAIN. ***
-    Dire Wolf 12 struggles back to their footing -- no action this round.
-    Archer 11 sends an arrow at Ownka -- who twists away.
-        pressure: Archer 11: 12 (2d6=8, +4 AIM) vs Ownka: 13 (2d6=6, +4 DEX, +3 training) [arrows: 7 left]
-    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Archer 11 4/5
+    Ownka, Giant 13 close the distance -- the lines meet!
+    Gruk's flash-freeze overwhelms Giant 13 -- a graze! [Giant 13: 25/26 HP, -0 to rolls]
+        pressure: Gruk: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 13 (2d6=7, +6 DEX) [flash-freeze: -4 Power, 6 left]
+        severity: 1 = margin 5 +2 flash-freeze +3 spell rank -9 soak -> graze (-1 HP)
+    Giant 13 is rimed with frost (-2 DEX for this fight)
+    Giant 13 is frozen fast -- they lose their next action!
+    Grushka's fire bolt outmaneuvers Giant 13 -- a solid wound! [Giant 13: 23/26 HP, -1 to rolls]
+        pressure: Grushka: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 10 (2d6=6, +6 DEX, -2 chilled) [fire bolt: -1 Power, 11 left]
+        severity: 3 = margin 4 +5 fire bolt +3 spell rank -9 soak -> wound (-2 HP)
+    Giant 13 struggles back to their footing -- no action this round.
+    stamina: Gruk 12/12, Ownka 12/11, Grushka 11/11 | Giant 13 10/10
   Round 2:
-    Ownka, Gruk, Grushka close the distance (the gap narrows to 1).
-    Archer 11 works the shortbow's reload.
-    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Archer 11 4/5
+    Gruk's flash-freeze overwhelms Giant 13 -- a solid wound! [Giant 13: 21/26 HP, -1 to rolls]
+        pressure: Gruk: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 11 (2d6=8, +6 DEX, -2 chilled, -1 wounds) [flash-freeze: -4 Power, 2 left]
+        severity: 3 = margin 7 +2 flash-freeze +3 spell rank -9 soak -> wound (-2 HP)
+    Giant 13 is rimed with frost (-4 DEX for this fight)
+    Giant 13 is frozen fast -- they lose their next action!
+    Ownka feints -- Giant 13's guard opens for the next pass.
+    Ownka overwhelms Giant 13 -- a grievous injury! [Giant 13: 17/26 HP, -3 to rolls]
+        pressure: Ownka: 15 (2d6=4, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency) vs Giant 13: 9 (2d6=8, +6 DEX, -4 chilled, -1 wounds)
+        severity: 5 = margin 6 +4 STR +1 schweizersäbel +3 proficiency -9 soak -> grievous (-4 HP)
+    Grushka's fire bolt overwhelms Giant 13 -- a crippling blow! [Giant 13: 11/26 HP, -5 to rolls]
+        pressure: Grushka: 17 (2d6=6, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 9 (2d6=10, +6 DEX, -4 chilled, -3 wounds) [fire bolt: -1 Power, 10 left]
+        severity: 7 = margin 8 +5 fire bolt +3 spell rank -9 soak -> crippling blow (-6 HP)
+    Giant 13 struggles back to their footing -- no action this round.
+    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Giant 13 10/10
   Round 3:
-    Ownka close the distance -- the lines meet!
-    Gruk's flash-freeze overwhelms Archer 11 -- a crippling blow! [Archer 11: 0/6 HP, -3 to rolls]
-        pressure: Gruk: 18 (2d6=8, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Archer 11: 12 (2d6=7, +5 DEX) [flash-freeze: -4 Power, 2 left]
-        severity: 9 = margin 6 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Archer 11 is SLAIN. ***
-    Archer 11 looses point-blank into Ownka's charge!
-    (Archer 11 strikes even as they fall)
-    Archer 11 sends an arrow at Ownka -- who twists away.
-        pressure: Archer 11: 11 (2d6=7, +4 AIM) vs Ownka: 15 (2d6=8, +4 DEX, +3 training) [arrows: 6 left]
-    stamina: Gruk 10/12, Ownka 11/11, Grushka 10/11
+    Gruk's ice bolt overwhelms Giant 13 -- a crippling blow! [Giant 13: 5/26 HP, -7 to rolls]
+        pressure: Gruk: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 8 (2d6=11, +6 DEX, -4 chilled, -5 wounds) [ice bolt: -1 Power, 1 left]
+        severity: 7 = margin 11 +2 ice bolt +3 spell rank -9 soak -> crippling blow (-6 HP)
+    Giant 13 is rimed with frost (-5 DEX for this fight)
+    Ownka overwhelms Giant 13 -- a crippling blow! [Giant 13: 0/26 HP, -8 to rolls]
+        pressure: Ownka: 25 (2d6=11, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, +3 feint opening) vs Giant 13: 1 (2d6=7, +6 DEX, -5 chilled, -7 wounds)
+        severity: 23 = margin 24 +4 STR +1 schweizersäbel +3 proficiency -9 soak -> crippling blow (-6 HP)
+    *** Giant 13 is SLAIN. ***
+    (Giant 13 strikes even as they fall)
+    Giant 13 attacks Ownka -- parried.
+        pressure: Giant 13: 6 (2d6=10, +6 DEX, -5 chilled, -5 wounds) vs Ownka: 15 (2d6=8, +4 DEX, +3 training)
+    stamina: Gruk 10/12, Ownka 10/11, Grushka 10/11
     The party catches its breath (+1 STA)
-    Gruk gains 26 XP (encounter) [1018/1400]
-    Ownka gains 26 XP (encounter) [807/1400]
-    Grushka gains 26 XP (encounter) [807/1400]
-Left among the dead:
-a shortbow (+0 atk/+4 sev, 8s).
+    Gruk gains 176 XP (encounter) [1194/1400]
+    Ownka gains 176 XP (encounter) [983/1400]
+    Grushka gains 176 XP (encounter) [983/1400]
+
+  *** THE JOB IS DONE: Giants in the Pass -- the boulder field. Return to Henk at Kyiv -- due day 23: `turnin q41`. ***
+    Gruk gains 176 XP (the work done) [1370/1400]
+    Ownka gains 176 XP (the work done) [1159/1400]
+    Grushka gains 176 XP (the work done) [1159/1400]
 
 -- the party --
-Gruk: Unhurt STA 11/12 Power 2/10
-  (hurt -1 to rolls)
-  - a shallow cut along the ribs (sev 1)
+Gruk: Unhurt STA 11/12 Power 1/10
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  (HP ceiling 13/16 until they mend)
-  (healing x1, stamina x1)
+  (HP ceiling 14/16 until they mend)
+  (healing x2, stamina x1)
 Ownka: Unhurt STA 11/11 Power 12/12
-  (stamina x1)
-Grushka: Unhurt STA 11/11 Power 11/12
+  (stamina x1, healing x2)
+Grushka: Unhurt STA 11/11 Power 10/12
   [a cold -2 HP ceiling]
-  (stamina x1)
-Purse 72s; day 18.
+  (stamina x1, healing x2)
+Purse 19s; day 19.
+The work is done: return to Henk at Kyiv -- the turn-in pays 0s, 152 XP (`turnin q41`).
+  (due day 23 -- 4 days left; quick pay, x1.15)

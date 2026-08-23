@@ -33,7 +33,7 @@ HERE: Kyiv (R10C27) -- Tergal, plains
   last harvest: ordinary
   goods: horses
   Kyiv Riverlands (river)
-  Kyiv (city)  <- the party, 5 job(s)
+  Kyiv (city)  <- the party, 4 job(s)
   Guratai (village)  0 job(s)
   Kharnam (village)  0 job(s)
   Eshkar (village)  2 job(s)
