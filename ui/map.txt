@@ -1,6 +1,5 @@
-RPG2 MAP -- day 7
+RPG2 MAP -- day 8
 the party is at Tergal > R10C26 > Sargul
-  > the raided trail
 
             111111111122222222223
    123456789012345678901234567890
@@ -33,15 +32,14 @@ HERE: R10C26 -- Tergal, plains
   last harvest: ordinary
   goods: horses
   R10C26 Countryside (fields)
-  Sargul (village)  <- the party, 1
+  Sargul (village)  <- the party, 2
     job(s)
   Ukhta (hamlet)  0 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: clear skies -- 7 days without
-    rain.
+  WEATHER: steady rain.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London

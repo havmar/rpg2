@@ -1,61 +1,60 @@
-## turn 11 (day 7)
+## turn 12 (day 8)
 
-> take the sabre, turn in to Varg
+> rapier is a low dex weapon i think. if that's true Gruk should use it and should sell the sabre. camp to heal first
 
-You take the swordmaster's sabre off the grass and leave your longsword in its place.
-
-```
-Gruk takes up the schweizersäbel
-  (setting aside the longsword).
-```
-
-Varg is at the corral when you come in, counting horses that walked home an hour ahead of you. He hears it out. He was expecting you on day six and it is day seven, and he says so twice before he says anything else. Then he goes into his house and comes back with the rapier wrapped in a saddle cloth: a thin blade, unpitted, thirty years old at least, and it draws blood on any hit that lands.
-
-By evening the herders are talking about taking the north trails again. That is what the job was for, and it is done.
+That is right.
 
 ```
-*** QUEST COMPLETE: Rival Warband --
-  paid in full. Reward: 0 silver. ***
-  The party purse holds 5 silver.
-  Gruk gains 85 XP (quest) [719/1400]
-  Ownka gains 85 XP (quest) [508/1400]
-  Grushka gains 85 XP (quest)
-    [508/1400]
-  Ownka: satisfaction 7 -> 8/10 (a job
-    paid out)
-  Grushka: satisfaction 7 -> 8/10 (a
-    job paid out)
-(turned in LATE -- day 7 against a
-  deadline of day 6: x0.6 on the
-  turn-in)
+  attack pressure adds to the
+  attack roll and never to defense.
+  the true rapier is +4 there --
+  the highest attack number carried
+  steel reaches. it pays for it at
+  -1 severity: the hits land small.
+  its floor is the reason it works
+  low: ANY landed hit draws blood,
+  so soak can never zero it.
+  it buys won exchanges, which is
+  what a low-DEX arm is short of.
 ```
 
-```
-  the reward: a true rapier
-    +2 attack, -1 severity,
-    draws blood on any landed hit
-  `claim HERO` takes it up.
-  Gruk: schweizersabel (+1/+1)
-  Ownka: schweizersabel, prof 3
-  Grushka: wooden staff
-```
-
-Ownka asks whether anyone is going to say something about the man you buried six days of your life for. Nobody does.
+You take the rapier and leave the sabre with the smith, who counts out thirty silver for it and does not haggle. He is short of good steel and everybody in Sargul knows what happened on the north trail.
 
 ```
-  day 7. purse 5s.
-  Gruk: 10/16 ceiling, 4 wounds.
-  Ownka: 12/16 ceiling, 2 wounds.
-  Grushka: unhurt.
-  4 skill points unspent (Gruk),
-    4 (Grushka).
+Gruk takes up the true rapier
+  (setting aside the schweizersäbel).
+purse: 35s.
+```
+
+You sleep behind the village wall. In the morning everyone is as whole as an untended body gets.
+
+```
+Gruk mends a little. HP ceiling 11/16.
+Ownka mends a little. HP ceiling 13/16.
+Ownka: satisfaction 8 -> 4/10
+(carrying untended wounds)
+  Still carrying wounds: Gruk, Ownka.
+  A bed, a healer, or a salve is
+  what answers those.
+```
+
+Ownka is frightened of the gash in her back and says so at length, twice, over breakfast. Grushka listens both times. This is what took Gell out of the party: an open wound costs satisfaction every night it stays open, and Ownka is cowardly, which doubles it. She went down four in one night and she has four left.
+
+```
+  day 8. purse 35s.
+  the healer here: 20s a severity,
+    2 severity a visit, costs a day.
+  Ownka carries 3 severity.
+  Gruk carries 5.
 ```
 
 ```
-  options: claim the rapier (say
-    who), Ront's hunt job (L2, 58s),
-    hunt for silver, Kyiv (1 day
-    east, five jobs posted), camp
+  options: Ront's hunt job (L2,
+    58s, wants the hide), hunt for
+    silver, the healer (35s buys
+    one severity), Kyiv (1 day
+    east, a capital), spend the 8
+    banked skill points
 ```
 
 Where to?
