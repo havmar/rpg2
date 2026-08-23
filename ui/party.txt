@@ -1,7 +1,7 @@
 RPG2 PARTY SHEET -- day 9, at Tergal >
   R10C26 > Sargul
-purse: 5s
-party: 0/2 companion slot(s) filled (CHA
+purse: 0s
+party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
@@ -12,11 +12,35 @@ party: 0/2 companion slot(s) filled (CHA
   spells: fire 1, ice 3, scry 1
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  - a shallow cut along the ribs
-    (dressed) (sev 1)
+  - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
   wound load 3 -> HP ceiling 13/16
+
+(companion) Ownka -- tergal f, age 37
+  L14  training 3  XP 508/1400  points 0
+  DEX 4  STR 4  MIND 3  CHA 5
+  HP 15/16  STA 11/11  Power 12/12
+  schweizersäbel, prof 3 | staminax1
+  abilities: bulwark
+  moves: feint, pommel, thrust
+  pools bought: hp +6, power +6, sta +6
+  speaks: Latin, Tergal
+  satisfaction 4/10
+  temperament: cowardly; speech:
+    verbose; looks: beautiful
+
+(companion) Grushka -- tergal f, age 30
+  L14  training 3  XP 508/1400  points 4
+  DEX 4  STR 3  MIND 6  CHA 6
+  HP 16/16  STA 11/11  Power 12/12
+  wooden staff | staminax1
+  spells: fire 3
+  pools bought: hp +6, power +6, sta +6
+  speaks: Latin, Tergal
+  satisfaction 8/10
+  quirk: patriotic; voice: whispering;
+    looks: pockmarked
 
 active quest [q01] Rival Warband is
   COMPLETE

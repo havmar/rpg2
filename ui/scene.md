@@ -1,60 +1,53 @@
-## turn 12 (day 8)
+## turn 13 (day 9)
 
-> rapier is a low dex weapon i think. if that's true Gruk should use it and should sell the sabre. camp to heal first
+> get ownka healed. haggle, and ask if we can do a job for the healer in exchange
 
-That is right.
+Sargul's healer works out of the back of the store: a bench, a box of thread, a shelf of jars. He wants twenty a severity and Ownka has three. You tell him what you have and that you cleared the north trail on day seven. He looks at the purse, says the trail was worth more to him than to Varg, and takes the thirty-five for the whole visit.
 
-```
-  attack pressure adds to the
-  attack roll and never to defense.
-  the true rapier is +4 there --
-  the highest attack number carried
-  steel reaches. it pays for it at
-  -1 severity: the hits land small.
-  its floor is the reason it works
-  low: ANY landed hit draws blood,
-  so soak can never zero it.
-  it buys won exchanges, which is
-  what a low-DEX arm is short of.
-```
+He will not take work instead of money. He says he does not need anything killed and would not know what to ask for if he did. What the village needs killed, he says, Ront at the lodge is already asking about.
 
-You take the rapier and leave the sabre with the smith, who counts out thirty silver for it and does not haggle. He is short of good steel and everybody in Sargul knows what happened on the north trail.
+He opens the gash across Ownka's back, cleans it, and sews it shut. It takes the day. You all sleep in the store.
 
 ```
-Gruk takes up the true rapier
-  (setting aside the schweizersäbel).
-purse: 35s.
+The healer works on Ownka: a deep gash
+  across the back -- closed.
+2 severity treated for 35s (purse: 0s).
+  It costs the day.
+--- Night passes; day 9 dawns. ---
+Ownka: a cracked rib -- closed.
+Ownka: HP 15/16 STA 11/11 Power 12/12
+Gruk mends a little. HP 13/16.
+Grushka: HP 16/16.
 ```
 
-You sleep behind the village wall. In the morning everyone is as whole as an untended body gets.
+Ownka is carrying nothing open for the first time since she signed on. She talks about the stitching for most of the morning. Grushka pays out the last of the silver and says nothing about it.
 
 ```
-Gruk mends a little. HP ceiling 11/16.
-Ownka mends a little. HP ceiling 13/16.
-Ownka: satisfaction 8 -> 4/10
-(carrying untended wounds)
-  Still carrying wounds: Gruk, Ownka.
-  A bed, a healer, or a salve is
-  what answers those.
+  day 9. purse 0s.
+  Ownka: no wounds. satisfaction 4.
+  Grushka: no wounds. satisfaction 8.
+  Gruk: 3 wounds, all light.
+  8 skill points banked (4 Gruk,
+    4 Grushka).
 ```
 
-Ownka is frightened of the gash in her back and says so at length, twice, over breakfast. Grushka listens both times. This is what took Gell out of the party: an open wound costs satisfaction every night it stays open, and Ownka is cowardly, which doubles it. She went down four in one night and she has four left.
+Two people in Sargul want something killed. Ront runs the hunting lodge and wants a beast's hide brought back to prove it. Krusk is the high chief's shaman and wants shamans dealt with, and pays in a staff instead of coin. And a day east, in Kyiv, they are asking for someone to deal with a giant on the border.
 
 ```
-  day 8. purse 35s.
-  the healer here: 20s a severity,
-    2 severity a visit, costs a day.
-  Ownka carries 3 severity.
-  Gruk carries 5.
+  q23 The Great Hunt -- L2, 58s
+    Ront, the lodge. wants the hide.
+    5 days left.
+  q30 Rebel Shamans -- L3
+    Krusk, the chief's shaman.
+    pays a wooden staff. 12 days.
+  q29 The Giant at the Border -- L14
+    at Kyiv, 1 day east. 5 days.
 ```
 
 ```
-  options: Ront's hunt job (L2,
-    58s, wants the hide), hunt for
-    silver, the healer (35s buys
-    one severity), Kyiv (1 day
-    east, a capital), spend the 8
-    banked skill points
+  options: take one of the three,
+    hunt for silver, spend the
+    skill points
 ```
 
 Where to?
