@@ -1,26 +1,28 @@
-RPG2 PARTY SHEET -- day 19, at Tergal >
+RPG2 PARTY SHEET -- day 20, at Tergal >
   Kyiv > Kyiv
-purse: 19s
+purse: 316s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L15  training 3  XP 71/1500  points 7
-  DEX 3  STR 4  MIND 6  CHA 5
-  HP 16/14 of 16  STA 11/12  Power 1/10
-  true rapier | healingx2, staminax1
+  L15  training 3  XP 71/1500  points 0
+  DEX 4  STR 4  MIND 6  CHA 5
+  HP 17/15 of 16  STA 13/12  Power 14/14
+  true rapier, prof 1 | healingx2,
+    staminax1
   spells: fire 1, ice 3, scry 1
-  pools bought: hp +6, power +6, sta +6
+  alchemy 1
+  pools bought: hp +6, power +10, sta +6
+  drilled, not in hand: rapier 1
   speaks: Latin, Tergal
-  - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  wound load 2 -> HP ceiling 14/16
+  wound load 1 -> HP ceiling 15/16
 
 (companion) Ownka -- tergal f, age 37
   L14  training 3  XP 1260/1400  points
     0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 18/16  STA 11/11  Power 12/12
+  HP 18/16  STA 12/11  Power 12/12
   schweizersäbel, prof 3 | staminax1,
     healingx2
   abilities: bulwark
@@ -35,7 +37,7 @@ party: 2/2 companion slot(s) filled (CHA
   L14  training 3  XP 1260/1400  points
     4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 16/16  STA 11/11  Power 10/12
+  HP 16/16  STA 12/11  Power 12/12
   wooden staff | staminax1, healingx2
   spells: fire 3
   pools bought: hp +6, power +6, sta +6
@@ -47,6 +49,6 @@ party: 2/2 companion slot(s) filled (CHA
 
 active quest [q41] Giants in the Pass is
   COMPLETE
-THE PACT: no current assignment (the
-  level-15 pin is due -- it lands at the
-  next settlement).
+THE PACT: assignment [q46] Guard the
+  Cultists at Kyiv (grace to take it
+  runs to day 30).
