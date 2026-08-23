@@ -23,6 +23,10 @@ day 22: [q46] Guard the Cultists (L15)
   A demon appears. It attacks the
     cultists. Hell calls the job
     complete.
+day 26: [q54] Rebel Shamans (L6) --
+  done.
+  The rebels are defeated. Their ritual
+    fire is put out.
 
 -- REMARKABLE --
 day 1: DEFEAT at L14: the party went
@@ -31,11 +35,16 @@ day 1: DEFEAT at L14: the party went
   is spent.
 day 22: HELL'S ASSIGNMENT 1 served:
   Guard the Cultists.
+day 26: Muzgash, the high chief's
+  shaman, named the party the Sky's
+  before the clan mothers -- the price
+  of the rebel shamans dead. Drog is 63
+  and has no heir.
 
 -- THE TALLY OF SIN --
   (no crime committed yet)
-  sin 668/1500; heat 0 -- lying low
-  lifetime sin 767 / penance 2121
+  sin 259/1500; heat 0 -- lying low
+  lifetime sin 767 / penance 2530
 
 -- SUGGESTIONS --
   taxcart -- Rob the Tax Collector: The

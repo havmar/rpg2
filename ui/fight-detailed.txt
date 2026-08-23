@@ -1,57 +1,68 @@
-=== Rebel Shamans -- the burned plains (L6), room 1/2: shrine path ===
+=== Rebel Shamans -- the burned plains (L6), room 2/2: outer altar ===
   2x Ice Shaman -- dagger
   DEX 4  STR 2  STA 6  HP 10/10
   takes spoils, leaves the fallen,
   caster: ice 2; 8 Power
   Round 1:
     Ownka close the distance (the gap narrows to 1).
-    Gruk's flash-freeze overwhelms Ice Shaman 16 -- a crippling blow! [Ice Shaman 16: 4/10 HP, -3 to rolls]
-        pressure: Gruk: 20 (2d6=8, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 16: 8 (2d6=4, +4 DEX) [flash-freeze: -4 Power, 10 left]
-        severity: 15 = margin 12 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
-    Ice Shaman 16 is rimed with frost (-2 DEX for this fight)
-    Ice Shaman 16 is frozen fast -- they lose their next action!
-    Grushka's fire bolt overwhelms Ice Shaman 16 -- a crippling blow! [Ice Shaman 16: 0/10 HP, -5 to rolls]
-        pressure: Grushka: 17 (2d6=6, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 16: 2 (2d6=3, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 12 left]
-        severity: 21 = margin 15 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Ice Shaman 16 is SLAIN. ***
-    Ice Shaman 16 struggles back to their footing -- no action this round.
-    Ice Shaman 17's ice bolt outmaneuvers Gruk -- a solid wound! [Gruk: 14/16 HP, -0 to rolls]
-        pressure: Ice Shaman 17: 18 (2d6=8, +8 AIM, +2 proficiency) vs Gruk: 15 (2d6=7, +5 DEX, +3 training) [ice bolt: -1 Power, 7 left]
-        severity: 3 = margin 3 +2 ice bolt +2 spell rank -4 soak -> wound (-2 HP)
-    Gruk is rimed with frost (-1 DEX for this fight)
-    Gruk takes a wound: a shallow cut along the ribs (severity 1; HP ceiling 15/16)
-    stamina: Gruk 11/12, Ownka 12/12, Grushka 11/12 | Ice Shaman 17 5/6
+    Gruk's flash-freeze overwhelms Ice Shaman 18 -- a crippling blow! [Ice Shaman 18: 4/10 HP, -3 to rolls]
+        pressure: Gruk: 18 (2d6=6, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 18: 11 (2d6=7, +4 DEX) [flash-freeze: -4 Power, 2 left]
+        severity: 10 = margin 7 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
+    Ice Shaman 18 is rimed with frost (-2 DEX for this fight)
+    Ice Shaman 18 is frozen fast -- they lose their next action!
+    Grushka's fire bolt overwhelms Ice Shaman 18 -- a crippling blow! [Ice Shaman 18: 0/10 HP, -5 to rolls]
+        pressure: Grushka: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 18: 4 (2d6=5, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 10 left]
+        severity: 16 = margin 10 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Ice Shaman 18 is SLAIN. ***
+    Ice Shaman 18 struggles back to their footing -- no action this round.
+    Ice Shaman 19 and Gruk -- the ice bolt splashes wide; neither yields.
+        pressure: Ice Shaman 19: 16 (2d6=6, +8 AIM, +2 proficiency) vs Gruk: 16 (2d6=8, +5 DEX, +3 training) [ice bolt: -1 Power, 7 left]
+    stamina: Gruk 10/12, Ownka 12/12, Grushka 10/12 | Ice Shaman 19 5/6
   Round 2:
     Ownka close the distance -- the lines meet!
-    Gruk's flash-freeze overwhelms Ice Shaman 17 -- a crippling blow! [Ice Shaman 17: 4/10 HP, -3 to rolls]
-        pressure: Gruk: 24 (2d6=12, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 17: 13 (2d6=9, +4 DEX) [flash-freeze: -4 Power, 6 left]
-        severity: 14 = margin 11 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
-    Ice Shaman 17 is rimed with frost (-2 DEX for this fight)
-    Ice Shaman 17 is frozen fast -- they lose their next action!
-    Grushka's fire bolt overwhelms Ice Shaman 17 -- a crippling blow! [Ice Shaman 17: 0/10 HP, -5 to rolls]
-        pressure: Grushka: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 17: 4 (2d6=5, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 11 left]
-        severity: 20 = margin 14 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Ice Shaman 17 is SLAIN. ***
-    Ice Shaman 17 struggles back to their footing -- no action this round.
-    stamina: Gruk 10/12, Ownka 12/12, Grushka 10/12
+    Gruk's ice bolt overwhelms Ice Shaman 19 -- a crippling blow! [Ice Shaman 19: 4/10 HP, -3 to rolls]
+        pressure: Gruk: 20 (2d6=8, +6 AIM, +3 training, +3 proficiency) vs Ice Shaman 19: 11 (2d6=7, +4 DEX) [ice bolt: -1 Power, 1 left]
+        severity: 12 = margin 9 +2 ice bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    Ice Shaman 19 is rimed with frost (-1 DEX for this fight)
+    Grushka's fire bolt overwhelms Ice Shaman 19 -- a crippling blow! [Ice Shaman 19: 0/10 HP, -5 to rolls]
+        pressure: Grushka: 16 (2d6=5, +5 AIM, +3 training, +3 proficiency) vs Ice Shaman 19: 4 (2d6=4, +4 DEX, -1 chilled, -3 wounds) [fire bolt: -1 Power, 9 left]
+        severity: 18 = margin 12 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Ice Shaman 19 is SLAIN. ***
+    (Ice Shaman 19 strikes even as they fall)
+    Ice Shaman 19's ice bolt overwhelms Grushka -- a grievous injury! [Grushka: 13/17 HP, -1 to rolls]
+        pressure: Ice Shaman 19: 15 (2d6=5, +8 AIM, +2 proficiency) vs Grushka: 10 (2d6=2, +4 DEX, +3 training, +1 wooden staff) [ice bolt: -1 Power, 6 left]
+        severity: 6 = margin 5 +2 ice bolt +2 spell rank -3 soak -> grievous (-4 HP)
+    Grushka is rimed with frost (-1 DEX for this fight)
+    Grushka takes a wound: a deep gash across the back (severity 2; HP ceiling 15/17)
+    stamina: Gruk 9/12, Ownka 12/12, Grushka 9/12
     The party catches its breath (+1 STA)
-    Gruk gains 66 XP (encounter) [648/1500]
-    Ownka gains 66 XP (encounter) [437/1500]
-    Grushka gains 66 XP (encounter) [437/1500]
-    (penance: -99 sin -- sin 668/1500; heat 0 -- lying low)
+    Gruk gains 66 XP (encounter) [714/1500]
+    Ownka gains 66 XP (encounter) [503/1500]
+    Grushka gains 66 XP (encounter) [503/1500]
+    (penance: -99 sin -- sin 569/1500; heat 0 -- lying low)
 Left among the dead:
 2x dagger (+0 atk/-1 sev, 2s).
 
+  *** THE JOB IS DONE: Rebel Shamans -- the burned plains. Return to Muzgash at Eshkar -- due day 30: `turnin q54`. ***
+    Gruk gains 131 XP (the work done) [845/1500]
+    Ownka gains 131 XP (the work done) [634/1500]
+    Grushka gains 131 XP (the work done) [634/1500]
+    (penance: -196 sin -- sin 373/1500; heat 0 -- lying low)
+    The party shares out its potions -- Gruk: 2 healing, 1 stamina; Ownka: 1 healing, 1 stamina; Grushka: 2 healing, 1 stamina.
+
 -- the party --
-Gruk: Scratched STA 11/12 Power 6/14
+Gruk: Scratched STA 10/12 Power 1/14
   - a shallow cut along the ribs (sev 1)
   (HP ceiling 15/16 until they mend)
   (healing x2, stamina x1)
 Ownka: Unhurt STA 12/12 Power 13/13
-  (stamina x1, healing x2)
-Grushka: Unhurt STA 11/12 Power 11/13
   (stamina x1, healing x1)
+Grushka: Scratched STA 10/12 Power 9/13
+  (hurt -1 to rolls)
+  - a deep gash across the back (sev 2)
+  (HP ceiling 15/17 until they mend)
+  (stamina x1, healing x2)
 Purse 800s; day 26.
-Sin: sin 668/1500; heat 0 -- lying low.
-Ahead: 1 fight(s) at the burned plains; the work done pays 196 XP in the field, and the turn-in pays 199s, 114 XP at the giver.
+Sin: sin 373/1500; heat 0 -- lying low.
+The work is done: return to Muzgash at Eshkar -- the turn-in pays 199s, 114 XP (`turnin q54`).
   (due day 30 -- 4 days left; quick pay, x1.15)

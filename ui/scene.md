@@ -1,59 +1,61 @@
-## turn 24 (day 26)
+## turn 25 (day 26)
 
-> take Muzgash's job in exchange for support
+> press on.
 
-Muzgash agrees to it standing up, in front of four of his own people, which is the part that matters. He says it back so there is no mistake later: the rebels dead, and he will say the Sky is with you, by name, to the clan mothers and to anyone else who asks. Then he tells you where they are. They are not hiding. They are on burned ground an hour out of Kyiv, working a shrine on the old path.
-
-```
-=== Rebel Shamans ===
-the burned plains (L6),
-room 1/2: shrine path
-2x Ice Shaman -- dagger
-DEX 4  STR 2  STA 6  HP 10/10
-takes spoils, leaves the fallen,
-caster: ice 2; 8 Power
-```
+The altar is a slab on the ridge with two more of them working it. It goes the way the path did: your ice and Grushka's fire land together in the first round and the first man is dead before he moves. The second one gets nothing out until he is falling, and the bolt he throws on the way down opens Grushka's back.
 
 [the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
 
-They are ice like you. The first one is dead in the opening exchange, frozen by your cast and burned down by Grushka's before he can move. The second gets one bolt out -- it opens your ribs -- and then goes the same way in the second round. Neither of them was going to beat three people.
-
 ```
-The party catches its breath (+1 STA)
-Gruk +66 XP (encounter) [648/1500]
-Ownka +66 XP (encounter) [437/1500]
-Grushka +66 XP (encounter) [437/1500]
-(penance: -99 sin -- sin 668/1500;
-  heat 0 -- lying low)
-Left among the dead:
-2x dagger (+0 atk/-1 sev, 2s).
+Gruk +66 XP (encounter) [714/1500]
+Ownka +66 XP (encounter) [503/1500]
+Grushka +66 XP (encounter) [503/1500]
+(penance: -99 sin -- sin 569/1500)
 
--- the party --
-Gruk: Scratched STA 11/12 Power 6/14
-  - a shallow cut along the ribs (sev 1)
-  (HP ceiling 15/16 until they mend)
-  (healing x2, stamina x1)
-Ownka: Unhurt STA 12/12 Power 13/13
-  (stamina x1, healing x2)
-Grushka: Unhurt STA 11/12 Power 11/13
-  (stamina x1, healing x1)
-Purse 800s; day 26.
-Sin: sin 668/1500; heat 0 -- lying low.
-Ahead: 1 fight(s) at the burned plains;
-  the work done pays 196 XP in the
-  field, and the turn-in pays 199s, 114
-  XP at the giver.
-  (due day 30 -- 4 days left; quick pay,
-    x1.15)
+*** THE JOB IS DONE: Rebel Shamans --
+the burned plains. ***
+Gruk +131 XP (the work done) [845/1500]
+(penance: -196 sin -- sin 373/1500)
 ```
 
-Honest work burns off what hell put on the meter. Ninety-nine of it, for two dead shamans.
+You put the ritual fire out yourselves and walk back down through the burn to Eshkar.
 
-The path goes on up the ridge to an outer altar with more of them on it. Grushka says they are the same rank as the two you just killed and asks why the chief's man could not do this himself.
+Muzgash pays the silver in front of the same four people he made the promise in front of, and then he keeps the rest of it. He goes out into the square and says it: these three are the Sky's, and the Sky put them on the ridge to end what his own people could not. He names you. Half the village has come out to hear it by the time he finishes, because a shaman shouting in a burnt square is worth listening to.
+
+It is not a title and it does not command anybody. It is a shaman of the high chief's household saying, out loud, in front of witnesses, that the Sky is with a man who is not the high chief. In a country whose whole constitution is the Sky's mandate, that is a stone dropped in a well. Drog is sixty-three and has no heir, and the clan mothers seat the next one.
 
 ```
-  options: press on to the altar,
-    camp first, back to the city
+*** QUEST COMPLETE: Rebel Shamans --
+  Reward: 199 silver. ***
+  Gruk talks the pay up: +40s
+    (239s in all).
+  The party purse holds 1039 silver.
+  Ownka: satisfaction 5 -> 6/10
+  (penance: -114 sin -- sin 259/1500)
+(turned in QUICK -- day 26 against a
+  deadline of day 30: x1.15)
+EPILOGUE: The rebels are defeated.
+  Their ritual fire is put out.
+```
+
+Grushka is in high spirits on the walk back and talks about the plain the way people talk about a thing they own a piece of. Ownka wants to know what happens to the three of you when the high chief hears that his own shaman has been naming other men the Sky's, and nobody has an answer for her.
+
+```
+  day 26. purse 1039s.
+  Gruk: L15, 921/1500. a rib cut.
+  Ownka: unhurt, sat 6.
+  Grushka: a back gash (sev 2),
+    4 skill points banked.
+  sin 259 and falling. heat 0.
+  Kyiv is a free step: healer,
+    spellbook 120s, masterwork 300s.
+```
+
+```
+  options: the healer, buy a
+    spellbook, go back to Muzgash
+    about the clan mothers, hire
+    Ghorza, the board, camp
 ```
 
 Where to?

@@ -1,6 +1,6 @@
 === Rebel Shamans ===
 the burned plains (L6),
-room 1/2: shrine path
+room 2/2: outer altar
 2x Ice Shaman -- dagger
 DEX 4  STR 2  STA 6  HP 10/10
 takes spoils, leaves the fallen,
@@ -8,53 +8,68 @@ caster: ice 2; 8 Power
 Round 1:
 The lines close.
 Gruk's flash-freeze
-overwhelms Ice Shaman 16, deals 6 dmg!!!
-[10 Power left]
-Ice Shaman 16 is rimed with frost.
-Ice Shaman 16 is frozen fast --
+overwhelms Ice Shaman 18, deals 6 dmg!!!
+[2 Power left]
+Ice Shaman 18 is rimed with frost.
+Ice Shaman 18 is frozen fast --
 they lose their next action!
 Grushka's fire bolt
-overwhelms Ice Shaman 16, deals 6 dmg!!!
-[12 Power left]
-Ice Shaman 16 is SLAIN.
-Ice Shaman 16 struggles up -- no action.
-Ice Shaman 17's ice bolt
-outmaneuvers Gruk, deals 2 dmg!
-[7 Power left]
-Gruk is rimed with frost.
-Gruk takes a wound:
-a shallow cut along the ribs.
+overwhelms Ice Shaman 18, deals 6 dmg!!!
+[10 Power left]
+Ice Shaman 18 is SLAIN.
+Ice Shaman 18 struggles up -- no action.
+Ice Shaman 19's ice bolt splashes wide.
 Round 2:
 The lines meet -- steel range.
-Gruk's flash-freeze
-overwhelms Ice Shaman 17, deals 6 dmg!!!
-[6 Power left]
-Ice Shaman 17 is rimed with frost.
-Ice Shaman 17 is frozen fast --
-they lose their next action!
+Gruk's ice bolt
+overwhelms Ice Shaman 19, deals 6 dmg!!!
+[1 Power left]
+Ice Shaman 19 is rimed with frost.
 Grushka's fire bolt
-overwhelms Ice Shaman 17, deals 6 dmg!!!
-[11 Power left]
-Ice Shaman 17 is SLAIN.
-Ice Shaman 17 struggles up -- no action.
+overwhelms Ice Shaman 19, deals 6 dmg!!!
+[9 Power left]
+Ice Shaman 19 is SLAIN.
+Ice Shaman 19's dying ice bolt
+overwhelms Grushka, deals 4 dmg!!
+[6 Power left]
+Grushka is rimed with frost.
+Grushka takes a wound:
+a deep gash across the back.
 The party catches its breath (+1 STA)
-Gruk +66 XP (encounter) [648/1500]
-Ownka +66 XP (encounter) [437/1500]
-Grushka +66 XP (encounter) [437/1500]
-(penance: -99 sin -- sin 668/1500; heat 0 -- lying low)
+Gruk +66 XP (encounter) [714/1500]
+Ownka +66 XP (encounter) [503/1500]
+Grushka +66 XP (encounter) [503/1500]
+(penance: -99 sin -- sin 569/1500; heat 0 -- lying low)
 Left among the dead:
 2x dagger (+0 atk/-1 sev, 2s).
 
+*** THE JOB IS DONE: Rebel Shamans --
+the burned plains. Return to Muzgash
+at Eshkar -- due day 30:
+`turnin q54`. ***
+Gruk +131 XP (the work done) [845/1500]
+Ownka +131 XP (the work done) [634/1500]
+Grushka +131 XP (the work done)
+[634/1500]
+(penance: -196 sin -- sin 373/1500; heat 0 -- lying low)
+The party shares out its potions:
+Gruk: 2 healing, 1 stamina;
+Ownka: 1 healing, 1 stamina;
+Grushka: 2 healing, 1 stamina.
+
 -- the party --
-Gruk: Scratched STA 11/12 Power 6/14
+Gruk: Scratched STA 10/12 Power 1/14
   - a shallow cut along the ribs (sev 1)
   (HP ceiling 15/16 until they mend)
   (healing x2, stamina x1)
 Ownka: Unhurt STA 12/12 Power 13/13
-  (stamina x1, healing x2)
-Grushka: Unhurt STA 11/12 Power 11/13
   (stamina x1, healing x1)
+Grushka: Scratched STA 10/12 Power 9/13
+  (hurt -1 to rolls)
+  - a deep gash across the back (sev 2)
+  (HP ceiling 15/17 until they mend)
+  (stamina x1, healing x2)
 Purse 800s; day 26.
-Sin: sin 668/1500; heat 0 -- lying low.
-Ahead: 1 fight(s) at the burned plains; the work done pays 196 XP in the field, and the turn-in pays 199s, 114 XP at the giver.
+Sin: sin 373/1500; heat 0 -- lying low.
+The work is done: return to Muzgash at Eshkar -- the turn-in pays 199s, 114 XP (`turnin q54`).
   (due day 30 -- 4 days left; quick pay, x1.15)

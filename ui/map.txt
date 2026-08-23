@@ -1,6 +1,5 @@
 RPG2 MAP -- day 26
-the party is at Tergal > Kyiv > Kyiv >
-  the burned plains > shrine path
+the party is at Tergal > Kyiv > Eshkar
 
             111111111122222222223
    123456789012345678901234567890
@@ -34,10 +33,11 @@ HERE: Kyiv (R10C27) -- Tergal, plains
   last harvest: ordinary
   goods: horses
   Kyiv Riverlands (river)
-  Kyiv (city)  <- the party, 5 job(s)
+  Kyiv (city)  5 job(s)
   Guratai (village)  0 job(s)
   Kharnam (village)  0 job(s)
-  Eshkar (village)  2 job(s)
+  Eshkar (village)  <- the party, 1
+    job(s)
 
 -- Tergal --
   [NORMAL]
@@ -70,10 +70,3 @@ Tergal known: Chagan R09C26, Enkhar
     R10C27, Kubai R09C27, Namuruk
     R10C29, Ordaki R09C25, Sargul
     R10C26, +4 more
-
--- quests in hand (where they lead) --
-
-[q54] Rebel Shamans (L6) @ Eshkar
-  - the burned plains (L6): here, room
-    2/2
-  - R10C27: here
