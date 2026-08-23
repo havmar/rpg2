@@ -1,4 +1,4 @@
-RPG2 MAP -- day 8
+RPG2 MAP -- day 9
 the party is at Tergal > R10C26 > Sargul
 
             111111111122222222223
@@ -39,7 +39,7 @@ HERE: R10C26 -- Tergal, plains
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: steady rain.
+  WEATHER: a wind with no cover from it.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London
