@@ -1,39 +1,73 @@
-## turn 14 (day 10)
+## turn 15 (day 17)
 
-> do the hunt and the shamans in one go
+> go through both quests, do them
 
-Ront wants a beast killed on the river ground north of Kyiv and its hide brought back. Krusk wants a band of shamans put down on the burned plains, two tiles west of the same row. Both jobs turn in at Sargul.
+You leave the wolves on the bank and go north.
 
-```
-  q23 The Great Hunt -- L2
-    2 sites at R09C27. due day 14.
-  q30 Rebel Shamans -- L3
-    1 site at R09C25. due day 21.
-  the road: 3 days out, both sites
-    2 days apart, 3 days home.
-    that lands the hunt's turn-in on
-    day 17 -- the last day of its
-    grace, at six tenths.
-```
+The road into the river country is held by a cutthroat and a wolf of his own, and they are dead inside two rounds. The hunting grounds are a stretch of reed and mud where a boar has been killing dogs; Grushka burns it and it runs and you put ice in its back before it reaches the water. The den is an hour further, under a cut bank, and the beast in it is a dire wolf. Ownka kills it in the mouth of the hole. You take the hide.
 
-You go east out of Sargul with the wind across the grass all day and nothing to break it. Kyiv is on the river ahead by evening -- walls, smoke, the bridge traffic -- and you camp short of it.
+Then two days west along the top of the row, to a plain that has been burned in strips. One fire shaman is still working at a shrine on the ridge. He is level three and there are three of you.
 
-In the morning you come down into the river country and Grushka stops the line. Two dire wolves are working the bank a few hundred paces off, downwind, heads down. They have not seen you.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
 
 ```
-  Spotted first -- L3: 2x Dire Wolf.
-    They haven't noticed the party.
-    `engage` to attack; any other
-    move slips past.
+Gruk +47 XP (encounter) [905/1400]
+Ownka +47 XP (encounter) [694/1400]
+Grushka +47 XP (encounter) [694/1400]
+Left among the dead:
+a dagger (+0 atk/-1 sev, 2s).
+
+*** THE JOB IS DONE: Rebel Shamans --
+the burned plains. ***
+```
+
+Three days back to Sargul, the last two of them in steady rain. Ownka and Grushka both take a chill on the road and cough their way in through the corrals on day seventeen.
+
+Ront has the hide up on the lodge wall before you are out of the room. He is three days past his own deadline and pays six tenths of what he posted, then talks the price back up when you point out what the den was.
+
+Krusk hears the shrine is out and does not pay in coin at all. He gives you a staff: iron-shod, a caster's tool, worth about sixty silver on a counter.
+
+```
+*** QUEST COMPLETE: The Great Hunt --
+  Reward: 35 silver. ***
+  Gruk talks the pay up: +7s (CHA 5 --
+    42s in all).
+  Ownka: satisfaction 4 -> 5/10
+  Grushka: satisfaction 8 -> 9/10
+(turned in LATE -- day 17 against a
+  deadline of day 14: x0.6)
+EPILOGUE: The hide hangs in the lodge
+  hall. The hunters honor the party.
+
+*** QUEST COMPLETE: Rebel Shamans --
+  Reward: 0 silver. ***
+  Ownka: satisfaction 5 -> 6/10
+  Grushka: satisfaction 9 -> 10/10
+  The pay is the wooden staff itself --
+    `claim HERO` takes it up.
+EPILOGUE: The rebels are defeated.
+  Their ritual fire is put out.
 ```
 
 ```
-  day 10. purse 0s. all three whole.
-  Kyiv is a free step from here --
-    a capital: healer, shops, board.
-  options: engage the wolves, go to
-    Kyiv, travel north to the
-    hunting grounds
+  day 17. purse 42s.
+  Gruk: 13/16, 3 light wounds,
+    992/1400 XP -- 408 short of 15.
+  Ownka: 14/16, a cold. sat 6.
+  Grushka: 14/16, a cold. sat 10.
+  the staff is unclaimed. Grushka
+    already carries one.
+  the healer here breaks a cold.
+  8 skill points still banked.
+```
+
+Ownka has not stopped talking about the wolf in the hole since the river.
+
+```
+  options: claim the staff (say
+    who), the healer for the colds,
+    the board, hunt, spend the
+    skill points
 ```
 
 Where to?

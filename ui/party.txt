@@ -1,11 +1,11 @@
-RPG2 PARTY SHEET -- day 10, at Tergal >
-  Kyiv > Kyiv Riverlands
-purse: 0s
+RPG2 PARTY SHEET -- day 17, at Tergal >
+  R10C26 > Sargul
+purse: 42s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
-  L14  training 3  XP 719/1400  points 4
+  L14  training 3  XP 992/1400  points 4
   DEX 3  STR 4  MIND 6  CHA 5
   HP 13/13 of 16  STA 12/12  Power 10/10
   true rapier | healingx1, staminax1
@@ -18,34 +18,33 @@ party: 2/2 companion slot(s) filled (CHA
   wound load 3 -> HP ceiling 13/16
 
 (companion) Ownka -- tergal f, age 37
-  L14  training 3  XP 508/1400  points 0
+  L14  training 3  XP 781/1400  points 0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 16/16  STA 11/11  Power 12/12
+  HP 14/16  STA 11/11  Power 12/12
   schweizersäbel, prof 3 | staminax1
   abilities: bulwark
   moves: feint, pommel, thrust
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 4/10
+  satisfaction 6/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
+  [a cold -2 HP ceiling]
 
 (companion) Grushka -- tergal f, age 30
-  L14  training 3  XP 508/1400  points 4
+  L14  training 3  XP 781/1400  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 16/16  STA 11/11  Power 12/12
+  HP 14/16  STA 11/11  Power 12/12
   wooden staff | staminax1
   spells: fire 3
   pools bought: hp +6, power +6, sta +6
   speaks: Latin, Tergal
-  satisfaction 8/10
+  satisfaction 10/10
   quirk: patriotic; voice: whispering;
     looks: pockmarked
+  [a cold -2 HP ceiling]
 
-active quest: [q23] L2 The Great Hunt --
-  next: the hunting grounds (L2), room
-  1/1
-  due day 14 -- 4 days left
+active quest [q30] Rebel Shamans is
+  COMPLETE
 THE PACT: no current assignment (the
   next is pinned to PC level 15).
-sighted: L3: 2x Dire Wolf

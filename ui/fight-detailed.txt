@@ -1,111 +1,45 @@
-=== Rival Warband -- the raided trail (L14), room 2/2: campfire ===
-  Camp Swordmaster 5 -- schweizersäbel
-  DEX 8  STR 6  STA 8  HP 16/16
-  drilled +2,
-  takes spoils, leaves the fallen
+=== Rebel Shamans -- the burned plains (L3), room 1/1: shrine path ===
+  Fire Shaman 10 -- dagger
+  DEX 4  STR 2  STA 7  HP 12/12
+  takes spoils, leaves the fallen,
+  its fire clings, caster: fire 2; 8 Power
   Round 1:
-    Ownka, Camp Swordmaster 5 close the distance -- the lines meet!
-    Gruk and Camp Swordmaster 5 -- the flash-freeze splashes wide; neither yields.
-        pressure: Gruk: 16 (2d6=6, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 16 (2d6=6, +8 DEX, +2 training) [flash-freeze: -4 Power, 6 left]
-    Grushka and Camp Swordmaster 5 -- the fire bolt splashes wide; neither yields.
-        pressure: Grushka: 15 (2d6=4, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 15 (2d6=5, +8 DEX, +2 training) [fire bolt: -1 Power, 11 left]
-    stamina: Gruk 11/12, Ownka 13/13, Grushka 10/11 | Camp Swordmaster 5 8/8
-  Round 2:
-    Gruk sends flash-freeze at Camp Swordmaster 5 -- warded off.
-        pressure: Gruk: 13 (2d6=3, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 19 (2d6=9, +8 DEX, +2 training) [flash-freeze: -4 Power, 2 left]
-    Ownka rolls a pommel strike into Camp Swordmaster 5. (+1 STA)
-    Ownka outmaneuvers Camp Swordmaster 5 -- a solid wound! [Camp Swordmaster 5: 14/16 HP, -1 to rolls]
-        pressure: Ownka: 21 (2d6=10, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency) vs Camp Swordmaster 5: 18 (2d6=8, +8 DEX, +2 training)
-        severity: 3 = margin 3 +4 STR +1 schweizersäbel +3 proficiency -2 Pommel Strike -6 soak -> wound (-2 HP)
-    Ownka's pommel rings Camp Swordmaster 5's skull -- they lose their next action!
-    Grushka's fire bolt edges past Camp Swordmaster 5 -- a solid wound! [Camp Swordmaster 5: 12/16 HP, -2 to rolls]
-        pressure: Grushka: 20 (2d6=9, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 19 (2d6=10, +8 DEX, +2 training, -1 wounds) [fire bolt: -1 Power, 10 left]
-        severity: 3 = margin 1 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
-    Camp Swordmaster 5 struggles back to their footing -- no action this round.
-    stamina: Gruk 10/12, Ownka 13/13, Grushka 9/11 | Camp Swordmaster 5 8/8
-  Round 3:
-    Gruk sends ice bolt at Camp Swordmaster 5 -- warded off.
-        pressure: Gruk: 18 (2d6=8, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 19 (2d6=11, +8 DEX, +2 training, -2 wounds) [ice bolt: -1 Power, 1 left]
-    Ownka lunges into a driving thrust at Camp Swordmaster 5. (+1 STA)
-    Ownka attacks Camp Swordmaster 5 -- parried.
-        pressure: Ownka: 19 (2d6=6, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, +2 Thrust) vs Camp Swordmaster 5: 20 (2d6=12, +8 DEX, +2 training, -2 wounds)
-    Grushka sends fire bolt at Camp Swordmaster 5 -- warded off.
-        pressure: Grushka: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 17 (2d6=9, +8 DEX, +2 training, -2 wounds) [fire bolt: -1 Power, 9 left]
-    Camp Swordmaster 5 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 12/16 HP, -1 to rolls; 10 Power left]
-        pressure: Camp Swordmaster 5: 20 (2d6=11, +8 DEX, +2 training, +1 schweizersäbel, -2 wounds) vs Ownka: 15 (2d6=8, +4 DEX, +3 training)
-        severity: 8 = margin 5 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
-    Ownka takes a wound: a deep gash across the back (severity 2; HP ceiling 14/16)
-    stamina: Gruk 9/12, Ownka 13/13, Grushka 8/11 | Camp Swordmaster 5 7/8
-  Round 4:
-    Gruk's ice bolt outmaneuvers Camp Swordmaster 5 -- a graze! [Camp Swordmaster 5: 11/16 HP, -2 to rolls]
-        pressure: Gruk: 16 (2d6=6, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 13 (2d6=5, +8 DEX, +2 training, -2 wounds) [ice bolt: -1 Power, 0 left]
-        severity: 2 = margin 3 +2 ice bolt +3 spell rank -6 soak -> graze (-1 HP)
-    Camp Swordmaster 5 is rimed with frost (-1 DEX for this fight)
-    Ownka and Camp Swordmaster 5 -- Lull. They circle, probing for an opening.
-        pressure: Ownka: 14 (2d6=4, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 14 (2d6=7, +8 DEX, -1 chilled, +2 training, -2 wounds)
-    Grushka's fire bolt edges past Camp Swordmaster 5 -- a solid wound! [Camp Swordmaster 5: 9/16 HP, -3 to rolls]
-        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 17 (2d6=10, +8 DEX, -1 chilled, +2 training, -2 wounds) [fire bolt: -1 Power, 8 left]
-        severity: 4 = margin 2 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
-    Camp Swordmaster 5 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 8/16 HP, -2 to rolls; 8 Power left]
-        pressure: Camp Swordmaster 5: 16 (2d6=9, +8 DEX, -1 chilled, +2 training, +1 schweizersäbel, -3 wounds) vs Ownka: 11 (2d6=5, +4 DEX, +3 training, -1 wounds)
-        severity: 8 = margin 5 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
-    Ownka takes a wound: three ribs broken (severity 2; HP ceiling 12/16)
-    stamina: Gruk 8/12, Ownka 11/11, Grushka 7/11 | Camp Swordmaster 5 6/8
-    == Ownka is badly cut up (HP 8/16) -- the fight hangs for a heartbeat. ==
-  Round 5:
-    Ownka downs a healing potion mid-fight (HP 8 -> 12/16, now -1 to rolls; 0 left) -- no attack this round, -2 defending while they drink
-    Gruk close the distance (the gap narrows to 0).
-    Grushka sends fire bolt at Camp Swordmaster 5 -- warded off.
-        pressure: Grushka: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 15 (2d6=9, +8 DEX, -1 chilled, +2 training, -3 wounds) [fire bolt: -1 Power, 7 left]
-    Camp Swordmaster 5 outmaneuvers Gruk -- a crippling blow! [Gruk: 7/16 HP, -3 to rolls]
-        pressure: Camp Swordmaster 5: 14 (2d6=7, +8 DEX, -1 chilled, +2 training, +1 schweizersäbel, -3 wounds) vs Gruk: 11 (2d6=6, +3 DEX, +3 training, -1 wounds)
-        severity: 7 = margin 3 +6 STR +1 schweizersäbel -3 soak -> crippling blow (-6 HP)
-    Gruk takes a wound: a torn side, badly closed (severity 3; HP ceiling 10/16)
-    stamina: Gruk 8/12, Ownka 11/11, Grushka 6/11 | Camp Swordmaster 5 5/8
-  Round 6:
-    Gruk downs a healing potion mid-fight (HP 7 -> 10/16, now -2 to rolls; 0 left) -- no attack this round, -2 defending while they drink
-    Ownka feints -- Camp Swordmaster 5's guard opens for the next pass. (+1 STA)
-    Ownka overwhelms Camp Swordmaster 5 -- a crippling blow! [Camp Swordmaster 5: 3/16 HP, -6 to rolls]
-        pressure: Ownka: 18 (2d6=8, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, -1 wounds) vs Camp Swordmaster 5: 8 (2d6=2, +8 DEX, -1 chilled, +2 training, -3 wounds)
-        severity: 12 = margin 10 +4 STR +1 schweizersäbel +3 proficiency -6 soak -> crippling blow (-6 HP)
-    Grushka's fire bolt overwhelms Camp Swordmaster 5 -- a crippling blow! [Camp Swordmaster 5: 0/16 HP, -8 to rolls]
-        pressure: Grushka: 21 (2d6=10, +5 AIM, +3 training, +3 proficiency) vs Camp Swordmaster 5: 12 (2d6=9, +8 DEX, -1 chilled, +2 training, -6 wounds) [fire bolt: -1 Power, 6 left]
-        severity: 11 = margin 9 +5 fire bolt +3 spell rank -6 soak -> crippling blow (-6 HP)
-    *** Camp Swordmaster 5 is SLAIN. ***
-    (Camp Swordmaster 5 strikes even as they fall)
-    Camp Swordmaster 5 attacks Gruk -- parried.
-        pressure: Camp Swordmaster 5: 12 (2d6=5, +8 DEX, -1 chilled, +2 training, +1 schweizersäbel, -3 wounds) vs Gruk: 13 (2d6=11, +3 DEX, +3 training, -2 wounds, -2 drinking)
-    stamina: Gruk 8/12, Ownka 11/11, Grushka 5/11
+    Ownka close the distance (the gap narrows to 1).
+    Gruk's flash-freeze overwhelms Fire Shaman 10 -- a crippling blow! [Fire Shaman 10: 6/12 HP, -3 to rolls]
+        pressure: Gruk: 17 (2d6=7, +5 AIM, +3 training, +3 proficiency, -1 wounds) vs Fire Shaman 10: 7 (2d6=3, +4 DEX) [flash-freeze: -4 Power, 6 left]
+        severity: 13 = margin 10 +2 flash-freeze +3 spell rank -2 soak -> crippling blow (-6 HP)
+    Fire Shaman 10 is rimed with frost (-2 DEX for this fight)
+    Fire Shaman 10 is frozen fast -- they lose their next action!
+    Grushka's fire bolt overwhelms Fire Shaman 10 -- a crippling blow! [Fire Shaman 10: 0/12 HP, -6 to rolls]
+        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Fire Shaman 10: 2 (2d6=3, +4 DEX, -2 chilled, -3 wounds) [fire bolt: -1 Power, 11 left]
+        severity: 23 = margin 17 +5 fire bolt +3 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Fire Shaman 10 is SLAIN. ***
+    Fire Shaman 10 struggles back to their footing -- no action this round.
+    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11
     The party catches its breath (+1 STA)
-    Gruk gains 141 XP (encounter) [352/1400]
-    Ownka gains 141 XP (encounter) [141/1400]
-    Grushka gains 141 XP (encounter) [141/1400]
-    Loot: 5 silver (purse 5s).
+    Gruk gains 47 XP (encounter) [905/1400]
+    Ownka gains 47 XP (encounter) [694/1400]
+    Grushka gains 47 XP (encounter) [694/1400]
 Left among the dead:
-a schweizersäbel (+1 atk/+1 sev, 60s).
+a dagger (+0 atk/-1 sev, 2s).
 
-  *** THE JOB IS DONE: Rival Warband -- the raided trail. Return to Varg at Sargul -- due day 6: `turnin q01`. ***
-    Gruk gains 282 XP (the work done) [634/1400]
-    Ownka gains 282 XP (the work done) [423/1400]
-    Grushka gains 282 XP (the work done) [423/1400]
+  *** THE JOB IS DONE: Rebel Shamans -- the burned plains. Return to Krusk at Sargul -- due day 21: `turnin q30`. ***
+    Gruk gains 47 XP (the work done) [952/1400]
+    Ownka gains 47 XP (the work done) [741/1400]
+    Grushka gains 47 XP (the work done) [741/1400]
 
 -- the party --
-Gruk: Unhurt STA 9/12 Power 0/10
-  (hurt -2 to rolls)
-  - a torn side, badly closed (sev 3)
-  - a cut across the left forearm (sev 1)
+Gruk: Unhurt STA 12/12 Power 6/10
+  (hurt -1 to rolls)
+  - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  (HP ceiling 10/16 until they mend)
+  (HP ceiling 13/16 until they mend)
+  (healing x1, stamina x1)
+Ownka: Unhurt STA 11/11 Power 12/12
   (stamina x1)
-Ownka: Unhurt STA 11/11 Power 8/12
-  (hurt -1 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  (HP ceiling 12/16 until they mend)
+Grushka: Unhurt STA 11/11 Power 11/12
   (stamina x1)
-Grushka: Unhurt STA 6/11 Power 6/12
-  (stamina x1)
-Purse 5s; day 7.
-The work is done: return to Varg at Sargul -- the turn-in pays 0s, 127 XP (`turnin q01`).
-  (due day 6 -- LATE (2 day(s) of grace); late pay, x0.6)
+Purse 0s; day 14.
+The work is done: return to Krusk at Sargul -- the turn-in pays 0s, 35 XP (`turnin q30`).
+  (due day 21 -- 7 days left; on time pay, x1)

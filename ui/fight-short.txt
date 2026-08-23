@@ -1,107 +1,51 @@
-=== Rival Warband ===
-the raided trail (L14),
-room 2/2: campfire
-Camp Swordmaster 5 -- schweizersäbel
-DEX 8  STR 6  STA 8  HP 16/16
-drilled +2,
-takes spoils, leaves the fallen
+=== Rebel Shamans ===
+the burned plains (L3),
+room 1/1: shrine path
+Fire Shaman 10 -- dagger
+DEX 4  STR 2  STA 7  HP 12/12
+takes spoils, leaves the fallen,
+its fire clings, caster: fire 2; 8 Power
 Round 1:
-The lines meet -- steel range.
-Gruk's flash-freeze splashes wide.
-Grushka's fire bolt splashes wide.
-Round 2:
-Gruk's flash-freeze is warded off.
-Ownka: Pommel Strike
-at Camp Swordmaster 5!
-Ownka outmaneuvers Camp Swordmaster 5,
-deals 2 dmg!
-the pommel rings Camp Swordmaster 5's skull --
+The lines close.
+Gruk's flash-freeze
+overwhelms Fire Shaman 10,
+deals 6 dmg!!! [6 Power left]
+Fire Shaman 10 is rimed with frost.
+Fire Shaman 10 is frozen fast --
 they lose their next action!
 Grushka's fire bolt
-edges past Camp Swordmaster 5,
-deals 2 dmg! [10 Power left]
-Camp Swordmaster 5 struggles up -- no action.
-Round 3:
-Gruk's ice bolt is warded off.
-Ownka: Thrust at Camp Swordmaster 5!
-Ownka
-attacks Camp Swordmaster 5, parried.
-Grushka's fire bolt is warded off.
-Camp Swordmaster 5 (12/16)
-overwhelms Ownka, but Bulwark blunts it:
-deals 4 dmg!!
-Ownka takes a wound:
-a deep gash across the back.
-Round 4:
-Gruk's ice bolt
-outmaneuvers Camp Swordmaster 5,
-deals 1 dmg. [0 Power left]
-Camp Swordmaster 5 is rimed with frost.
-Ownka and Camp Swordmaster 5:
-they circle.
-Grushka's fire bolt
-edges past Camp Swordmaster 5,
-deals 2 dmg! [8 Power left]
-Camp Swordmaster 5 (9/16)
-overwhelms Ownka, but Bulwark blunts it:
-deals 4 dmg!!
-Ownka takes a wound: three ribs broken.
-== Ownka is badly cut up ==
-Round 5:
-Ownka downs a healing potion (0 left).
-The lines close.
-Grushka's fire bolt is warded off.
-Camp Swordmaster 5 (9/16)
-outmaneuvers Gruk, deals 6 dmg!!!
-Gruk takes a wound:
-a torn side, badly closed.
-Round 6:
-Gruk downs a healing potion (0 left).
-Ownka: Feint --
-Camp Swordmaster 5's guard opens.
-Ownka (12/16)
-overwhelms Camp Swordmaster 5,
-deals 6 dmg!!!
-Grushka's fire bolt
-overwhelms Camp Swordmaster 5,
-deals 6 dmg!!! [6 Power left]
-Camp Swordmaster 5 is SLAIN.
-Camp Swordmaster 5 strikes as they fall:
-Gruk parries.
+overwhelms Fire Shaman 10,
+deals 6 dmg!!! [11 Power left]
+Fire Shaman 10 is SLAIN.
+Fire Shaman 10 struggles up -- no action.
 The party catches its breath (+1 STA)
-Gruk +141 XP (encounter) [352/1400]
-Ownka +141 XP (encounter) [141/1400]
-Grushka +141 XP (encounter) [141/1400]
-Loot: 5 silver (purse 5s).
+Gruk +47 XP (encounter) [905/1400]
+Ownka +47 XP (encounter) [694/1400]
+Grushka +47 XP (encounter) [694/1400]
 Left among the dead:
-a schweizersäbel (+1 atk/+1 sev, 60s).
+a dagger (+0 atk/-1 sev, 2s).
 
-*** THE JOB IS DONE: Rival Warband --
-the raided trail. Return to Varg
-at Sargul -- due day 6:
-`turnin q01`. ***
-Gruk +282 XP (the work done) [634/1400]
-Ownka +282 XP (the work done) [423/1400]
-Grushka +282 XP (the work done)
-[423/1400]
+*** THE JOB IS DONE: Rebel Shamans --
+the burned plains. Return to Krusk
+at Sargul -- due day 21:
+`turnin q30`. ***
+Gruk +47 XP (the work done) [952/1400]
+Ownka +47 XP (the work done) [741/1400]
+Grushka +47 XP (the work done)
+[741/1400]
 
 -- the party --
-Gruk: Unhurt STA 9/12 Power 0/10
-  (hurt -2 to rolls)
-  - a torn side, badly closed (sev 3)
-  - a cut across the left forearm (sev 1)
+Gruk: Unhurt STA 12/12 Power 6/10
+  (hurt -1 to rolls)
+  - a shallow cut along the ribs (sev 1)
   - a split knuckle (sev 1)
   - a gash above the knee (sev 1)
-  (HP ceiling 10/16 until they mend)
+  (HP ceiling 13/16 until they mend)
+  (healing x1, stamina x1)
+Ownka: Unhurt STA 11/11 Power 12/12
   (stamina x1)
-Ownka: Unhurt STA 11/11 Power 8/12
-  (hurt -1 to rolls)
-  - three ribs broken (sev 2)
-  - a deep gash across the back (sev 2)
-  (HP ceiling 12/16 until they mend)
+Grushka: Unhurt STA 11/11 Power 11/12
   (stamina x1)
-Grushka: Unhurt STA 6/11 Power 6/12
-  (stamina x1)
-Purse 5s; day 7.
-The work is done: return to Varg at Sargul -- the turn-in pays 0s, 127 XP (`turnin q01`).
-  (due day 6 -- LATE (2 day(s) of grace); late pay, x0.6)
+Purse 0s; day 14.
+The work is done: return to Krusk at Sargul -- the turn-in pays 0s, 35 XP (`turnin q30`).
+  (due day 21 -- 7 days left; on time pay, x1)
