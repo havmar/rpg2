@@ -1,103 +1,49 @@
 === Rival Warband ===
 the raided trail (L14),
 room 2/2: campfire
-Camp Swordmaster 4 -- schweizersäbel
+Camp Swordmaster 5 -- schweizersäbel
 DEX 8  STR 6  STA 8  HP 16/16
 drilled +2,
 takes spoils, leaves the fallen
-Round 1: nothing lands.
+Round 1:
+The lines meet -- steel range.
+Gruk's flash-freeze splashes wide.
+Grushka's fire bolt splashes wide.
 Round 2:
-Gruk (14/16)
-attacks Camp Swordmaster 4, parried.
-Gell: Feint --
-Camp Swordmaster 4's guard opens.
-Gell (9/17)
-attacks Camp Swordmaster 4, parried.
-Camp Swordmaster 4 overwhelms Gell,
-but Bulwark blunts it: deals 4 dmg!!
-Gell takes a wound:
-a deep wound in the thigh.
-Bleeding: Gell -1.
-== Gell is badly cut up ==
+Gruk's flash-freeze is warded off.
+Ownka: Pommel Strike
+at Camp Swordmaster 5!
+Ownka outmaneuvers Camp Swordmaster 5,
+deals 2 dmg!
+the pommel rings Camp Swordmaster 5's skull --
+they lose their next action!
+Grushka's fire bolt
+edges past Camp Swordmaster 5,
+deals 2 dmg! [10 Power left]
+Camp Swordmaster 5 struggles up -- no action.
 Round 3:
-Gell downs a healing potion (0 left).
-Gruk (14/16)
-attacks Camp Swordmaster 4, parried.
-Camp Swordmaster 4 overwhelms Gruk,
-deals 6 dmg!!!
-Gruk takes a wound:
-a broken leg, set crooked.
-Bleeding: Gell -1.
-Round 4:
-!! Gruk is Winded.
-Gruk (8/16)
-attacks Camp Swordmaster 4, parried.
-Gell: Pommel Strike
-at Camp Swordmaster 4!
-Gell (7/17)
-attacks Camp Swordmaster 4, parried.
-Camp Swordmaster 4 overwhelms Gell,
-but Bulwark blunts it: deals 4 dmg!!
-Gell takes a wound:
-a deep wound in the right arm.
-Bleeding: Gell -1.
-Round 5:
-Gruk (8/16)
-attacks Camp Swordmaster 4, parried.
-Gell (2/17)
-attacks Camp Swordmaster 4, parried.
-Camp Swordmaster 4 overwhelms Gruk,
-deals 6 dmg!!!
-Gruk takes a wound: two fingers gone.
-Bleeding: Gell -1.
-Round 6:
-Gruk downs a stamina draught (0 left).
-Gell (1/17)
-attacks Camp Swordmaster 4, parried.
-!! Camp Swordmaster 4 is Winded.
-Camp Swordmaster 4 overwhelms Gell,
-but Bulwark blunts it: deals 4 dmg!!
-Gell takes a wound: a torn eyelid.
-Gell goes DOWN.
-Round 7:
-Gruk (2/16)
-attacks Camp Swordmaster 4, parried.
-Camp Swordmaster 4 edges past Gruk,
+Gruk's ice bolt is warded off.
+Ownka: Thrust at Camp Swordmaster 5!
+Ownka
+attacks Camp Swordmaster 5, parried.
+Grushka's fire bolt is warded off.
+Camp Swordmaster 5 (12/16)
+overwhelms Ownka, but Bulwark blunts it:
 deals 4 dmg!!
-Gruk takes a wound:
-a deep wound in the right arm.
-Gruk goes DOWN.
-*** LEFT FOR DEAD --
-the victors take 1048 g
-and the quality weapons,
-then leave the party breathing. ***
-Taken: Gruk's cruel staff,
-Gell's zweihander.
-The beaten party rises at 1 HP.
-Its wounds remain.
-
--- the party --
-Gruk: Failing STA 5/12 Power 0/10
-  (hurt -5 to rolls)
-  - two fingers gone (sev 3)
-  - a broken leg, set crooked (sev 3)
-  - a deep wound in the right arm (sev 2)
-  - badly beaten (sev 1)
-  (HP ceiling 8/16 until they mend)
-  (no kit)
-Gell: Failing STA 6/10 Power 6/12
-  (hurt -5 to rolls)
-  [bleeding -1 HP/round]
-  - a deep wound in the right arm (sev 2)
-  - three ribs broken (sev 2)
-  - a torn eyelid (sev 2)
-  - a deep gash across the back (sev 2)
-  - a cut through the palm (sev 2)
-  - a deep wound in the thigh (sev 2)
-  - badly beaten (sev 1)
-  - a shallow belly wound (sev 1)
-  (HP ceiling 8/17 until they mend)
-  (no kit)
-Purse 0s; day 1.
-Ahead: 1 fight(s) at the raided trail; the work done pays 423 XP in the field, and the turn-in pays 0s, 243 XP at the giver.
-  (due day 6 -- 5 days left; quick pay, x1.15)
+Ownka takes a wound:
+a deep gash across the back.
+Round 4:
+Gruk's ice bolt
+outmaneuvers Camp Swordmaster 5,
+deals 1 dmg. [0 Power left]
+Camp Swordmaster 5 is rimed with frost.
+Ownka and Camp Swordmaster 5:
+they circle.
+Grushka's fire bolt
+edges past Camp Swordmaster 5,
+deals 2 dmg! [8 Power left]
+Camp Swordmaster 5 (9/16)
+overwhelms Ownka, but Bulwark blunts it:
+deals 4 dmg!!
+Ownka takes a wound: three ribs broken.
+== Ownka is badly cut up ==

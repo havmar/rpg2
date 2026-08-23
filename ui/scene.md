@@ -1,64 +1,58 @@
-## turn 8 (day 7)
+## turn 9 (day 7)
 
-> go to nearest tavern and get two new companions instead of him
+> back to the trail for the swordmaster
 
-The Herd Inn is one long room behind the corrals. You settle with Gell there. There is nothing to split -- the purse is empty -- so he takes the longsword he sharpened and the armor he has been mending for six days, and he goes out past the well and south, on foot, without saying anything you have not already heard.
-
-```
-Gell is let go at Sargul -- taking
-  their share of the purse (0s) and
-  their gear.
-```
-
-The innkeeper knows who is looking for work. Two faces come by before dark. The first is a married couple: Ownka, who is thirty-seven, carries a schweizersäbel and has been drilled on it, and talks a great deal; and Grushka, who is thirty, speaks barely above a whisper, and throws fire at the third rank. They hire together or not at all. The second is Bolg, a trader turned caster, who wanted the seat alone.
-
-You take the couple.
+The camp has been rebuilt in the six days you were gone: a new fire, new horses on the picket, and the swordmaster sitting where he sat before. He recognizes you. He looks at the two women with you and stands up anyway.
 
 ```
-Ownka -- tergal f, age 37; temperament:
-  cowardly; speech: verbose; looks:
-  beautiful
-  Ownka (L14, training 3): DEX 4  STR
-    4  MIND 3  STA 13/13  HP 16/16
-    Power 12/12  CHA 5  (bulwark;
-    moves: feint, pommel, thrust;
-    schweizersabel, prof 3)
-  notes: cowardly [satisfaction losses
-    from blood and fear cut twice as
-    deep]
-Grushka -- tergal f, age 30; quirk:
-  patriotic; voice: whispering; looks:
-  pockmarked
-  Grushka (L14, training 3): DEX 4
-    STR 3  MIND 6  STA 11/11  HP 16/16
-    Power 12/12  CHA 6  (spells: fire
-    3; wooden staff)
-  notes: patriotic [downtime in their
-    homeland suits them]
-  4 skill point(s) unspent
-  bound to Ownka (a married couple)
+=== Rival Warband ===
+the raided trail (L14),
+room 2/2: campfire
+Camp Swordmaster 5 -- schweizersäbel
+DEX 8  STR 6  STA 8  HP 16/16
+drilled +2,
+takes spoils, leaves the fallen
 ```
 
-Ownka wants to know what happened to your hand, and then what happened to the last one, and does not stop asking until Grushka puts a hand on her arm.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
+
+He turns your ice aside three times out of four. Ownka gets a pommel into his skull in the second round and he loses the next one standing there; Grushka's fire keeps landing in small bites while he is busy with Ownka's sabre. He has taken seven off her in exchange -- back and ribs, both blunted. Your Power is gone again and he is at nine.
 
 ```
-  day 7. purse 0s. party 3/3.
-  Gruk: HP 13/13 of 16. 4 points
-    unspent.
-  Ownka: HP 16/16.
-  Grushka: HP 16/16. 4 points
-    unspent.
-  the warband job: 1 fight left --
-    one swordmaster, untouched.
-    LATE, 2 days of grace.
+*** FIGHT PAUSED (after round 4): Ownka
+  is badly cut up. ***
+  Facing: Camp Swordmaster 5 (9/16 HP)
+  Gruk: Unhurt HP 13/13 (max 16) STA
+    8/12 Power 0/10
+    (hurt -1 to rolls)
+    - a cut across the left forearm (sev
+      1)
+    - a split knuckle (sev 1)
+    - a gash above the knee (sev 1)
+    healing x1, stamina x1
+  Ownka: Bloodied HP 8/12 (max 16) STA
+    11/11 Power 8/12
+    (hurt -2 to rolls)
+    - three ribs broken (sev 2)
+    - a deep gash across the back (sev
+      2)
+    healing x1, stamina x1
+  Grushka: Unhurt HP 16/16 STA 7/11
+    Power 8/12
+    healing x0, stamina x1
+  The player's call (a pause action
+    costs the round: defend at -2):
+    resume
+      fight on
+    resume --drink HERO
+      stamina draught, +4 STA now
+    resume --heal HERO
+      healing potion, +5 HP now (the
+        wound penalty lightens)
+    retreat
+      parting blows from foes still fit
+        to swing, then one group chase
+        roll
 ```
-
-```
-  options: back to the trail for the
-    swordmaster, spend the skill
-    points, hunt for silver, travel
-```
-
-Where to?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/history.txt)

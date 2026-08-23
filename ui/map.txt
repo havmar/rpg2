@@ -1,6 +1,6 @@
 RPG2 MAP -- day 7
 the party is at Tergal > R10C26 > Sargul
-  > HERD INN
+  > the raided trail > campfire
 
             111111111122222222223
    123456789012345678901234567890
