@@ -1,61 +1,81 @@
-## turn 25 (day 26)
+## turn 26 (day 27)
 
-> press on.
+> tavern night, then contact the clan mothers - would they support me if their kingmaking right were restored. what else do they value
 
-The altar is a slab on the ridge with two more of them working it. It goes the way the path did: your ice and Grushka's fire land together in the first round and the first man is dead before he moves. The second one gets nothing out until he is falling, and the bolt he throws on the way down opens Grushka's back.
-
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
+The Willow Inn at Eshkar, three silver, a fire and a fish supper. Your ribs close overnight.
 
 ```
-Gruk +66 XP (encounter) [714/1500]
-Ownka +66 XP (encounter) [503/1500]
-Grushka +66 XP (encounter) [503/1500]
-(penance: -99 sin -- sin 569/1500)
-
-*** THE JOB IS DONE: Rebel Shamans --
-the burned plains. ***
-Gruk +131 XP (the work done) [845/1500]
-(penance: -196 sin -- sin 373/1500)
+The party takes beds at the tavern
+(3s -- purse 1036s).
+Gruk: a shallow cut along the ribs
+  -- closed.
+Ownka: satisfaction 6 -> 7/10
+Grushka: satisfaction 10 -> 9/10
+  (carrying untended wounds)
 ```
 
-You put the ritual fire out yourselves and walk back down through the burn to Eshkar.
+The clan mothers are not in Kyiv. That is the whole quarrel in one fact: they keep their tents out on the grass an hour from the walls, and the chief keeps his hall inside them. Muzgash's name gets you as far as the fire.
 
-Muzgash pays the silver in front of the same four people he made the promise in front of, and then he keeps the rest of it. He goes out into the square and says it: these three are the Sky's, and the Sky put them on the ridge to end what his own people could not. He names you. Half the village has come out to hear it by the time he finishes, because a shaman shouting in a burnt square is worth listening to.
+Ulma is old and does not stand up for you. There is a second woman behind her who says nothing the whole time and is the one Ulma looks at before she answers anything.
 
-It is not a title and it does not command anybody. It is a shaman of the high chief's household saying, out loud, in front of witnesses, that the Sky is with a man who is not the high chief. In a country whose whole constitution is the Sky's mandate, that is a stone dropped in a well. Drog is sixty-three and has no heir, and the clan mothers seat the next one.
+On the first question she is short with you. The right is not a thing a man hands back to them, she says; it is a thing they have and Drog has spent thirty years making useless. If a man wants their voice he does not offer them their own law. He offers them a man they can name -- and they cannot name somebody who belongs to no clan. You are Tergal, which is a door. You are nobody's son that she knows, which is a wall. She says both without any heat, the way you would price a horse.
 
-```
-*** QUEST COMPLETE: Rebel Shamans --
-  Reward: 199 silver. ***
-  Gruk talks the pay up: +40s
-    (239s in all).
-  The party purse holds 1039 silver.
-  Ownka: satisfaction 5 -> 6/10
-  (penance: -114 sin -- sin 259/1500)
-(turned in QUICK -- day 26 against a
-  deadline of day 30: x1.15)
-EPILOGUE: The rebels are defeated.
-  Their ritual fire is put out.
-```
+Then she tells you what they actually care about, and it is not the succession.
 
-Grushka is in high spirits on the walk back and talks about the plain the way people talk about a thing they own a piece of. Ownka wants to know what happens to the three of you when the high chief hears that his own shaman has been naming other men the Sky's, and nobody has an answer for her.
+The herds. Everything here is counted in beasts -- a fine, a bride, a killing, all of it paid in livestock -- and the herd trails have been robbed twice this month by warbands the chief's men did not ride out against. The clans are eating that loss.
+
+The law they keep. Running water, the tent threshold, the names of the dead. They fine it and the fines come to them, and Drog's reform has been quietly moving those fines to his own men.
+
+The dead. Sky burial, and nobody buried in earth. She mentions this while looking at you, once, and moves on.
+
+The warbands. Their sons used to ride for the clan. They ride for the chief now. That is what Drog took and it is what they want back.
+
+Her price for a hearing is two things, and she says them plainly. Be brought into a clan -- she can arrange that, and it is not free, and it is not fast. And do for the clans the thing the chief has not: the trails are being robbed now, and there is a dragon on the mountain that a herd-road elder is offering four hundred silver to have killed, because a man who brings a dragon's head down to the grass does not need anybody to explain who he is.
 
 ```
-  day 26. purse 1039s.
-  Gruk: L15, 921/1500. a rib cut.
-  Ownka: unhurt, sat 6.
-  Grushka: a back gash (sev 2),
-    4 skill points banked.
-  sin 259 and falling. heat 0.
-  Kyiv is a free step: healer,
-    spellbook 120s, masterwork 300s.
+  WHAT THE CLAN MOTHERS WANT
+  1. herds -- wealth, fines, brides,
+     all paid in beasts. the trails
+     have been robbed twice this
+     month and nobody rode out.
+  2. the old law and its fines,
+     which Drog is moving to his men.
+  3. the rites of the dead.
+  4. the warbands back from the
+     chief to the clans.
+  the price of a hearing: be taken
+  into a clan, and do something for
+  the clans that Drog has not.
 ```
 
 ```
-  options: the healer, buy a
-    spellbook, go back to Muzgash
-    about the clan mothers, hire
-    Ghorza, the board, camp
+  q55 Dragon on the Mountain -- L10
+    1 site, 3 fights. 396s, 1065 XP.
+    wants the head. 5 days left.
+    Snagg, the herd-road elder,
+    at Kyiv.
+  q47 The Dragon's Tribute -- L20
+    576s. due tomorrow. Emen, the
+    king's general, at Kyiv.
+  (day 21, 26) the rival warband
+    took the herd trails. the
+    herders go the long way now.
+```
+
+```
+  day 27. purse 1036s.
+  Gruk L15 921/1500, no wounds.
+  Ownka unhurt, sat 7.
+  Grushka: a back gash (sev 1 now),
+    sat 9, 4 points banked.
+```
+
+```
+  options: take the dragon (L10,
+    three fights), ask Ulma about
+    the adoption, hunt the warband
+    on the trails, the healer,
+    a spellbook
 ```
 
 Where to?

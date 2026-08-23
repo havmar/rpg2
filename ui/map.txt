@@ -1,4 +1,4 @@
-RPG2 MAP -- day 26
+RPG2 MAP -- day 27
 the party is at Tergal > Kyiv > Eshkar
 
             111111111122222222223
@@ -36,13 +36,13 @@ HERE: Kyiv (R10C27) -- Tergal, plains
   Kyiv (city)  5 job(s)
   Guratai (village)  0 job(s)
   Kharnam (village)  0 job(s)
-  Eshkar (village)  <- the party, 1
+  Eshkar (village)  <- the party, 2
     job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: steady rain.
+  WEATHER: hard frost.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London

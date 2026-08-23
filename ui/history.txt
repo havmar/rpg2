@@ -1,4 +1,4 @@
-RPG2 HISTORY -- day 26
+RPG2 HISTORY -- day 27
 (what this campaign has done)
 
 -- QUESTS DONE --
@@ -47,11 +47,11 @@ day 26: Muzgash, the high chief's
   lifetime sin 767 / penance 2530
 
 -- SUGGESTIONS --
-  taxcart -- Rob the Tax Collector: The
-    crown's own coin, in one box, on one
-    road.
   heist -- The Vault Heist: The vault
     opens between patrols, or it does
     not open.
   arson -- Arson: Straw, lamp oil, an
     open door, and a long walk.
+  taxcart -- Rob the Tax Collector: The
+    crown's own coin, in one box, on one
+    road.

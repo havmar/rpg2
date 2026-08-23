@@ -1,13 +1,13 @@
-RPG2 PARTY SHEET -- day 26, at Tergal >
+RPG2 PARTY SHEET -- day 27, at Tergal >
   Kyiv > Eshkar
-purse: 1039s
+purse: 1036s
 party: 2/2 companion slot(s) filled (CHA
   5)
 
 (YOU) Gruk -- tergal m, age 32
   L15  training 3  XP 921/1500  points 0
   DEX 5  STR 4  MIND 6  CHA 5
-  HP 14/15 of 16  STA 10/12  Power 1/14
+  HP 18/16  STA 13/12  Power 14/14
   true rapier, prof 1 | healingx2,
     staminax1
   spells: fire 1, ice 3, scry 1
@@ -15,36 +15,34 @@ party: 2/2 companion slot(s) filled (CHA
   pools bought: hp +6, power +10, sta +6
   drilled, not in hand: rapier 1
   speaks: Latin, Tergal
-  - a shallow cut along the ribs (sev 1)
-  wound load 1 -> HP ceiling 15/16
 
 (companion) Ownka -- tergal f, age 37
   L15  training 3  XP 710/1500  points 0
   DEX 4  STR 4  MIND 3  CHA 5
-  HP 17/17  STA 12/12  Power 13/13
+  HP 19/17  STA 13/12  Power 13/13
   schweizersäbel, prof 3 | staminax1,
     healingx1
   abilities: bulwark
   moves: feint, pommel, thrust
   pools bought: hp +7, power +7, sta +7
   speaks: Latin, Tergal
-  satisfaction 6/10
+  satisfaction 7/10
   temperament: cowardly; speech:
     verbose; looks: beautiful
 
 (companion) Grushka -- tergal f, age 30
   L15  training 3  XP 710/1500  points 4
   DEX 4  STR 3  MIND 6  CHA 6
-  HP 13/15 of 17  STA 10/12  Power 9/13
+  HP 17/16 of 17  STA 13/12  Power 13/13
   wooden staff | staminax1, healingx2
   spells: fire 3
   pools bought: hp +7, power +7, sta +7
   speaks: Latin, Tergal
-  satisfaction 10/10
+  satisfaction 9/10
   quirk: patriotic; voice: whispering;
     looks: pockmarked
-  - a deep gash across the back (sev 2)
-  wound load 2 -> HP ceiling 15/17
+  - a shallow cut along the ribs (sev 1)
+  wound load 1 -> HP ceiling 16/17
 
 active quest [q54] Rebel Shamans is
   COMPLETE
