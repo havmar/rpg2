@@ -47,3 +47,61 @@ overwhelms Ownka, but Bulwark blunts it:
 deals 4 dmg!!
 Ownka takes a wound: three ribs broken.
 == Ownka is badly cut up ==
+Round 5:
+Ownka downs a healing potion (0 left).
+The lines close.
+Grushka's fire bolt is warded off.
+Camp Swordmaster 5 (9/16)
+outmaneuvers Gruk, deals 6 dmg!!!
+Gruk takes a wound:
+a torn side, badly closed.
+Round 6:
+Gruk downs a healing potion (0 left).
+Ownka: Feint --
+Camp Swordmaster 5's guard opens.
+Ownka (12/16)
+overwhelms Camp Swordmaster 5,
+deals 6 dmg!!!
+Grushka's fire bolt
+overwhelms Camp Swordmaster 5,
+deals 6 dmg!!! [6 Power left]
+Camp Swordmaster 5 is SLAIN.
+Camp Swordmaster 5 strikes as they fall:
+Gruk parries.
+The party catches its breath (+1 STA)
+Gruk +141 XP (encounter) [352/1400]
+Ownka +141 XP (encounter) [141/1400]
+Grushka +141 XP (encounter) [141/1400]
+Loot: 5 silver (purse 5s).
+Left among the dead:
+a schweizersäbel (+1 atk/+1 sev, 60s).
+
+*** THE JOB IS DONE: Rival Warband --
+the raided trail. Return to Varg
+at Sargul -- due day 6:
+`turnin q01`. ***
+Gruk +282 XP (the work done) [634/1400]
+Ownka +282 XP (the work done) [423/1400]
+Grushka +282 XP (the work done)
+[423/1400]
+
+-- the party --
+Gruk: Unhurt STA 9/12 Power 0/10
+  (hurt -2 to rolls)
+  - a torn side, badly closed (sev 3)
+  - a cut across the left forearm (sev 1)
+  - a split knuckle (sev 1)
+  - a gash above the knee (sev 1)
+  (HP ceiling 10/16 until they mend)
+  (stamina x1)
+Ownka: Unhurt STA 11/11 Power 8/12
+  (hurt -1 to rolls)
+  - three ribs broken (sev 2)
+  - a deep gash across the back (sev 2)
+  (HP ceiling 12/16 until they mend)
+  (stamina x1)
+Grushka: Unhurt STA 6/11 Power 6/12
+  (stamina x1)
+Purse 5s; day 7.
+The work is done: return to Varg at Sargul -- the turn-in pays 0s, 127 XP (`turnin q01`).
+  (due day 6 -- LATE (2 day(s) of grace); late pay, x0.6)

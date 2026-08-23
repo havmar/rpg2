@@ -69,6 +69,5 @@ Tergal known: Sargul R10C26, Ukhta
 -- quests in hand (where they lead) --
 
 [q01] Rival Warband (L14) @ Sargul
-  - the raided trail (L14): here, room
-    2/2
+  - the raided trail (L14): cleared
   - R10C26: here
