@@ -1,82 +1,56 @@
-## turn 18 (day 20)
+## turn 19 (day 22)
 
-> train alchemy, rapier, as much power as you can. help decide if zweihander is worth it for the others, otherwise sell it for as much as can be got. do a tavern night.
+> take hell's job
 
-You spend the day at the alchemist's counter learning to work a still, then on the drill ground behind the forge with the rapier, and the rest of it on the Power.
+Imsh is at the horse market with the mask on, standing where everyone can see him and nobody looks. He hands over the place and the day and says hell is not paying for the cultists' lives, only for their time. Then he buys a horse he does not need and walks away leading it.
 
-```
-Gruk studies the still: alchemy rank 1
-  (batch 1, stock cap 3) -- healing
-  potion, stamina draught
-Gruk drills with the rapier:
-  proficiency rank 1 (+1 attack
-  pressure and +1 severity with it)
-Gruk hardens the body: +1 max POWER x4
-  (Power 14/14; +10/10 bought)
-```
-
-The zweihander is not worth it for either of them.
+Two days east through steady rain and a hard frost. The ritual is on a rise at the end of the third wet day: a ring of stones, fires in it, twenty people in a circle who have been chanting long enough to have gone hoarse. Nobody there speaks to you. The outer camp is below them on the road, and two men in good coats are already coming up it with their sabres out. They are not bandits. They came here to stop this.
 
 ```
-  Ownka: sabre + prof 3 gives her
-    +4 atk / +4 sev. the zweihander
-    unprofed gives +1 / +3, defends
-    at -1, and adds +2 STR. she
-    would trade three drilled ranks
-    for one point of severity, and
-    she has no points to re-drill.
-  Grushka: her staff is her focus
-    (+1 max Power, +1 parry). she
-    is a fire caster with STR 3.
-    the blade does nothing for her.
+=== Guard the Cultists ===
+the outer camp (L15),
+room 1/1: outer watch
+2x Master Swordfighter -- schweizersäbel
+DEX 8  STR 6  STA 8  HP 16/16
+drilled +2,
+takes spoils, leaves the fallen
 ```
 
-So you sell it. No smith in the city can find nine hundred silver, but the high chief's hall can, and a blade with iron letters down it is exactly the kind of thing that goes on a wall behind a chief. His steward pays three hundred, which is a third of what it is worth and the only offer in Tergal.
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/fight-short.txt)
+
+Your ice catches the first one in the second round and freezes him where he stands; Ownka's feint opens him and Grushka burns him down before he can move again. The second one is untouched by any of that. He has put two into Ownka through her guard -- ribs, then the gut -- and Bulwark blunted both.
 
 ```
-purse: 319s.
+*** FIGHT PAUSED (after round 3): Ownka
+  is badly cut up. ***
+  Facing: Master Swordfighter 15 (14/16
+    HP)
+  Gruk: Unhurt HP 15/15 (max 16) STA
+    9/12 Power 2/14
+    - a gash above the knee (sev 1)
+    healing x2, stamina x1
+  Ownka: Bloodied HP 8/12 (max 16) STA
+    9/9 Power 8/12
+    (hurt -2 to rolls)
+    - three ribs broken (sev 2)
+    - a gut wound, still seeping (sev 2)
+    healing x2, stamina x1
+  Grushka: Unhurt HP 16/16 STA 8/11
+    Power 9/12
+    healing x2, stamina x1
+  The player's call (a pause action
+    costs the round: defend at -2):
+    resume
+      fight on
+    resume --drink HERO
+      stamina draught, +4 STA now
+    resume --heal HERO
+      healing potion, +5 HP now (the
+        wound penalty lightens)
+    retreat
+      parting blows from foes still fit
+        to swing, then one group chase
+        roll
 ```
-
-The Open Hearth again, three silver. Gruk's knuckle closes overnight.
-
-In the morning a boy is waiting outside the room, very polite, hands folded. His eyes catch the light wrong.
-
-```
-*** WORD FROM BELOW -- day 20 ***
-  Hell assigns: [q46] L15 DARK
-    Guard the Cultists -- 1 site,
-    1 encounter; pays 405s, 704 XP
-    (sin)
-  the local hand: Imsh, the masked
-    collector -- tergal m, age 31
-  ~10 days to `take q46`. untaken
-    past that: one warning, then one
-    collections visit, then hell
-    writes it off. `bribe` is 450s
-    for 10 days of quiet.
-```
-
-The job is this. A group of cultists somewhere in this country is calling up a demon, and it takes them time. People with swords are coming to stop them. Hell does not want the cultists saved and does not care whether they live; hell wants the summoning finished. So: stand in the way of whoever arrives, and hold the ground until the thing is through.
-
-Imsh keeps a mask on in a city where nobody wears one, and is at the horse market until you come and find him.
-
-```
-  day 20. purse 316s.
-  Gruk: L15, 0 points, Power 14/14,
-    rapier prof 1, alchemy 1.
-  Grushka still has her cold, and
-    4 points banked.
-  Kyiv sells: spellbook 120s,
-    masterwork steel 300s, the
-    healer, potions, the alchemist.
-```
-
-```
-  options: take hell's job, bribe
-    (450s), ignore it, the healer,
-    buy a spellbook, the board
-```
-
-Where to?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/map.txt) | [history](https://github.com/havmar/rpg2/blob/claude/new-game-rhc7vd/ui/history.txt)

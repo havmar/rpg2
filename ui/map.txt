@@ -1,5 +1,7 @@
-RPG2 MAP -- day 20
-the party is at Tergal > Kyiv > Kyiv
+RPG2 MAP -- day 22
+the party is at Tergal > R10C29 > R10C29
+  Countryside > the outer camp > outer
+  watch
 
             111111111122222222223
    123456789012345678901234567890
@@ -12,7 +14,7 @@ the party is at Tergal > Kyiv > Kyiv
 07 ...####....#......#########C##
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~v#v##^
-10 ....######~######^^^###~#v@##^
+10 ....######~######^^^###~#vCv@^
 11 .....######^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
 13 .#CC^#T#....##...###.........#
@@ -26,22 +28,21 @@ the party is at Tergal > Kyiv > Kyiv
 @ party  ! job  C city  T town  v
   village
 
-HERE: Kyiv (R10C27) -- Tergal, plains
+HERE: R10C29 -- Tergal, plains
   horse country
-  ground: river, riverside, pasture,
-    steppe, coast
+  ground: pasture, steppe, mountain-foot
   last harvest: ordinary
   goods: horses
-  Kyiv Riverlands (river)
-  Kyiv (city)  <- the party, 5 job(s)
-  Guratai (village)  0 job(s)
-  Kharnam (village)  0 job(s)
-  Eshkar (village)  2 job(s)
+  R10C29 Countryside (fields)  <- the
+    party
+  Namuruk (village)  0 job(s)
+  Tolui (hamlet)  0 job(s)
 
 -- Tergal --
   [NORMAL]
   THE GREAT CHIEF
-  WEATHER: steady rain.
+  WEATHER: steady rain -- the 3rd wet
+    day running.
 
 -- known settlements --
 Phyrascia cities: Dublin R05C02, London
@@ -66,5 +67,12 @@ Tergal cities: Kyiv R10C27*
 Tergal known: Chagan R09C26, Enkhar
     R09C27, Erkhet R09C25, Eshkar
     R10C27, Guratai R10C27, Kharnam
-    R10C27, Kubai R09C27, Ordaki R09C25,
-    Sargul R10C26, Ukhta R10C26, +1 more
+    R10C27, Kubai R09C27, Namuruk
+    R10C29, Ordaki R09C25, Sargul
+    R10C26, +4 more
+
+-- quests in hand (where they lead) --
+
+[q46] Guard the Cultists (L15) @ Kyiv
+  - the outer camp (L15): here, room 1/1
+  - R10C29: here

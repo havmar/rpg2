@@ -1,69 +1,48 @@
-=== Giants in the Pass -- the boulder field (L14), room 1/1: mine entrance ===
-  Giant 13 -- giant's club
-  DEX 6  STR 9  STA 10  HP 26/26
-  barely feels pain, breaks when beaten,
-  spell-warded 1, a great sweeping blow
+=== Guard the Cultists -- the outer camp (L15), room 1/1: outer watch ===
+  2x Master Swordfighter -- schweizersäbel
+  DEX 8  STR 6  STA 8  HP 16/16
+  drilled +2,
+  takes spoils, leaves the fallen
   Round 1:
-    Ownka, Giant 13 close the distance -- the lines meet!
-    Gruk's flash-freeze overwhelms Giant 13 -- a graze! [Giant 13: 25/26 HP, -0 to rolls]
-        pressure: Gruk: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 13 (2d6=7, +6 DEX) [flash-freeze: -4 Power, 6 left]
-        severity: 1 = margin 5 +2 flash-freeze +3 spell rank -9 soak -> graze (-1 HP)
-    Giant 13 is rimed with frost (-2 DEX for this fight)
-    Giant 13 is frozen fast -- they lose their next action!
-    Grushka's fire bolt outmaneuvers Giant 13 -- a solid wound! [Giant 13: 23/26 HP, -1 to rolls]
-        pressure: Grushka: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 10 (2d6=6, +6 DEX, -2 chilled) [fire bolt: -1 Power, 11 left]
-        severity: 3 = margin 4 +5 fire bolt +3 spell rank -9 soak -> wound (-2 HP)
-    Giant 13 struggles back to their footing -- no action this round.
-    stamina: Gruk 12/12, Ownka 12/11, Grushka 11/11 | Giant 13 10/10
+    Ownka, Master Swordfighter 14, Master Swordfighter 15 close the distance -- the lines meet!
+    Gruk and Master Swordfighter 14 -- the flash-freeze splashes wide; neither yields.
+        pressure: Gruk: 21 (2d6=10, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 21 (2d6=11, +8 DEX, +2 training) [flash-freeze: -4 Power, 10 left]
+    Grushka's fire bolt edges past Master Swordfighter 14 -- a solid wound! [Master Swordfighter 14: 14/16 HP, -1 to rolls]
+        pressure: Grushka: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 17 (2d6=7, +8 DEX, +2 training) [fire bolt: -1 Power, 11 left]
+        severity: 3 = margin 1 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
+    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Master Swordfighter 14 8/8, Master Swordfighter 15 8/8
   Round 2:
-    Gruk's flash-freeze overwhelms Giant 13 -- a solid wound! [Giant 13: 21/26 HP, -1 to rolls]
-        pressure: Gruk: 18 (2d6=7, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 11 (2d6=8, +6 DEX, -2 chilled, -1 wounds) [flash-freeze: -4 Power, 2 left]
-        severity: 3 = margin 7 +2 flash-freeze +3 spell rank -9 soak -> wound (-2 HP)
-    Giant 13 is rimed with frost (-4 DEX for this fight)
-    Giant 13 is frozen fast -- they lose their next action!
-    Ownka feints -- Giant 13's guard opens for the next pass.
-    Ownka overwhelms Giant 13 -- a grievous injury! [Giant 13: 17/26 HP, -3 to rolls]
-        pressure: Ownka: 15 (2d6=4, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency) vs Giant 13: 9 (2d6=8, +6 DEX, -4 chilled, -1 wounds)
-        severity: 5 = margin 6 +4 STR +1 schweizersäbel +3 proficiency -9 soak -> grievous (-4 HP)
-    Grushka's fire bolt overwhelms Giant 13 -- a crippling blow! [Giant 13: 11/26 HP, -5 to rolls]
-        pressure: Grushka: 17 (2d6=6, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 9 (2d6=10, +6 DEX, -4 chilled, -3 wounds) [fire bolt: -1 Power, 10 left]
-        severity: 7 = margin 8 +5 fire bolt +3 spell rank -9 soak -> crippling blow (-6 HP)
-    Giant 13 struggles back to their footing -- no action this round.
-    stamina: Gruk 11/12, Ownka 11/11, Grushka 10/11 | Giant 13 10/10
+    Gruk's flash-freeze overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 8/16 HP, -4 to rolls]
+        pressure: Gruk: 21 (2d6=10, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 13 (2d6=4, +8 DEX, +2 training, -1 wounds) [flash-freeze: -4 Power, 6 left]
+        severity: 7 = margin 8 +2 flash-freeze +3 spell rank -6 soak -> crippling blow (-6 HP)
+    Master Swordfighter 14 is rimed with frost (-2 DEX for this fight)
+    Master Swordfighter 14 is frozen fast -- they lose their next action!
+    Ownka feints -- Master Swordfighter 14's guard opens for the next pass. (+1 STA)
+    Ownka overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 2/16 HP, -7 to rolls]
+        pressure: Ownka: 19 (2d6=8, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency) vs Master Swordfighter 14: 12 (2d6=8, +8 DEX, -2 chilled, +2 training, -4 wounds)
+        severity: 9 = margin 7 +4 STR +1 schweizersäbel +3 proficiency -6 soak -> crippling blow (-6 HP)
+    Grushka's fire bolt overwhelms Master Swordfighter 14 -- a crippling blow! [Master Swordfighter 14: 0/16 HP, -8 to rolls]
+        pressure: Grushka: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 14: 9 (2d6=8, +8 DEX, -2 chilled, +2 training, -7 wounds) [fire bolt: -1 Power, 10 left]
+        severity: 12 = margin 10 +5 fire bolt +3 spell rank -6 soak -> crippling blow (-6 HP)
+    *** Master Swordfighter 14 is SLAIN. ***
+    Master Swordfighter 14 struggles back to their footing -- no action this round.
+    Master Swordfighter 15 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 12/16 HP, -1 to rolls; 10 Power left]
+        pressure: Master Swordfighter 15: 21 (2d6=10, +8 DEX, +2 training, +1 schweizersäbel) vs Ownka: 16 (2d6=9, +4 DEX, +3 training)
+        severity: 8 = margin 5 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
+    Ownka takes a wound: three ribs broken (severity 2; HP ceiling 14/16)
+    stamina: Gruk 10/12, Ownka 9/9, Grushka 9/11 | Master Swordfighter 15 7/8
   Round 3:
-    Gruk's ice bolt overwhelms Giant 13 -- a crippling blow! [Giant 13: 5/26 HP, -7 to rolls]
-        pressure: Gruk: 19 (2d6=8, +5 AIM, +3 training, +3 proficiency) vs Giant 13: 8 (2d6=11, +6 DEX, -4 chilled, -5 wounds) [ice bolt: -1 Power, 1 left]
-        severity: 7 = margin 11 +2 ice bolt +3 spell rank -9 soak -> crippling blow (-6 HP)
-    Giant 13 is rimed with frost (-5 DEX for this fight)
-    Ownka overwhelms Giant 13 -- a crippling blow! [Giant 13: 0/26 HP, -8 to rolls]
-        pressure: Ownka: 25 (2d6=11, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, +3 feint opening) vs Giant 13: 1 (2d6=7, +6 DEX, -5 chilled, -7 wounds)
-        severity: 23 = margin 24 +4 STR +1 schweizersäbel +3 proficiency -9 soak -> crippling blow (-6 HP)
-    *** Giant 13 is SLAIN. ***
-    (Giant 13 strikes even as they fall)
-    Giant 13 attacks Ownka -- parried.
-        pressure: Giant 13: 6 (2d6=10, +6 DEX, -5 chilled, -5 wounds) vs Ownka: 15 (2d6=8, +4 DEX, +3 training)
-    stamina: Gruk 10/12, Ownka 10/11, Grushka 10/11
-    The party catches its breath (+1 STA)
-    Gruk gains 176 XP (encounter) [1194/1400]
-    Ownka gains 176 XP (encounter) [983/1400]
-    Grushka gains 176 XP (encounter) [983/1400]
-
-  *** THE JOB IS DONE: Giants in the Pass -- the boulder field. Return to Henk at Kyiv -- due day 23: `turnin q41`. ***
-    Gruk gains 176 XP (the work done) [1370/1400]
-    Ownka gains 176 XP (the work done) [1159/1400]
-    Grushka gains 176 XP (the work done) [1159/1400]
-
--- the party --
-Gruk: Unhurt STA 11/12 Power 1/10
-  - a split knuckle (sev 1)
-  - a gash above the knee (sev 1)
-  (HP ceiling 14/16 until they mend)
-  (healing x2, stamina x1)
-Ownka: Unhurt STA 11/11 Power 12/12
-  (stamina x1, healing x2)
-Grushka: Unhurt STA 11/11 Power 10/12
-  [a cold -2 HP ceiling]
-  (stamina x1, healing x2)
-Purse 19s; day 19.
-The work is done: return to Henk at Kyiv -- the turn-in pays 0s, 152 XP (`turnin q41`).
-  (due day 23 -- 4 days left; quick pay, x1.15)
+    Gruk sends flash-freeze at Master Swordfighter 15 -- warded off.
+        pressure: Gruk: 14 (2d6=3, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 17 (2d6=7, +8 DEX, +2 training) [flash-freeze: -4 Power, 2 left]
+    Ownka rolls a pommel strike into Master Swordfighter 15. (+1 STA)
+    Ownka attacks Master Swordfighter 15 -- parried.
+        pressure: Ownka: 16 (2d6=6, +4 DEX, +3 training, +1 schweizersäbel, +3 proficiency, -1 wounds) vs Master Swordfighter 15: 19 (2d6=9, +8 DEX, +2 training)
+    Grushka's fire bolt edges past Master Swordfighter 15 -- a solid wound! [Master Swordfighter 15: 14/16 HP, -1 to rolls]
+        pressure: Grushka: 22 (2d6=11, +5 AIM, +3 training, +3 proficiency) vs Master Swordfighter 15: 21 (2d6=11, +8 DEX, +2 training) [fire bolt: -1 Power, 9 left]
+        severity: 3 = margin 1 +5 fire bolt +3 spell rank -6 soak -> wound (-2 HP)
+    Master Swordfighter 15 overwhelms Ownka -- a crippling blow... Ownka's Bulwark flares! Reduced to grievous. [Ownka: 8/16 HP, -2 to rolls; 8 Power left]
+        pressure: Master Swordfighter 15: 22 (2d6=12, +8 DEX, +2 training, +1 schweizersäbel, -1 wounds) vs Ownka: 8 (2d6=2, +4 DEX, +3 training, -1 wounds)
+        severity: 17 = margin 14 +6 STR +1 schweizersäbel -4 soak -> crippling blow, Bulwark save -> grievous (-4 HP)
+    Ownka takes a wound: a gut wound, still seeping (severity 2; HP ceiling 12/16)
+    stamina: Gruk 9/12, Ownka 9/9, Grushka 8/11 | Master Swordfighter 15 6/8
+    == Ownka is badly cut up (HP 8/16) -- the fight hangs for a heartbeat. ==
