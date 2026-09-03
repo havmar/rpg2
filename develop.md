@@ -1836,6 +1836,13 @@ a pointer: what the file is, how it's run, where its docs are.
   two": both sites at rank 0 for party sizes 1-4, wipe/down/clear per size.
   Re-run after touching the press or the melee loop.
   `python bench_party.py [--trials N]`.
+- `bench_wounds.py` — the wound-record bench (2026-09-03, the one-wound
+  rebalance): named records and wound LOAD per surviving hero out of one
+  at-level room and out of a whole cleared job, L1-5 by default, plus the
+  share of fights leaving two or more on one hero and the names that come
+  up. The meter for `WOUND_TIER_SEVERITY` / `WOUND_SEVERITY_MAX` — re-run
+  after touching the accrual table, the cap, or the location weights.
+  `python bench_wounds.py [--trials N] [--levels 1-5]`.
 - `bench_quests.py` — the quest-generator calibration AND the career sim:
   (1) generated at-level rooms vs the reference duo across levels 1-20,
   (2) generated whole sites likewise, (3) full careers — fresh duo, fresh
@@ -1895,6 +1902,7 @@ python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
 python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
+python bench_wounds.py   # wound records and load per hero, one room and a whole job
 python bench_quests.py   # generated rooms/sites honesty + the career sim
 python weapons.py --seed 1            # one world's armory + smiths (eyeball)
 python worldsim.py --seed 1 --days 60 # the world layer after 60 days (eyeball)
@@ -2873,6 +2881,32 @@ sessions A/B's point economy still underlie doctrine v2.) The full dated
 report of every measured re-tuning lives in `benchlog.md`; this is only the
 standing summary — refresh it whenever a new entry lands there.**
 
+**The one-wound rebalance (2026-09-03; benchlog 2026-09-03 has every
+table).** A FEEL change with a measured mechanical shadow. The slow channel
+now starts at the grievous tier, a hero carries ONE record (cap 8) and the
+worst blow names it; the load per surviving hero per cleared job holds
+within a few points of the old table from L2 up (L1 carries a third less —
+its hits were mostly the 2-HP cuts that no longer record) while records
+fell from 0.3-0.5 to 0.1-0.2 and nobody carries two. What did NOT hold is
+the stacked in-fight stat penalties those small records carried: bestiary
+**mean +0.9** at the annotated level (all 28 rows within +4; no annotation
+touched), at-level encounters **+1.1** and whole jobs **+2.1** clear
+points, the barrow `[3,3,4]` fixture **35.0 clear / 43.7 wipe** (was 27.4 /
+51.1), and 200 careers reach **L5 91% / L8 77% / L11 39% / L14 16%**
+against the same-tree 82 / 66 / 34 / 9 (slice 4's 500-career standing
+numbers are 86 / 70 / 35 / 10), median death **L9** unchanged but its tenth
+percentile **1 → 5**. The early band the designer plays got easier by a
+few points. Dial #1 (`HERO_PAIN` 3 → 2) was tried on a copy and REJECTED:
+it takes the bestiary mean **−3.6** with the deep-pool rows collapsing
+(Warlord −17.6, Blademaster −15.1) and reach-L8 to **58%** — the divisor
+bites in the long high-band fights, not at L1-4. The four control benches keep their shapes and verdicts (the training
+ladder converges at rank 3, no weapon tops every cell, reach dies at the
+door, the equal-cost matrix's column order), with duel and field-0 cells
+up 0-7 points for the same reason. `bench_wounds.py` is the new meter for
+the records-per-hero and load-per-hero pair. Nothing
+was tuned beyond the accrual table, the cap and the salve; the give is
+flagged for the felt game to judge.
+
 **The towns & the tongues moved NOTHING (2026-08-22, the medieval world
 arc's session 3; benchlog 2026-08-22).** `bench_worldgen.py --seeds 500`
 came back byte-identical to session 2's run, line for line, which is the
@@ -3392,8 +3426,9 @@ light). Re-adding the wound tier, or a cap under 8, is the "catalogue"
 coming back or the load going soft; move the treatment rate instead if
 the convalescence itself is the complaint.
 **Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
-`bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
-`bench_quests.py` after touching any of these** — small changes swing
+`bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`,
+`bench_quests.py` — and, for the wound knobs, `bench_wounds.py` — after
+touching any of these** — small changes swing
 lethality, the attrition curve, the weapon matchup matrix, the level
 annotations, the equal-cost matrix, and the career curve.
 

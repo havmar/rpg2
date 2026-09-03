@@ -7273,13 +7273,29 @@ permanent facts live and it did not change.
   most −1 a night per companion (it was −2 or −3 with a catalogue). Kept:
   the convalescence lasts as long as it did, and the drain runs for all of
   it.
-- **`HERO_PAIN` stays at 3.** The budget-shift premise (the located −1 pays
-  for the pain divisor's relief) holds for the record that exists; the
-  bestiary re-measure (benchlog) is the check that it still does.
+- **`HERO_PAIN` stays at 3 — and this was measured, not assumed.** The
+  one number the rebalance did NOT hold is the career curve: with the small
+  records' stacked −1 stat penalties gone, the reference duo reaches L8 in
+  77% of careers against the baseline's 66% and the tenth-percentile death
+  level moved from 1 to 5 — the early game the designer actually plays got
+  easier. develop.md's dial #1 for exactly this, `HERO_PAIN` back to 2,
+  was tried on a copy of the tree and rejected: it takes the bestiary down
+  3.6 points on average with the deep-pool high band collapsing (Warlord
+  −17.6, Blademaster −15.1, Wight −5.8) and pushes reach-L8 to 58%, under
+  the baseline. The spiral penalty scales with HP lost, so the divisor
+  bites hardest in the long high-level fights, not in the L1-4 band where
+  the give sits. The give is flagged in benchlog 2026-09-03 and left for
+  the designer: if the early band wants its pressure back, a penalty that
+  deepens with the ONE record's severity (a severity-6 broken leg costing
+  DEX −2) would put it where the stacked cuts used to, without touching
+  the divisor. Not built — the ask was a tweak to the feel, and the felt
+  game is the meter for whether the curve moved too far.
 
 **Where it landed** (the measurement is in benchlog 2026-09-03): records per
 surviving hero per cleared job 0.08-0.17 (was 0.31-0.48), two-or-more on one
 hero 0-1% of cleared jobs (was 11-20%), and the load per hero within a few
 points of the old table from L2 up. `test_wounds.py` was rewritten for the
-new contract (78 tests, from 59); rules.md, dm.md, writing.md and develop.md
-carry the rules, the table manner, the naming bar and the code pointers.
+new contract (78 tests, from 59); the measurement harness shipped as
+`bench_wounds.py`, the meter for the two new knobs; rules.md, dm.md,
+writing.md and develop.md carry the rules, the table manner, the naming bar
+and the code pointers.
