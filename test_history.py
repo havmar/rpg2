@@ -146,7 +146,7 @@ class Maimings(unittest.TestCase):
 
     def hero(self):
         h = rpg.Entity(name="Maud", dex=4, str_=4, sta=8, max_hp=10)
-        h.wounds.append(rpg.Wound(location="arm", severity=3,
+        h.wounds.append(rpg.Wound(location="arm", severity=4, grade=3,
                                   name="a withered arm", permanent=True))
         return h
 
@@ -165,8 +165,8 @@ class Maimings(unittest.TestCase):
 
     def test_an_ordinary_wound_is_not_history(self):
         h = rpg.Entity(name="Maud", dex=4, str_=4, sta=8, max_hp=10)
-        h.wounds.append(rpg.Wound(location="arm", severity=2,
-                                  name="a gashed arm"))
+        h.wounds.append(rpg.Wound(location="arm", severity=3, grade=2,
+                                  name="a deep cut in the forearm"))
         state = _state(party=[h])
         session._note_maimings(state)
         self.assertEqual(state["history"], [])

@@ -94,8 +94,8 @@ Isolde: satisfaction 7 -> 8/10
 Corvin: Unhurt STA 4/6 Power 5/5
  (healing x1)
 Isolde: Scratched STA 4/6 Power 5/5
- - a bitten forearm, torn (sev 1)
- (HP ceiling 7/8 until it mends)
+ - a deep cut in the forearm (sev 3)
+ (HP ceiling 5/8 until it mends)
 Purse 20s; day 1.
 ```
 

@@ -1737,6 +1737,14 @@ SAT_FOUL_WEATHER = -1       # per companion, for a night spent out in a STORM
 # is that part of it is now specific, located, and does NOT heal overnight.
 # That is the entire point of the system.
 #
+# ONE WOUND, NOT A CATALOGUE (2026-09-03). A body carries a SINGLE
+# non-permanent record; the slow channel starts at the GRIEVOUS tier; every
+# further wounding blow deepens that one record and the worst blow names it.
+# The load a fight leaves is held near the 2026-07-26 table's (fewer records,
+# each heavier -- benchlog 2026-09-03), so the ceiling and the convalescence
+# cost what they did; what changed is that the sheet shows one injury, named
+# for the worst thing that happened, instead of two or three cuts.
+#
 # THE ASYMMETRY IS DELIBERATE. Heroes record wounds; foes keep the scalar and
 # nothing else (they do not persist between fights, so records buy nothing and
 # would cost the bestiary's 25 bench-fitted annotations). So a hero's penalty
@@ -1764,13 +1772,33 @@ WOUND_VITALS = ("head", "chest", "gut")     # where a crippling blow KILLS;
                                             # everywhere else it MAIMS instead
 WOUND_LIMBS = ("arm", "hand", "leg", "eye", "flesh")
 
-# Tier -> severity recorded. A GRAZE records NOTHING: grazes are blood loss,
-# not disabling wounds, and keeping them off the record is what keeps the
-# 40-column log (and the sheet) readable.
-WOUND_TIER_SEVERITY = {"wound": 1, "grievous": 2, "crippling blow": 3}
-WOUND_DOWN_SEVERITY = 1     # going Down by ANY route adds this much, unlocated
-                            # ("badly beaten") -- the fall is itself an injury
-WOUND_SEVERITY_MAX = 3
+# Tier -> what a blow LEAVES. The slow channel starts at GRIEVOUS: a graze
+# and the 2-HP "solid wound" are blood loss, not lasting injuries, and keeping
+# them off the record is what keeps one fight from filing a catalogue of cuts
+# (the 2026-07-26 table recorded the wound tier at severity 1, and a hero
+# walked out of a cleared job with two or three named injuries -- grotesque
+# at the table, and every one of them a line on the sheet).
+#
+# SEVERITY is the LOAD: what the record docks off the HP ceiling and how many
+# bed-nights it takes to knit. GRADE is the DEPTH of the worst single blow
+# behind the record (1 a beating, 2 grievous, 3 crippling): the record is
+# NAMED for it and its stat penalty reads off it, and it never steps down as
+# the load knits -- a broken leg is a broken leg until it closes. Fewer
+# records, each carrying more severity: the per-fight load stays near the old
+# table's while the sheet shows ONE injury.
+WOUND_TIER_SEVERITY = {"grievous": 3, "crippling blow": 4}
+WOUND_TIER_GRADE = {"grievous": 2, "crippling blow": 3}
+WOUND_DOWN_SEVERITY = 1     # going Down by ANY route adds this much...
+WOUND_DOWN_GRADE = 1        # ...at the beating's own grade: "badly beaten",
+                            # unlocated, and the only grade-1 record there is
+WOUND_SEVERITY_MAX = 8      # the ONE record's load cap: eight bed-nights, or
+                            # a town healer's day and four. The half-pool
+                            # floor (WOUND_HP_FLOOR_DIV) bounds the CEILING;
+                            # this bounds the CONVALESCENCE, so the track
+                            # never turns into a countdown. (Benched at 6
+                            # first: two blows saturated it and a job's load
+                            # came in 9-20% under the old table's; 8 holds it
+                            # within a few points -- benchlog 2026-09-03.)
 
 # The stat penalties a location carries, by stat key ("str"/"dex"/"mind"/
 # "sta" -- sta is the MAX pool). Folded into the raw stats the way the brewed
@@ -1787,7 +1815,8 @@ WOUND_PENALTIES = {
     "eye": {"dex": -1},
     "": {},                 # the unlocated "badly beaten" record
 }
-# What a severity-3 wound adds on top (a shattered arm is not a cut arm).
+# What a GRADE-3 record (a crippling blow's) adds on top: a broken arm is
+# not a cut arm.
 WOUND_SEVERE_EXTRA = {"arm": {"dex": -1}}
 # Which locations keep bleeding while untreated -- re-derived at every fight's
 # start (refresh_wound_bleed), so the free field stabilize stops the blood and
@@ -1802,34 +1831,31 @@ WOUND_HP_FLOOR_DIV = 2      # ...and wounds never take the HP ceiling below
 
 # The naming table -- the narrative payoff of the whole system. This is what
 # lets the agent refer back to an injury sessions later, so it is authored
-# content (writing.md's register: plain, specific, present, no purple), not
-# placeholders. Indexed [location][severity].
+# content (writing.md's register: the part, what was done to it, no adjective
+# of feeling), not placeholders. Indexed [location][GRADE]: grade 2 is what a
+# GRIEVOUS blow leaves, grade 3 a CRIPPLING one, and grade 1 exists only for
+# the unlocated beating. Since 2026-09-03 nothing here is an injury the
+# fiction cannot carry for a week and then close: no bellies opened, no
+# fingers gone, no caved-in anything, and no wound on the back (a fighter
+# faces the foe) -- the maiming table below is where the permanent facts live.
 WOUND_NAMES = {
-    "flesh": {1: "a shallow cut along the ribs",
-              2: "a deep gash across the back",
-              3: "a torn side, badly closed"},
-    "arm": {1: "a cut across the left forearm",
-            2: "a deep wound in the right arm",
-            3: "a shattered arm"},
-    "hand": {1: "a split knuckle",
-             2: "a cut through the palm",
-             3: "two fingers gone"},
-    "leg": {1: "a gash above the knee",
-            2: "a deep wound in the thigh",
-            3: "a broken leg, set crooked"},
-    "chest": {1: "a cracked rib",
-              2: "three ribs broken",
-              3: "a caved-in chest"},
-    "gut": {1: "a shallow belly wound",
-            2: "a gut wound, still seeping",
-            3: "a belly opened and packed"},
-    "head": {1: "a split scalp",
-             2: "a cracked skull",
-             3: "a caved temple"},
-    "eye": {1: "a cut brow, blood in the eye",
-            2: "a torn eyelid",
-            3: "a ruined eye"},
-    "": {1: "badly beaten", 2: "badly beaten", 3: "badly beaten"},
+    "flesh": {2: "a deep cut along the ribs",
+              3: "a gash from hip to ribs"},
+    "arm": {2: "a deep cut in the forearm",
+            3: "a broken arm"},
+    "hand": {2: "a cut through the palm",
+             3: "a broken hand"},
+    "leg": {2: "a deep wound in the thigh",
+            3: "a broken leg"},
+    "chest": {2: "a cracked rib",
+              3: "broken ribs"},
+    "gut": {2: "a cut across the belly",
+            3: "a deep wound in the belly"},
+    "head": {2: "a split scalp",
+             3: "a cracked skull"},
+    "eye": {2: "a cut brow, blood in the eye",
+            3: "an eye swollen shut"},
+    "": {1: "badly beaten"},
 }
 # The maiming line: what a permanent record reads as once it has set.
 WOUND_MAIM_NAMES = {"arm": "a withered arm", "hand": "a crippled hand",
@@ -1856,15 +1882,21 @@ HEALER_TIER_CAP = {"hamlet": 2, "village": 2, "town": 4,
                             # 2026-08-21: city-grade clears what a capital
                             # clears, and the hamlet's herb-wife reaches
                             # exactly as far as the village's.
-SALVE_SEVERITY = 1          # the salve (the medium potion tier): closes one
-                            # non-permanent wound outright, worst first
+SALVE_SEVERITY = 2          # the salve (the medium potion tier): knits this
+                            # much off the wound and DRESSES it -- two bed-
+                            # nights in a jar, at the healer's rate, with no
+                            # day spent and no tier gate. (1 until 2026-09-03,
+                            # when it closed a 1-severity cut outright; the
+                            # one-wound table starts at 3.)
 SALVE_PRICE = 40            # dearer than a healing potion, cheaper than a day
 SALVE_ALCHEMY_RANK = 3      # ...and brewable, under the same stock cap
-ELIXIR_SEVERITY = 3         # the epic tier: clears one wound of ANY kind,
-                            # permanents and maimings included. Scarce and
-                            # AUTHORED -- never stocked, never brewed, never
-                            # dropped. The DM places it (`give`), or the
-                            # rank-3 healing spell does the same work.
+ELIXIR_SEVERITY = WOUND_SEVERITY_MAX
+                            # the epic tier: clears one wound of ANY kind
+                            # outright, permanents and maimings included.
+                            # Scarce and AUTHORED -- never stocked, never
+                            # brewed, never dropped. The DM places it
+                            # (`give`), or the rank-3 healing spell does the
+                            # same work.
 # The healing spell's top rank is the permanent career job of the level-point
 # sink: at SPELL_RANK_MAX it clears a maiming (see cast_healing).
 
@@ -2315,15 +2347,24 @@ class Wound:
     with rest. A wound lowers the HP ceiling by its severity, carries its
     location's stat penalties, and only comes off through the treatment ladder
     -- a bed knits one severity a night, a healer several in a day, a salve
-    closes one outright. A `permanent` wound (a maiming) comes off for nothing
-    below the epic tier.
+    two. A `permanent` wound (a maiming) comes off for nothing below the epic
+    tier.
+
+    A body carries ONE of these that is not permanent (2026-09-03, add_wound):
+    further blows deepen it and the worst blow names it. `severity` is the
+    load (the ceiling dock, the bed-nights); `grade` is the depth of the worst
+    blow behind it, which the name and the penalty read off and which never
+    steps down as the load knits.
 
     `name` is authored display copy (WOUND_NAMES / WOUND_MAIM_NAMES); the
-    mechanics read `location`, `severity`, `penalty` and `bleed`."""
+    mechanics read `location`, `severity`, `grade`, `penalty` and `bleed`."""
     location: str           # a WOUND_LOCATION_WEIGHTS key, or "" (unlocated:
                             # the "badly beaten" record a fall leaves)
     name: str               # the authored display string (writing.md register)
-    severity: int           # 1..WOUND_SEVERITY_MAX
+    severity: int           # the LOAD, 1..WOUND_SEVERITY_MAX
+    grade: int              # the DEPTH of the worst blow behind it: 1 a
+                            # beating, 2 grievous, 3 crippling (the
+                            # WOUND_TIER_GRADE row the name reads off)
     penalty: dict = field(default_factory=dict)   # stat key -> int (negative)
     bleed: int = 0          # HP/round it re-opens with at a fight's start;
                             # 0 = none. Re-derived every fight, so first aid
@@ -2484,11 +2525,12 @@ class Entity:
                                          # stacking rule -- apply_condition).
     wounds: list["Wound"] = field(default_factory=list)
                                          # the SLOW injury channel (slice 3b):
-                                         # named located records that lower
-                                         # hp_ceiling and carry stat
-                                         # penalties. Nothing here is per-fight
-                                         # state -- only the treatment ladder
-                                         # takes one off.
+                                         # ONE named located record that lowers
+                                         # hp_ceiling and carries a stat
+                                         # penalty, plus any maimings (the
+                                         # permanent ones, per limb). Nothing
+                                         # here is per-fight state -- only the
+                                         # treatment ladder takes one off.
     records_wounds: bool = False        # whether blows on THIS body are
                                          # recorded as wounds. The hero
                                          # factories (make_human, develop_hero)
@@ -3419,57 +3461,66 @@ def roll_wound_location(rng: random.Random) -> str:
     return keys[-1]
 
 
-def wound_name(location: str, severity: int, permanent: bool = False) -> str:
-    """The authored display string for a record. A maiming gets its own,
-    shorter line -- it has stopped being an injury and become a fact about
-    the body."""
-    if permanent and location in WOUND_MAIM_NAMES:
+def wound_name(location: str, grade: int, permanent: bool = False) -> str:
+    """The authored display string for a record: its location at the GRADE of
+    the worst blow behind it. A maiming gets its own, shorter line -- it has
+    stopped being an injury and become a fact about the body."""
+    if permanent:
         return WOUND_MAIM_NAMES[location]
-    table = WOUND_NAMES.get(location) or WOUND_NAMES[""]
-    return table.get(min(severity, WOUND_SEVERITY_MAX), table[1])
+    return WOUND_NAMES[location][grade]
 
 
-def wound_penalty_for(location: str, severity: int) -> dict:
-    """The stat penalties a record of this location and depth carries."""
-    pen = dict(WOUND_PENALTIES.get(location, {}))
-    if severity >= WOUND_SEVERITY_MAX:
+def wound_penalty_for(location: str, grade: int) -> dict:
+    """The stat penalties a record of this location and grade carries."""
+    pen = dict(WOUND_PENALTIES[location])
+    if grade >= WOUND_TIER_GRADE["crippling blow"]:
         for stat, v in WOUND_SEVERE_EXTRA.get(location, {}).items():
             pen[stat] = pen.get(stat, 0) + v
     return pen
 
 
-def add_wound(e: Entity, location: str, severity: int,
+def add_wound(e: Entity, location: str, severity: int, grade: int,
               permanent: bool = False, log: list[str] | None = None,
               quiet: bool = False) -> "Wound | None":
-    """Record a wound (or DEEPEN the one already at that location).
+    """Record a blow on the body's ONE wound, or open it (2026-09-03).
 
-    Stacking is bounded exactly as conditions are: a second cut to the same
-    arm does not open a second record, it makes the arm worse -- capped at
-    WOUND_SEVERITY_MAX. Unbounded records would bury both the sheet and the
-    40-column log, and would turn the HP ceiling into a countdown.
+    A body carries a single non-permanent record. A further wounding blow
+    DEEPENS it -- the severities add, capped at WOUND_SEVERITY_MAX -- and the
+    worst blow NAMES it: a deeper grade moves the record to the new blow's
+    location, name and penalty; an equal or lighter one leaves the name where
+    it was and only adds its load. So the sheet shows one injury with one
+    number after it, the number is the convalescence, and "a cut arm and then
+    a broken leg" reads as a broken leg that will take longer to mend -- never
+    as two lines. (Until 2026-09-03 every location kept its own record and a
+    cleared job left two or three of them on a hero.)
+
+    Maimings are the exception: a permanent record is a fact about the body,
+    kept per limb beside the wound (`permanent=True`; the same limb maimed
+    twice deepens the one record).
 
     Returns the live record, or None when the body does not keep them (every
     foe). Callers never need to check `records_wounds` themselves."""
     if not e.records_wounds or severity <= 0:
         return None
-    existing = next((w for w in e.wounds
-                     if w.location == location and w.permanent == permanent),
-                    None)
-    if existing is not None:
-        if existing.severity >= WOUND_SEVERITY_MAX and not permanent:
-            return existing
-        existing.severity = min(WOUND_SEVERITY_MAX,
-                                existing.severity + severity)
-        w = existing
-        w.treated = False       # it has been opened again
+    if permanent:
+        existing = next((w for w in e.wounds
+                         if w.permanent and w.location == location), None)
     else:
-        w = Wound(location=location, name="", severity=min(severity,
-                                                           WOUND_SEVERITY_MAX),
+        existing = next((w for w in e.wounds if not w.permanent), None)
+    fresh = existing is None
+    if fresh:
+        w = Wound(location=location, name="", severity=0, grade=grade,
                   permanent=permanent)
         e.wounds.append(w)
-    w.name = wound_name(location, w.severity, permanent)
-    w.penalty = wound_penalty_for(location, w.severity)
-    w.bleed = WOUND_BLEED.get(location, 0)
+    else:
+        w = existing
+        if grade > w.grade:
+            w.location, w.grade = location, grade
+        w.treated = False       # it has been opened again
+    w.severity = min(WOUND_SEVERITY_MAX, w.severity + severity)
+    w.name = wound_name(w.location, w.grade, permanent)
+    w.penalty = wound_penalty_for(w.location, w.grade)
+    w.bleed = WOUND_BLEED.get(w.location, 0)
     _sync_wound_stats(e)
     # A ceiling is a ceiling: current HP can never sit above it. In ordinary
     # play this clamp does nothing -- every tier's damage is at least its
@@ -3480,7 +3531,9 @@ def add_wound(e: Entity, location: str, severity: int,
     # honest.
     e.hp = min(e.hp, e.hp_ceiling)
     if log is not None and not quiet:
-        what = "is MAIMED" if permanent else "takes a wound"
+        what = ("is MAIMED" if permanent
+                else "takes a wound" if fresh
+                else "is hurt worse")
         _play(log,
               f"    {e.name} {what}: {w.name} "
               f"(severity {w.severity}; HP ceiling {e.hp_ceiling}/{e.max_hp})",
@@ -3488,22 +3541,36 @@ def add_wound(e: Entity, location: str, severity: int,
     return w
 
 
+def maim(e: Entity, location: str,
+         log: list[str] | None = None) -> "Wound | None":
+    """A MAIMING by any route -- the crippling limb blow that would have
+    killed (record_hit_wound) or the beasts' mercy (mercy_of_the_victors): a
+    PERMANENT record at the crippling tier's grade and load, beside whatever
+    wound the body already carries."""
+    return add_wound(e, location, WOUND_TIER_SEVERITY["crippling blow"],
+                     WOUND_TIER_GRADE["crippling blow"], permanent=True,
+                     log=log)
+
+
 def record_hit_wound(defender: Entity, tier: str, rng: random.Random,
                      log: list[str] | None = None) -> "Wound | None":
     """The accrual hook, called from _attack once a blow has landed and its
     tier is known (rules.md's Wounds & Recovery, "What a blow leaves"):
 
-      graze      -- nothing recorded. Grazes are blood loss, not disabling
-                    injuries, and keeping them off the record is what keeps
-                    the log and the sheet readable.
-      wound      -- severity 1, located
-      grievous   -- severity 2, located
-      crippling  -- severity 3, located. If the blow also DROPPED the body,
-                    the location decides the fate: a vital (head/chest/gut)
-                    is the killing one and the ordinary death path stands; a
-                    limb or extremity MAIMS instead -- permanent, and Down
-                    rather than dead. That is the whole of the "obliterating
-                    tier" the roadmap parked, bought for free.
+      graze, wound -- nothing recorded. Blood loss, not a lasting injury;
+                    keeping the two common tiers off the record is what
+                    keeps a fight from filing a catalogue (2026-09-03).
+      grievous   -- severity 3 at grade 2, located
+      crippling  -- severity 4 at grade 3, located. If the blow also DROPPED
+                    the body, the location decides the fate: a vital
+                    (head/chest/gut) is the killing one and the ordinary
+                    death path stands; a limb or extremity MAIMS instead --
+                    permanent, and Down rather than dead. That is the whole
+                    of the "obliterating tier" the roadmap parked, bought
+                    for free.
+
+    Whatever lands goes onto the body's ONE wound (add_wound): a second blow
+    deepens it, and the deeper blow names it.
 
     Makes ZERO rng calls for a body that keeps no records, so foe-only
     exchanges hold their exact RNG stream."""
@@ -3514,19 +3581,22 @@ def record_hit_wound(defender: Entity, tier: str, rng: random.Random,
         return None
     location = roll_wound_location(rng)
     dropped = defender.hp <= 0
-    maims = (tier == "crippling blow" and dropped
-             and location not in WOUND_VITALS)
-    if maims:
+    if (tier == "crippling blow" and dropped
+            and location not in WOUND_VITALS):
         defender.dead = False
         defender.down = True
-    return add_wound(defender, location, severity, permanent=maims, log=log)
+        return maim(defender, location, log)
+    return add_wound(defender, location, severity, WOUND_TIER_GRADE[tier],
+                     log=log)
 
 
 def note_beaten(e: Entity, log: list[str] | None = None) -> "Wound | None":
     """Going Down by ANY route -- steel, a bleed-out tick, a misfire -- is
-    itself an injury: WOUND_DOWN_SEVERITY, unlocated ("badly beaten"). It is
-    what makes a fall cost something past the fight it happened in."""
-    return add_wound(e, "", WOUND_DOWN_SEVERITY, log=log, quiet=True)
+    itself an injury: WOUND_DOWN_SEVERITY onto the body's one wound, or a
+    fresh unlocated "badly beaten" record when it carries none. It is what
+    makes a fall cost something past the fight it happened in."""
+    return add_wound(e, "", WOUND_DOWN_SEVERITY, WOUND_DOWN_GRADE, log=log,
+                     quiet=True)
 
 
 def go_down(e: Entity, log: list[str] | None = None) -> None:
@@ -3565,10 +3635,13 @@ def heal_wounds(e: Entity, severity: int, permanents: bool = False,
 
     Every rung calls this and differs only in its budget and its reach: a bed
     spends BED_SEVERITY_PER_NIGHT a night and never touches a maiming, a
-    healer spends its tier cap in a day, a salve closes one wound outright,
-    the epic tier and the rank-3 healing spell pass `permanents=True`.
-    `treat=True` additionally marks what SURVIVES as packed and dressed: it
-    stops bleeding and stops draining morale while the severity knits."""
+    healer spends its tier cap in a day, a salve SALVE_SEVERITY, the epic
+    tier and the rank-3 healing spell pass `permanents=True`. `treat=True`
+    additionally marks what SURVIVES as packed and dressed: it stops bleeding
+    and stops draining morale while the severity knits.
+
+    The name and the penalty do NOT step down as the load knits (2026-09-03):
+    a broken leg at severity 1 is a broken leg nearly mended, not a gash."""
     closed: list[str] = []
     left = severity
     for w in _treatable(e, permanents):
@@ -3580,16 +3653,12 @@ def heal_wounds(e: Entity, severity: int, permanents: bool = False,
         if w.severity <= 0:
             closed.append(w.name)
             e.wounds.remove(w)
-        else:
-            w.name = wound_name(w.location, w.severity, w.permanent)
-            w.penalty = wound_penalty_for(w.location, w.severity)
-            if treat:
-                # Only what this rung actually WORKED ON is dressed. A salve
-                # packs the wound it was poured into, not every scratch on
-                # the body -- and a healer who ran out of tier cap leaves the
-                # ones they never reached raw, which is exactly the pressure
-                # the cap is there to create.
-                w.treated = True
+        elif treat:
+            # Only what this rung actually WORKED ON is dressed: a healer who
+            # ran out of tier cap before reaching a body leaves that body's
+            # wound raw, which is exactly the pressure the cap is there to
+            # create.
+            w.treated = True
     _sync_wound_stats(e)
     if closed:
         clear_conditions(e, ("bleed",))
@@ -7929,11 +7998,11 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
       strength / dexterity -> +1 STR / +1 DEX until the next long rest (the
                            brewed stat buffs; DEX never exceeds +1)
       power   -> restore Power now (the retired kind; an old save may carry it)
-      salve   -> the WOUND tier (slice 3b): closes SALVE_SEVERITY of the worst
-                           non-permanent wound outright. Bought or brewed at
-                           alchemy rank 3; the middle rung of the treatment
-                           ladder, and the one the party can carry with them
-      elixir  -> the EPIC tier: clears ELIXIR_SEVERITY of ANY wound,
+      salve   -> the WOUND tier (slice 3b): knits SALVE_SEVERITY off the
+                           worst non-permanent wound and dresses it. Bought
+                           or brewed at alchemy rank 3; the middle rung of the
+                           treatment ladder, and the one the party can carry
+      elixir  -> the EPIC tier: clears one wound of ANY kind outright,
                            permanents and maimings included. Never stocked,
                            never brewed, never dropped -- authored placement
                            only (the DM's `give`), like a named weapon"""
@@ -8039,13 +8108,14 @@ def use_potion(h: Entity, kind: str, log: list[str]) -> bool:
         epic = kind == "elixir"
         depth = ELIXIR_SEVERITY if epic else SALVE_SEVERITY
         closed = heal_wounds(h, depth, permanents=epic, treat=True)
-        what = ", ".join(closed) if closed else "the worst of it"
+        what = (", ".join(closed) + " closes" if closed
+                else "the wound is packed and dressed")
         _play(log,
-              f"    {h.name} uses a {POTION_DISPLAY[kind]} -- {what} closes "
+              f"    {h.name} uses a {POTION_DISPLAY[kind]} -- {what} "
               f"(wound load {h.wound_load}; HP ceiling {h.hp_ceiling}/"
               f"{h.max_hp}; {h.items[kind]} left)",
               fit_lines([f"{first} uses a {POTION_DISPLAY[kind]}:",
-                         f"{what} closes.",
+                         f"{what}.",
                          f"HP ceiling {h.hp_ceiling}/{h.max_hp}."]))
     else:  # power (retired kind; old saves)
         before = h.cur_power
@@ -8716,8 +8786,7 @@ def apply_defeat_mercy(party: list[Entity], foes: list[Entity],
             candidates = [(h, location) for h in active
                           for location in WOUND_LIMBS]
         victim, location = rng.choice(candidates)
-        add_wound(victim, location, WOUND_SEVERITY_MAX,
-                  permanent=True, log=log)
+        maim(victim, location, log)
         _play(log,
               "  *** LEFT FOR DEAD -- the beasts leave the party where it "
               f"fell. {victim.name} wakes maimed; nothing was taken. ***",

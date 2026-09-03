@@ -803,7 +803,7 @@ These are the only edits to the existing rules:
 | Resource | Scope | Refillable? | Role |
 |----------|-------|-------------|------|
 | **HP** | Carries across the run (never a per-fight reset) | A healing potion drunk between fights; the real heal is a **long rest** — HP returns over **~a week**, but only ever up to the **wound ceiling** (2026-07-26, slice 3b) | Lethal death-spiral inside a fight; a lasting wound between them. The FAST channel of the injury system. |
-| **Wounds** | Carry indefinitely — a night does nothing for them | Only the **treatment ladder**: a settlement bed (1 severity a night), the healer (tier-capped), a salve, or high magic for a maiming | The SLOW channel (2026-07-26, slice 3b): named located records that dock the HP ceiling and carry stat penalties. See the Wounds & Recovery add-on. |
+| **Wounds** | Carry indefinitely — a night does nothing for them | Only the **treatment ladder**: a settlement bed (1 severity a night), the healer (tier-capped), a salve (2 severity), or high magic for a maiming | The SLOW channel (2026-07-26, slice 3b): **one** named located record a body (2026-09-03) that docks the HP ceiling and carries a stat penalty. See the Wounds & Recovery add-on. |
 | **STA** | Per day | A **sawtooth trending down**: +1 when a fight ends (the day's only free give-back since the short rest went, 2026-07-26); rare/costly potions; **fully recharges on a long rest (overnight)**. Mid-fight it comes back only through a pause action (a draught, Berserk, or War-Breath; each costs the round's attack and a −2 guard). | The **second death-track**. Attacks spend it; at 0 you're **Spent** (still swinging, −6 to everything, until the fight ends) and fresh enemies usually finish you. Drives the matchup loop. Stays expensive to buy back mid-day on purpose. |
 | **Power** | Per day | **Full on a long rest** (it recharges with rest like STA, just never mid-fight); world drops | The **spendable budget** for the learned abilities (Bulwark's mid-fight absorb, First Blood's opener, War-Breath) and for every spell — the healing spell's between-fights mending included. |
 | **Items** | Carried stock | The **kit restocks itself, thinly** — every long rest the PARTY scrounges up to 1 healing + 1 stamina (per party since session C, + a forage roll for a 2nd draught); anything above that is bought, found, or **brewed** (the alchemist) | The buffer: drunk in the lull for an instant top-up, or mid-fight at a pause / by standing order (the round's attack, −2 guard). Drunk AT max, a potion **overcharges** (+2 above max, spent-only — session C). Out of combat the lull top-up runs itself since 2026-07-26 — the **quartermaster pass** deals the stock to whoever needs it, and at a fight's OPENING (2026-08-05) drinks for everyone who has no better answer (see "Silver and the potion economy"). |
@@ -2438,6 +2438,38 @@ and HP carries), so a delay would have been a fiction.
 `rpg.Wound` / `rpg.Entity.wounds`; the constants live in the wounds block at
 the top of `rpg.py`.
 
+## One wound, not a catalogue (2026-09-03)
+
+The first table recorded every 2-HP "solid wound" as a severity-1 located
+record, so a hero walked out of a cleared job with two or three named
+injuries — "a shallow cut along the ribs", "a deep gash across the back", "a
+split knuckle" — grotesque at the table, and a line each on the sheet. The
+designer's call: wounds **rarer, each longer to mend**, so the mechanical
+cost stays about where it was while the sheet shows **one major injury**.
+Three rules do it:
+
+- **The slow channel starts at the grievous tier.** A graze and a solid
+  wound are blood loss and record nothing. A grievous blow leaves
+  **severity 3**, a crippling blow **severity 4**.
+- **A body carries ONE wound.** A further wounding blow *deepens* it (the
+  severities add, capped at 8) and **the worst blow names it**: a deeper
+  blow moves the record to its own location, name and penalty; an equal or
+  lighter one only adds its load. "A cut arm, then a broken leg" is a broken
+  leg that will take longer to mend — never two lines. Maimings are the
+  exception: a permanent record is a fact about the body and sits beside the
+  wound.
+- **The name never steps down as the load knits.** A record carries a
+  **grade** (1 a beating, 2 grievous, 3 crippling) that its name and its
+  penalty read off; severity is the convalescence. "A broken leg (sev 1)"
+  is a broken leg nearly mended, not a gash.
+
+Measured (benchlog 2026-09-03): records per surviving hero per cleared job
+fell from 0.3-0.5 to 0.1-0.2 across the played band, no survivor carries
+two, and the load per job holds within a few points of the old table's from
+level 2 up (level 1, where most hits were 2-HP cuts, carries about a third
+less). The names were rewritten in the same pass — the field surgeon's
+register without the gruesome entries, and no wound lands on the back.
+
 ## Why: rest had stopped being incomplete
 
 With quests down to one encounter (slice 1) there was nothing left inside a
@@ -2477,7 +2509,8 @@ Foe wound *narration* is free and stays the DM's.
 |-------|---------|
 | `location` | `flesh` / `arm` / `hand` / `leg` / `chest` / `gut` / `head` / `eye`, or `""` (unlocated) |
 | `name` | the authored display string (`WOUND_NAMES`, writing.md's register) |
-| `severity` | 1–3 |
+| `severity` | 1–8: the **load** — what it docks off the ceiling, and the bed-nights it takes |
+| `grade` | 1–3: the **depth** of the worst blow behind it (1 a beating, 2 grievous, 3 crippling). The name and the penalty read off it; it never steps down |
 | `penalty` | stat key → int (folded into the raw stats) |
 | `bleed` | HP/round it re-opens with; 0 = none |
 | `permanent` | a **maiming** — only the epic tier reaches it |
@@ -2506,17 +2539,18 @@ Rolled in `_attack`, where the tier is already known:
 
 | tier | result |
 |------|--------|
-| graze | **nothing recorded** — blood loss only; grazes are never located |
-| wound | severity 1, located |
-| grievous | severity 2, located |
-| crippling blow | severity 3, located — and if it also **dropped** the body, see below |
-| going Down by any route | **+1 severity, unlocated** ("badly beaten") |
+| graze, wound | **nothing recorded** — blood loss only; never located |
+| grievous | severity 3 at grade 2, located |
+| crippling blow | severity 4 at grade 3, located — and if it also **dropped** the body, see below |
+| going Down by any route | **+1 severity** onto the wound the body carries — or a fresh unlocated grade-1 record ("badly beaten") when it carries none |
 
-Grazes staying unlocated is what keeps the 40-column log and the sheet
-readable, and it matches the fiction: a cut is blood, not a disabling injury.
+The two common tiers staying off the record is what keeps a fight from
+filing a catalogue (2026-09-03), and it matches the fiction: a cut is blood,
+not a lasting injury.
 
-A second hit to the same place **deepens** the record rather than opening a
-second one (bounded exactly as conditions are), capped at severity 3.
+A second wounding hit **anywhere deepens the one record** rather than
+opening another, capped at severity 8, and the deeper blow names it (see
+"One wound, not a catalogue" above).
 
 **The maiming rule.** A crippling blow that drops the body reads off its
 location: a **vital** (head / chest / gut) is the killing one and the ordinary
@@ -2535,7 +2569,7 @@ it is a **primary lethality lever**: bench it, never eyeball it.
 
 | location | penalty |
 |----------|---------|
-| arm | STR −1 (and DEX −1 at severity 3) |
+| arm | STR −1 (and DEX −1 at grade 3 — a broken arm) |
 | hand | DEX −1 |
 | leg | DEX −1 |
 | chest | max STA −2 |
@@ -2565,11 +2599,14 @@ forever.
 | **a bed in a settlement** | 1 severity per night | **time** (the wilds knit none) |
 | **the healer** (`healer`) | several severity, a day + a flat fee | **settlement tier** |
 | basic potion | HP / blood loss, to the ceiling | silver (price unchanged) |
-| **surgeon's salve** | one non-permanent wound outright | silver, or alchemy rank 3 (stock-capped) |
-| **elixir of mending / rank-3 healing spell** | permanents and maimings | scarce, authored |
+| **surgeon's salve** | 2 severity off the wound, and dresses it | silver (the healer's rate, carried), or alchemy rank 3 (stock-capped) |
+| **elixir of mending / rank-3 healing spell** | one wound of any kind outright, maimings included | scarce, authored |
 
 **Healer tier caps: hamlet and village 2 severity a visit, town 4, a city
-or a capital everything short of a maiming.** The **cap is the gate**, which is why the fee
+or a capital everything short of a maiming.** Against the one-wound table
+that reads: a village knits a grievous wound down to 1 and dresses it, a
+town closes a crippling one in a day, a city closes anything. The **cap is
+the gate**, which is why the fee
 never needs to scale — a village that cannot touch your third wound is worth
 exactly as much at level 20 as at level 1. Treatment also *dresses* what it
 cannot close: a packed wound stops bleeding and stops draining morale while
@@ -2589,8 +2626,9 @@ where it was.
 
 ## Morale
 
-`SAT_WOUNDED_DAY` per night for each companion carrying an **untended** wound,
-plus a one-off `SAT_MAIMED` the first night after a maiming. With the tavern's
+`SAT_WOUNDED_DAY` per night for a companion carrying an **untended** wound
+(one record a body, so at most −1 a night since 2026-09-03), plus a one-off
+`SAT_MAIMED` the first night after a maiming. With the tavern's
 morale cooldown (`SAT_TAVERN_COOLDOWN_DAYS`) a long convalescence genuinely
 costs the party, and `wants_to_leave` / `leave_threshold` carry it from there
 — no new departure machinery. A wound a healer has dressed costs nothing:
@@ -2606,9 +2644,9 @@ stay one command away in `status`, the pause menu, and
 `ui/fight-detailed.txt`. That is the designer's "no HP as a number" at display
 level only, and it is cheaply reversible — the model still has the scalar.
 
-The wound list itself appears in the post-fight tally, the pause menu,
-`status` and `ui/party.txt`, worst first, with `[PERMANENT]` and `(dressed)`
-markers.
+The wound itself — one line with its severity, plus any maiming — appears
+in the post-fight tally, the pause menu, `status` and `ui/party.txt`, with
+`[PERMANENT]` and `(dressed)` markers.
 
 ---
 

@@ -2878,3 +2878,153 @@ other sweep are untouched: the fix changes when a shared mark is CLEARED,
 never what a war rolls. (The "was" column is the same bench re-run at the
 pre-fix tree, not entry (D): (D) predates the rename commit and prints no
 mark mix.)
+
+## 2026-09-03 — One wound, not a catalogue: the wound rebalance (FULL RE-RUN)
+
+**What shipped** (designlog 2026-09-03): the slow channel starts at the
+GRIEVOUS tier (the graze and the 2-HP wound tier record nothing); grievous
+leaves severity 3, crippling severity 4 (was 1 / 2 / 3 with the wound tier
+recording); a body carries ONE non-permanent record that every further blow
+deepens (cap 8, was 3 per location) and the worst blow names; the salve knits
+2 (was 1). `HERO_PAIN` stays 3. The whole suite was re-run against the same
+tree one commit back (`5d126fa`), both runs at the default trial counts.
+
+### The measurement the change was made for
+
+`bench_wounds.py` (new this session — the meter for the two feel knobs): the
+reference duo of `bench_bestiary` against one at-level room, and against a
+whole generated job (1-3 rooms, camps between), L1-5, 2000 / 1000 trials a
+level (the bench's default is 1000 / 1000). Read on the surviving heroes of WON fights and
+CLEARED jobs — what the sheet shows the player.
+
+| | one room, old | one room, new | whole job, old | whole job, new |
+|---|---|---|---|---|
+| records per surviving hero, L1 / L2 / L3 / L4 / L5 | 0.23 / 0.23 / 0.40 / 0.34 / 0.44 | **0.06 / 0.10 / 0.16 / 0.15 / 0.19** | 0.31 / 0.41 / 0.48 / 0.46 / 0.48 | **0.08 / 0.16 / 0.17 / 0.17 / 0.19** |
+| heroes carrying 2+ records | 2-10% | **0%** | 6-12% | **0%** |
+| fights/jobs leaving 2+ on one hero | 4-17% | **0%** | 11-20% | **0-1%** |
+| wound LOAD per surviving hero, L1 / L2 / L3 / L4 / L5 | 0.33 / 0.37 / 0.69 / 0.59 / 0.80 | **0.21 / 0.35 / 0.64 / 0.57 / 0.75** | 0.46 / 0.66 / 0.79 / 0.81 / 0.86 | **0.30 / 0.62 / 0.68 / 0.71 / 0.86** |
+
+Records fell to a quarter-to-half and nobody carries two; the load — the
+ceiling dock and the bed-nights, the thing the designer asked to keep —
+holds within 2-7 points of the old table per room from L2 up and within
+3-14 points per job. **Level 1 is the exception on purpose:** it carries a
+third less, because L1 hits are mostly the 2-HP tier that no longer records
+— that tier WAS the catalogue.
+
+Under the old table 42% of records were wound-tier cuts (severity 1, a
+line each), 32% grievous, 26% opened straight at severity 3 with the most
+gruesome names. "A shallow cut along the ribs" was the commonest record at
+every level and "a deep gash across the back" the second at L2-4.
+
+**The load cap was fitted, not guessed.** At 6 (the first try) two blows
+saturated it and the job load came in 9-20% under the old table's at L2-5
+(0.60 / 0.67 / 0.68 / 0.69 against 0.66 / 0.79 / 0.81 / 0.86); at 8 it is
+the row above. Crippling at 5 with the cap at 8 was tried too and bought
+nothing (0.65 / 0.68 / 0.65 / 0.78) — the crippling record already sits at
+the floor of a low-band pool.
+
+### The bestiary: within noise, drifting up a point
+
+At the annotated level, 2000 trials a column, all 28 rows: **mean +0.9 win
+points**, range −1.0 (Pyromancer) to +3.9 (Wight). The rows that moved most
+are the ones where a wound-tier record used to land its −1 mid-fight and
+carry into the rest of the exchange: Wight +3.9, Blademaster +2.8, Bruiser
++2.6, Cutthroat +2.3, Ghoul +2.0. Nothing moved more than 4 and the
+2026-07-26 baseline called ±3 "within noise". No `level` annotation touched.
+
+### Generated content: a small, consistent give
+
+300 trials a cell, the same seeds. Mean delta over the 20 levels:
+
+| | win/clear −2 | at level | +2 | wipe@L | down@L |
+|---|---|---|---|---|---|
+| ENCOUNTERS (one room) | −0.0 | **+1.1** | +0.3 | −1.4 | −2.4 |
+| JOBS (1-3 rooms) | +1.5 | **+2.1** | +2.7 | −2.1 | −2.4 |
+
+At-level jobs now clear **63-88%** (was 55-85%); the L8-9 pocket is still
+the deepest (63.7 / 63.3).
+
+### The fixtures and the career: the level-1 band got easier
+
+`tune.py`, the barrow sweep (a fresh L1 duo, three rooms, camps between,
+20000 trials a layout):
+
+| layout | clear old → new | wipe old → new |
+|---|---|---|
+| [2,2,3] | 61.0 → **68.0** | 26.0 → 19.9 |
+| [3,3,3] | 40.5 → **49.1** | 41.8 → 34.6 |
+| [3,3,4] (the set barrow) | 27.4 → **35.0** | 51.1 → 43.7 |
+| [3,4,5] | 11.2 → **15.7** | 64.9 → 57.7 |
+
+The rank-0 resource-pressure check: hideout **57.8 clear / 12.4 wipe** (was
+52.4 / 19.2 — back inside the designer's 55-65 band, for what a dev fixture
+is worth), barrow **36.0 / 42.6** (was 27.9 / 50.7). The RECKLESS baseline
+still mostly dies — hideout 71.2% wipe (74.5), barrow 99.7% (99.6) — so the
+resources are still being forced, not decorating. The walk-away HP-lost
+spread on cleared runs is unchanged (hideout 16.7 / 46.4 / 28.7 / 8.3 by
+band against 14.3 / 44.2 / 32.2 / 9.3): "low on HP" is still a state you
+play in.
+
+**Careers** (200 a run): reach **L5 91% / L8 77% / L11 39% / L14 16% / L17
+8% / L20 1%** against the same-tree baseline's **82 / 66 / 34 / 9 / 4 / 2**;
+the dead's median level **9 → 9**, but its tenth percentile **1 → 5**. Read
+against the slice-3b acceptance numbers (76 / 62 / 32 / 10 / 5 / 1.2, death
+L8) the curve moved toward slice 2's inflated reading (89 / 72 / 47 / 16 / 9
+/ 4.2). Turn-in bands 41 / 50 / 7 / 2 (was 42 / 50 / 6 / 2), defeat mercies
+0.90 a career (was 0.94). The capped-career day count (138, was 87) is 2-3
+careers out of 200 and not a number.
+
+**This is the one place the rebalance did not hold the mechanics, and it is
+where the designer plays.** The slow-channel COST held (the load table
+above); what went was the small records' stacked −1 stat penalties inside
+the fight and across a job's rooms — one major injury carries one penalty,
+which is what was asked for. The give is 1-2 points a fight, 7 points on
+the three-room L1 fixture, ~10 points of reach at L5-8.
+
+### The declared dial for this, tried and rejected
+
+develop.md's dial #1, `HERO_PAIN` 3 → 2, run on a copy of the new tree:
+
+| | base | new (pain 3) | new at pain 2 |
+|---|---|---|---|
+| bestiary, mean delta vs base | — | +0.9 | **−3.6** (Warlord −17.6, Blademaster −15.1, Champion −9.0, Veteran −6.4, Wight −5.8) |
+| jobs clear@L, mean delta | — | +2.1 | **−3.5** |
+| careers reach L5 / L8 / L11 / L14 | 82 / 66 / 34 / 9 | 91 / 77 / 39 / 16 | **83 / 58 / 20 / 4** |
+| the dead, median (p10-p90) | 9 (1-13) | 9 (5-15) | 8 (2-12) |
+
+The divisor scales with HP lost, so it bites hardest in the long deep-pool
+fights of the high band and barely at all in the L1-4 band where the give
+sits: it overshoots the career and guts the top rows. **Not pulled.** If
+the early band wants its pressure back the shape that fits is a penalty
+that deepens with the one record's severity (designlog); the felt game is
+the meter.
+
+### The controls
+
+`bench_training` — the ladder still climbs and converges at rank 3;
+ranks 0-1 carry the L1 fixture's give: barrow **34.6 / 69.1 / 89.2 / 96.9**
+(was 27.4 / 59.8 / 86.1 / 96.1), hideout **59.1 / 75.7 / 86.4 / 93.5** (was
+52.4 / 73.3 / 86.5 / 92.6). `bench_weapons` — the zweihander still tops
+every swarm cell and no weapon tops every cell; two near-tied DUEL cells
+flipped: steady's best duel is now the wooden staff (92.2 over the
+schweizersäbel's 90.1; was 89.9 / 89.0 the other way) and balanced's the
+zweihander (97.6 over 97.3; was 96.8 / 98.0). Duel cells rose 0-4 points
+across the board — the long 1v1 is where a wound-tier record used to land
+its −1 mid-fight. `bench_ranged` — longbow **94.5 / 76.0 / 84.2** by field
+(was 92.1 / 76.2 / 85.7): field 0 (the switched melee grip) rose 2-7 points
+on every card for the same reason, fields 2-3 are within noise, the sling
+is still the floor, the schweizersäbel 97.3 at every field (98.0). The
+shape holds: reach is an edge that grows with the field and dies at the
+door. `bench_abilities` — the equal-cost matrix keeps every verdict: L8
+site row pools **10.5** against a median of **45.4**, training **60.2**,
+weapon **59.8** (was 7.0 / 40.4 / 50.5 / 57.2); all-in pools is still the
+trap, training and weapon still top the row; the warrior moves still pay
+(L4 room 90.8 → 97.5, duel 89.0 → 99.2), disarm still beats telekinesis
+rank 1 (93.5 vs 82.0), the alchemist is still a support career (mixed
+51.2 / 27.5 / 44.5 against two fighters' 76.2 / 52.5 / 73.5). The utility
+odds are exact and unmoved.
+
+**Tuning verdict:** the accrual table, the cap and the salve are the
+change; nothing else was touched. `WOUND_TIER_SEVERITY` (3 / 4) and
+`WOUND_SEVERITY_MAX` (8) are recorded in develop.md's tuning section as the
+feel pair with their fit above.

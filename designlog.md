@@ -7198,3 +7198,104 @@ the spec companions) keep their original wording throughout, per the
 project's own convention — with one exception: the (N) entry's "Four
 cards" miscount was corrected in place, a wrong count in the record rather
 than a superseded fact.
+
+## 2026-09-03 — One wound, not a catalogue: the wound rebalance
+
+A short tuning session from a played complaint. The designer's note, in
+substance: any fight reliably leaves two or three serious-sounding injuries
+on a hero, which reads grotesque and unrealistic; one of the authored names
+puts a wound on the back of a character who is facing the foe; and the ask
+is to rebalance so that wounds are **rarer but take longer to heal** — the
+mechanical effect about the same, but ONE major injury carried instead of a
+catalogue — and/or to make the names less serious-sounding.
+
+**What the measurement said first.** Against the reference duo in the
+played band (L1-5), one at-level room left 0.23-0.44 named records per
+surviving hero and a whole cleared job 0.31-0.48, with 11-20% of cleared
+jobs leaving two or more on one hero. Fewer than the table experience, but
+the shape of the complaint was exact: **42% of records were the 2-HP wound
+tier**, severity-1 cuts with their own line each ("a shallow cut along the
+ribs" was the commonest record at every level and "a deep gash across the
+back" the second), and **26% opened straight at severity 3** with the
+table's most gruesome names — "a shattered arm", "two fingers gone", "a
+caved-in chest", "a belly opened and packed". A played party carries its
+records across the day's fights and for the nights a bed takes, so the
+sheet showed the catalogue for days.
+
+**Three rules replaced the 2026-07-26 accrual table** (rules.md's Wounds &
+Recovery add-on gained a "One wound, not a catalogue" section):
+
+1. **The slow channel starts at the grievous tier.** A graze and a solid
+   wound record nothing. Grievous leaves severity 3, crippling severity 4
+   (was 2 and 3, with the wound tier at 1). Fewer records, each heavier —
+   the designer's "rarer but longer" literally.
+2. **A body carries ONE wound.** `add_wound` deepens the single
+   non-permanent record on every wounding blow (severities add, capped at
+   8) and the WORST blow names it: a deeper grade moves the record to the
+   new blow's location, name and penalty; an equal or lighter blow only
+   adds load. Maimings stay separate — a permanent record is a fact about
+   the body, kept per limb beside the wound, and `maim` is now the one
+   constructor for both the crippling limb blow and the beasts' mercy.
+3. **Names read off a GRADE, not the severity, and never step down.** The
+   record carries `grade` (1 a beating, 2 grievous, 3 crippling); the name
+   and the stat penalty read off it; severity is the convalescence. "A
+   broken leg (sev 1)" is a broken leg nearly mended. The old behaviour —
+   a broken leg knitting into "a deep wound in the thigh" and then "a gash
+   above the knee" — was the fiction changing under the player's feet.
+
+**The names were rewritten in the same pass** to writing.md's field-surgeon
+register with a new bar: an injury the fiction can carry for a week and
+then close. Nothing opened, nothing gone, nothing caved in, nothing on the
+back. Grade 2 is a deep cut ("a deep wound in the thigh", "a cracked rib",
+"a cut across the belly"), grade 3 a break ("a broken leg", "broken ribs",
+"a cracked skull", "an eye swollen shut"). The maiming table is where the
+permanent facts live and it did not change.
+
+**The calls the ask left open, and how they were settled:**
+
+- **Whether the wound tier should still DEEPEN an existing record without
+  opening one.** Rejected: a rule that reads "a solid wound records nothing
+  unless you are already wounded" is two rules, and the cleaner one holds
+  the load on its own.
+- **The load cap.** Benched at 6 first (two blows saturated it): a cleared
+  job's load per hero came in 9-20% under the old table's at L2-5. At 8 it
+  holds within a few points (benchlog). Level 1 carries about a third less
+  either way, because L1 hits are mostly the 2-HP tier — which is the
+  complaint, not a regression. Crippling at 5 was also tried and bought
+  nothing the cap did not.
+- **The salve.** At 1 severity it closed a cut outright; against a table
+  that starts at 3 it would have been a bandage. It is now 2 severity, and
+  it still dresses the wound — the healer's rate (20s a severity) in a jar,
+  with no day spent and no tier gate. What silver buys is carrying it.
+- **The elixir** is pinned to the load cap so "clears one wound of any kind
+  outright" stays literally true at severity 8.
+- **The morale drain** counts untended RECORDS, so with one record it is at
+  most −1 a night per companion (it was −2 or −3 with a catalogue). Kept:
+  the convalescence lasts as long as it did, and the drain runs for all of
+  it.
+- **`HERO_PAIN` stays at 3 — and this was measured, not assumed.** The
+  one number the rebalance did NOT hold is the career curve: with the small
+  records' stacked −1 stat penalties gone, the reference duo reaches L8 in
+  77% of careers against the baseline's 66% and the tenth-percentile death
+  level moved from 1 to 5 — the early game the designer actually plays got
+  easier. develop.md's dial #1 for exactly this, `HERO_PAIN` back to 2,
+  was tried on a copy of the tree and rejected: it takes the bestiary down
+  3.6 points on average with the deep-pool high band collapsing (Warlord
+  −17.6, Blademaster −15.1, Wight −5.8) and pushes reach-L8 to 58%, under
+  the baseline. The spiral penalty scales with HP lost, so the divisor
+  bites hardest in the long high-level fights, not in the L1-4 band where
+  the give sits. The give is flagged in benchlog 2026-09-03 and left for
+  the designer: if the early band wants its pressure back, a penalty that
+  deepens with the ONE record's severity (a severity-6 broken leg costing
+  DEX −2) would put it where the stacked cuts used to, without touching
+  the divisor. Not built — the ask was a tweak to the feel, and the felt
+  game is the meter for whether the curve moved too far.
+
+**Where it landed** (the measurement is in benchlog 2026-09-03): records per
+surviving hero per cleared job 0.08-0.17 (was 0.31-0.48), two-or-more on one
+hero 0-1% of cleared jobs (was 11-20%), and the load per hero within a few
+points of the old table from L2 up. `test_wounds.py` was rewritten for the
+new contract (78 tests, from 59); the measurement harness shipped as
+`bench_wounds.py`, the meter for the two new knobs; rules.md, dm.md,
+writing.md and develop.md carry the rules, the table manner, the naming bar
+and the code pointers.

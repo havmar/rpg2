@@ -183,7 +183,7 @@ class FateBargain(unittest.TestCase):
         pc = hero("PC")
         companion = hero("Companion")
         pc.protagonist = True
-        rpg.add_wound(pc, "arm", 2)
+        rpg.add_wound(pc, "arm", 3, 2)
         wounds_before = [(w.location, w.severity) for w in pc.wounds]
         pc.cur_sta = 1
         pc.cur_power = 2
