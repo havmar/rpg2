@@ -1213,16 +1213,21 @@ a pointer: what the file is, how it's run, where its docs are.
   in the catalog carries a rider), and the save round-trip including a
   pre-slice save with no `conditions` key.
   `python -m unittest -v test_conditions.py`.
-- `test_wounds.py` — the WOUND system contract suite (2026-07-26, slice 3b):
-  the location table and its 15% vital fraction, the accrual table (and the
-  graze that deliberately records nothing), the bounded deepening, the
-  maiming rule and its one condition, the asymmetry (heroes record, foes
-  never do — including the assertion that a foe costs no rng call), the HP
-  ceiling and its half-pool floor, the stat fold's idempotence and its
-  floor, every rung of the treatment ladder and what each can and cannot
-  reach, the bleed re-derivation, the morale drain, the save round-trip
-  (including a pre-slice save with no `wounds` key), and the 40-column fit
-  of every authored wound name.
+- `test_wounds.py` — the WOUND system contract suite (2026-07-26, slice 3b;
+  reworked 2026-09-03 for the one-wound table): the location table and its
+  15% vital fraction, the accrual table (and the graze AND the 2-HP wound
+  tier that deliberately record nothing), the ONE-RECORD rule (a second blow
+  deepens, the deeper blow renames and moves the penalty, an equal one does
+  not, the fall deepens without renaming, the name never steps down as it
+  knits, the load cap), the maiming rule and its one condition, the
+  asymmetry (heroes record, foes never do — including the assertion that a
+  foe costs no rng call), the HP ceiling and its half-pool floor, the stat
+  fold's idempotence and its floor, every rung of the treatment ladder and
+  what each can and cannot reach (the salve as two severity at the healer's
+  rate), the bleed re-derivation and its move with the record, the morale
+  drain, the save round-trip (grade included), a played fight never leaving
+  two wounds on a hero, the no-wound-on-the-back rule, and the 40-column fit
+  of every authored name.
   `python -m unittest -v test_wounds.py`.
 - `test_mercy.py` — the DEFEAT / FEROCITY / FATE contract suite
   (2026-07-26, slice 4): catalog bands and 40-column tags; humanoid spoils,
@@ -1310,7 +1315,8 @@ a pointer: what the file is, how it's run, where its docs are.
   `_attack` and the maiming rule, the treatment ladder's `heal_wounds` /
   `healer_service` / the salve and elixir tiers, `wound_morale`, and
   **`HERO_PAIN` 2 -> 3, the budget shift** — rules.md's Wounds & Recovery
-  add-on), DEFEAT WITHOUT DEATH (2026-07-26, slice 4:
+  add-on; since 2026-09-03 ONE record a body, accrual from the grievous
+  tier, `Wound.grade` and `maim`), DEFEAT WITHOUT DEATH (2026-07-26, slice 4:
   `Entity.mercy_level` / `ferocity` / `withdrew` / `fate_paid`,
   `party_defeated`,
   `apply_defeat_mercy`, reverse retreat through `attempt_foe_retreat`, and
@@ -2757,25 +2763,40 @@ mechanic *does* and *why* is rules.md's job.
   because the bench's reference duo rolls fire wizards. It is a one-line
   addition for the magic content pass, with its own bench round.
 - **Wounds & recovery** (2026-07-26, the attrition rework's slice 3b —
-  rules.md's Wounds & Recovery add-on) — `rpg.py`: the wounds constants
+  rules.md's Wounds & Recovery add-on; **2026-09-03: one wound, not a
+  catalogue**, its "One wound" section) — `rpg.py`: the wounds constants
   block just under the conditions one (`WOUND_LOCATION_WEIGHTS` /
   `WOUND_VITALS` / `WOUND_LIMBS`, `WOUND_TIER_SEVERITY` /
-  `WOUND_DOWN_SEVERITY` / `WOUND_SEVERITY_MAX`, `WOUND_PENALTIES` /
-  `WOUND_SEVERE_EXTRA` / `WOUND_BLEED`, `WOUND_STAT_FLOOR` /
-  `WOUND_HP_FLOOR_DIV`, the authored `WOUND_NAMES` / `WOUND_MAIM_NAMES`,
-  the treatment ladder's `BED_SEVERITY_PER_NIGHT` / `HEALER_*` / `SALVE_*` /
-  `ELIXIR_SEVERITY`, `SAT_WOUNDED_DAY` / `SAT_MAIMED`, and
+  `WOUND_TIER_GRADE` (grievous 3 at grade 2, crippling 4 at grade 3 — the
+  graze and the 2-HP wound tier are absent on purpose: they record
+  nothing), `WOUND_DOWN_SEVERITY` / `WOUND_DOWN_GRADE`,
+  `WOUND_SEVERITY_MAX` (8: the ONE record's load cap), `WOUND_PENALTIES` /
+  `WOUND_SEVERE_EXTRA` (keyed on grade 3) / `WOUND_BLEED`,
+  `WOUND_STAT_FLOOR` / `WOUND_HP_FLOOR_DIV`, the authored `WOUND_NAMES`
+  (indexed [location][grade]; grade 1 exists only for the unlocated
+  beating) / `WOUND_MAIM_NAMES`, the treatment ladder's
+  `BED_SEVERITY_PER_NIGHT` / `HEALER_*` / `SALVE_*` (`SALVE_SEVERITY` 2 —
+  the healer's rate in a jar) / `ELIXIR_SEVERITY` (= the load cap: one
+  wound of any kind outright), `SAT_WOUNDED_DAY` / `SAT_MAIMED`, and
   `HP_STATE_BANDS`); **`HERO_PAIN` 2 -> 3 is the budget shift** and sits
   where it always did, in the hero-generation block. The `Wound` dataclass
-  beside `Condition`; `Entity.wounds` / `records_wounds` /
+  beside `Condition` (`severity` is the load, `grade` the depth of the
+  worst blow behind it); `Entity.wounds` / `records_wounds` /
   `wound_stat_pen` and the properties `wound_load` / `hp_ceiling` /
   `maimed` / `hp_state`. The API block between the conditions helpers and
   the melee: `_sync_wound_stats` (the stat fold — the `str_buff` pattern
   run backwards, which is why no read site needs a wound special case),
-  `roll_wound_location`, `wound_name` / `wound_penalty_for`, `add_wound`,
-  `record_hit_wound` (the accrual hook and the MAIMING rule),
+  `roll_wound_location`, `wound_name` / `wound_penalty_for` (both read the
+  grade), `add_wound` (the ONE-RECORD rule: a body's single non-permanent
+  record is deepened by every wounding blow, the deeper grade moves it to
+  the new blow's location, name and penalty, an equal or lighter one only
+  adds load; permanents are kept per limb beside it), `maim` (the one
+  maiming constructor, shared by the crippling limb blow and the beasts'
+  mercy), `record_hit_wound` (the accrual hook and the MAIMING rule),
   `note_beaten` / `go_down`, `refresh_wound_bleed`, `heal_wounds` (the ONE
-  treatment primitive every rung calls), `wound_tags` / `untreated_wounds`.
+  treatment primitive every rung calls; it no longer renames what it
+  knits — the name is the worst blow's until the record closes),
+  `wound_tags` / `untreated_wounds`.
   Accrual is called from the END of `_attack`, deliberately after the
   death branch — that is where a crippling limb blow commutes a kill into
   a maiming. **`go_down` replaced every bare `down = True`** so no future
@@ -3360,7 +3381,16 @@ a crippling blow reads as death rather than as a maiming, so it is a
 whole design gates recovery on rate and access precisely so that the
 magnitudes never have to be re-tuned against an inflating economy.
 `WOUND_HP_FLOOR_DIV` is **not** a dial — the half-pool floor is the
-anti-death-spiral guarantee.
+anti-death-spiral guarantee. **The one-wound table (2026-09-03) adds a
+fourth pair that is about FEEL, not difficulty:** `WOUND_TIER_SEVERITY`
+(grievous 3 / crippling 4, with the 2-HP tier absent) and
+`WOUND_SEVERITY_MAX` (8). Together they set how much load one fight files
+and how long one record can get; they were fitted so a cleared job's load
+per hero holds within a few points of the 2026-07-26 table's from level 2
+up (benchlog 2026-09-03 — the cap was benched at 6 first and came in 9-20%
+light). Re-adding the wound tier, or a cap under 8, is the "catalogue"
+coming back or the load going soft; move the treatment rate instead if
+the convalescence itself is the complaint.
 **Always re-run `tune.py`, `bench_training.py`, `bench_weapons.py`,
 `bench_ranged.py`, `bench_bestiary.py`, `bench_abilities.py`, and
 `bench_quests.py` after touching any of these** — small changes swing

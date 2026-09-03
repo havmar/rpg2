@@ -1337,7 +1337,8 @@ than the fights WITHOUT pages of narration:
   (`tavern`), **spending a day with the healer** (`healer` -- the wound
   answer: a flat fee per severity, capped by the settlement's size, and it
   costs the day), buying potions, weapons, or meds (`buy` -- including the
-  **surgeon's salve**, which closes one wound outright), **who to hire and
+  **surgeon's salve**, which knits two severity off a wound and dresses
+  it), **who to hire and
   whether to hire at all** (`hire`), **who to let go** (`dismiss`),
   spending a day on companion morale (`downtime`), **spending the PC's
   skill points** (`train HERO combat|weapon|hp|sta|power|SPELL` and
@@ -1369,7 +1370,7 @@ than the fights WITHOUT pages of narration:
     **wound ceiling**, and a night in the wilds knits no wound severity at
     all. So a party carrying wounds camps to its ceiling and then STOPS
     getting better out there -- more camping only spends days. When the
-    tally shows a wound list, the next decision is a PLACE, not another
+    tally shows a wound, the next decision is a PLACE, not another
     night: a settlement bed (1 severity a night, free), the `healer` (a day
     and a flat fee, capped by the settlement's size), or a salve. Say that
     in one line and hand the turn back; don't auto-loop nights that cannot
@@ -1720,21 +1721,26 @@ than the fights WITHOUT pages of narration:
   A `tavern` night (settlements, 1s/head) is a long rest plus a one-day
   +10% HP/STA overcharge above max; a wilds `camp` risks a ~10% night
   visitor PER NIGHT (see The wilds above).
-- **WOUNDS -- the slow injury channel.** A landed blow above a graze leaves
-  a NAMED LOCATED record on a hero ("a gut wound, still seeping"): it docks
-  the HP ceiling by its severity, carries a stat penalty, and a night in
-  the wilds does nothing for it. Read the wound list off the tally and
-  NARRATE FROM IT -- that list is the whole point of the system, and it is
-  what lets you refer back to an injury sessions later ("the arm still
-  doesn't come up clean"). Two things to know at the table: a crippling
-  blow that would KILL but lands on a limb **maims** instead (permanent,
-  Down not dead -- a real story beat, give it its moment), and wounds NEVER
+- **WOUNDS -- the slow injury channel.** A GRIEVOUS blow or worse leaves
+  ONE named located record on a hero ("a deep wound in the thigh (sev 3)"):
+  it docks the HP ceiling by its severity, carries a stat penalty, and a
+  night in the wilds does nothing for it. Grazes and 2-HP hits are blood
+  and leave nothing. A hero carries ONE wound (2026-09-03): a further blow
+  deepens it and the worst blow names it -- "a broken leg (sev 6)" is the
+  leg and everything else the fight did, and the number is the nights it
+  will take. The name does not change as it heals; sev 1 is nearly mended.
+  Read the wound off the tally and NARRATE FROM IT -- that line is the
+  whole point of the system, and it is what lets you refer back to an
+  injury sessions later ("the leg still doesn't take the weight"). Two
+  things to know at the table: a crippling blow that would KILL but lands
+  on a limb **maims** instead (permanent, Down not dead -- a real story
+  beat, give it its moment; it sits beside the wound), and wounds NEVER
   take anyone below half their pool. The treatment options, in order: a
   settlement bed (1 severity a night), the `healer` (a day, a flat fee,
   capped by the settlement's size -- village 2, town 4, capital everything
-  short of a maiming), a **surgeon's salve** (closes one outright; shops
-  and alchemy rank 3), and for a maiming only high magic -- the rank-3
-  healing spell or an authored elixir. Foes take wounds in the FICTION and
+  short of a maiming), a **surgeon's salve** (knits 2 severity and dresses
+  the wound; shops and alchemy rank 3), and for a maiming only high magic
+  -- the rank-3 healing spell or an authored elixir. Foes take wounds in the FICTION and
   nowhere else: narrate a broken foe arm freely, never track one.
 - **HP reads as a WORD in play, not a number.** The tally and the fight
   displays print Unhurt / Scratched / Bloodied / Reeling / Failing, banded

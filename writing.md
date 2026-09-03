@@ -251,17 +251,20 @@ modifier: rust blade, ember hound, glass key, tollhouse ghost. Stack modifiers
 only when each one matters in play.
 
 For a **wound** (`rpg.WOUND_NAMES` / `WOUND_MAIM_NAMES`), name the
-injury the way a field surgeon would write it down: **body part, what was done
-to it, and its current state**, in that order, with no adjective of feeling. "A
-gut wound, still seeping" and "two fingers gone" are the register; "a searing
-agony in his side" and "a wound that would trouble him for years" are not. The
-name is a durable game object — it is printed on the sheet for as long as the
-wound lasts, and it is what lets the DM refer back to an injury sessions later
-— so it must stay true after fifty readings and must fit the 40-column
-display. A **maiming** loses the clinical detail and becomes a plain fact about
-the body: "a blind eye", "a withered arm". Severity 1 is a cut, severity 3 is a
-thing the character now lives with; say which without reaching for intensity
-words.
+injury the way a field surgeon would write it down: **body part and what was
+done to it**, in that order, with no adjective of feeling and no state word
+that tomorrow makes false. "A deep wound in the thigh" and "a broken arm" are
+the register; "a searing agony in his side", "a wound that would trouble him
+for years" and "a gut wound, still seeping" are not. The name is a durable
+game object — since 2026-09-03 a hero carries ONE, it is printed on the sheet
+unchanged for as long as the wound lasts, and it is what lets the DM refer
+back to an injury sessions later — so it must stay true after fifty readings,
+at severity 6 and at severity 1, and must fit the 40-column display. It must
+also be an injury the fiction can carry for a week and then close: nothing
+opened, nothing gone, nothing caved in, and nothing on the back — a fighter
+faces the foe. A **maiming** is where the permanent facts live, and it loses
+the clinical detail: "a blind eye", "a withered arm". Grade 2 is a deep cut,
+grade 3 a break; say which without reaching for intensity words.
 
 ## The nine name sounds (the standing brief, 2026-08-22)
 

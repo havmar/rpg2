@@ -92,7 +92,7 @@ from rpg import (
     Wound, wound_tags, wound_morale, healer_service as _healer_service,
     DISEASE_KINDS, DISEASE_FEE, DISEASE_REACH, CONDITION_TAG, treat_disease,
     marked_up,
-    HEALER_FEE, HEALER_TIER_CAP, HEALER_DAYS, SALVE_PRICE,
+    HEALER_FEE, HEALER_TIER_CAP, HEALER_DAYS, SALVE_PRICE, SALVE_SEVERITY,
     SHOP_POTION_KINDS, BED_SEVERITY_PER_NIGHT,
     POTION_PRICE,
     ENCOUNTER_XP, TRAINING_MAX, PROFICIENCY_MAX, LEVEL_CAP,
@@ -6807,8 +6807,8 @@ def cmd_prices(args: argparse.Namespace) -> None:
         print("  (the sheet below is what that comes to at the counter)")
     print("-- SHOP PRICES (silver) --")
     print(f"potion (healing or stamina): {marked_up(POTION_PRICE, goods)}s")
-    print(f"surgeon's salve (closes one wound): "
-          f"{marked_up(SALVE_PRICE, goods)}s")
+    print(f"surgeon's salve (knits {SALVE_SEVERITY} severity, dresses the "
+          f"wound): {marked_up(SALVE_PRICE, goods)}s")
     print(f"healer's day: {marked_up(HEALER_FEE, fee)}s per severity, "
           f"{HEALER_DAYS} day -- reach by settlement:")
     reaches: dict[str, list[str]] = {}

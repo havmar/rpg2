@@ -468,7 +468,7 @@ class Pursue(unittest.TestCase):
     def test_blood_on_the_ground_helps_the_trackers(self):
         runner = foe("wolf")
         runner.wounds = [rpg.Wound(location="flank", name="a torn flank",
-                                   severity=2)]
+                                   severity=2, grade=2)]
         log: list[str] = []
         with mock.patch("random.Random.randint", return_value=1):
             rpg.track_contest([hero("T")], [runner], random.Random(1), log)
