@@ -3032,6 +3032,14 @@ whole of what a country is now:
 - **Nothing forks on either.** A homeland selects names and content
   routing; it never changes a statistic. All nine use one calibrated
   combat ladder.
+- **The table above is the painted world, and since 2026-09-12 it is not
+  the whole one.** Two more lands stand on it: Concordia and Saturna, the
+  two one-tile gate city states, each with a culture of its own and each
+  cut out of one of the nine wherever the gate roll put it. They are
+  countries in every way the machinery cares about; where "the nine" is
+  said below it means the nine the overlay PAINTS -- the answer keys, the
+  pinned censuses, the birth roll and the campaign's opening. The Heaven &
+  Hell add-on, part 4 is what they are.
 - The era anchor is **about 1500 without the age of exploration**: silk in
   from the east, spice through the southern entrepot, silver caravans from
   beyond the desert, the wool-cloth axis in the west. Higher technology is
@@ -3185,7 +3193,9 @@ materialize lazily.
   Seraptania 23, Teutonia 28, Thule 37, Vellisclavia 60, Byzantium 51,
   Andalusia 9, Umaia 68 and Tergal 25 Tiles (the Iberia split of
   2026-08-22 moved the peninsula's southern eight from Andalusia to
-  Umaia). A SEA Tile takes the country
+  Umaia), each MINUS the one tile a gate city took out of it since
+  2026-09-12 -- the census is the authored picture and the takeover is not
+  a repaint of it. A SEA Tile takes the country
   of the nearest land Tile, ties settled north-then-west; nothing about
   the water is painted. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
@@ -3830,7 +3840,8 @@ doorstep, not a railroad.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Homeland**: one of the nine countries. It selects a human name pool,
+- **Homeland**: one of the nine PAINTED countries -- nobody is born in
+  either gate city state. It selects a human name pool,
   the tongues the person speaks (below)
   and supplies cultural context only; every homeland uses the same fixed stat
   floors, ceilings and trait tables.
@@ -6200,3 +6211,108 @@ hiring page shows everything, the way it shows a quest's level.
 A fire-born's SPEAKS row carries the **Old Tongue** behind Latin and his
 homeland's tongue. He grew up hearing it; it is still true that nothing in
 the engine checks a tongue (dm.md, "The tongues at the table").
+
+---
+
+# Heaven & Hell — Add-on, part 4 (2026-09-12, the gates arc's session 4)
+
+Parts 1-3 put two dead cities on the map, a sentinel at the bottom of each
+and the half-blood in the party. This part is the two LIVE gates: the
+colonies Heaven and Hell built when the doors reopened twenty-seven years
+ago. They are now countries — **the world is eleven lands, not nine** —
+and this is what that means at the table.
+
+## A country of one tile
+
+**Concordia** (Heaven's) and **Saturna** (Hell's) are states of exactly
+one map tile each, cut out of the country the roll put them in. The tile
+changes hands whole: it flies the city's flag, the country it came out of
+is a tile smaller, and the countryside on that tile belongs to the city
+state too. What does NOT change is the ground. Climate, terrain, last
+year's harvest, the goods the tile produces and the fields' own character
+are exactly what the donor's countryside was — a wall round a plain does
+not move the plain, so Concordia's fields are still Seraptanian fields (or
+Umaian, or whoever's) and are farmed by the same people.
+
+Everything else a country has, they have: a land record, a culture of
+their own, a tongue (Heaven speaks Latin, Saturna the Old Tongue), a
+capital, name pools, a crown's title, a garrison commander, a card packet,
+a lore page, a wealth band and a place in the relations table. Two things
+they deliberately do not have:
+
+- **Nobody is born in one.** The birth roll — the PC's, a companion's, a
+  recruit's — is the NINE. The people of the gate came through the gate.
+  What a city state's name pool is for is the faces behind its counters:
+  the smith in Concordia is an angel and is named like one.
+- **No campaign opens in one.** The start is drawn from the human world.
+  The gates are somewhere the party walks to.
+
+The standing wars are not rolled over either of them, and no conquest
+system touches them yet. Taking land is a later arc.
+
+## The two cities
+
+Each city state seats exactly one settlement and it is its capital: the
+city itself, authored, chartered free, and **known from day one** — the
+map has heard of Concordia the way it has heard of Paris. There is no
+second village, no hamlet, no reserve of district names. A one-tile state
+is its city and its fields.
+
+**Concordia** is white walls laid out square on whatever open ground the
+roll gave it, with the gate standing in the middle of them. Its places are THE GATE (the approach, the ring, the
+gate), THE PREFECTURE (the court, the cells, the archive), THE INFIRMARY,
+THE SCHOOL OF MEASURES, THE MARKET OF LAMPS and THE CHOIR, beside the
+ordinary doors any city keeps — an inn, a forge, a shop, an apothecary.
+Its crown is the **PREFECT**, and its wall is held by a **warden of the
+gate**.
+
+**Saturna** is a wooden town thrown up round a hollow, smoke over it and a
+fire in every street. Its places are THE GATE (the descent, the ring, the
+gate), THE FEAST-HALL (the long table, the kitchens, the cellar), THE
+KENNELS, THE FIRE SCHOOL, THE WILD MARKET and THE DEBT-HOUSE, beside the
+same ordinary doors. Its crown is the **LORD OF MISRULE** (or the LADY),
+elected at the long table for a year and a day, and its wall is held by
+the **master of hounds**.
+
+## What they charge
+
+Each city prices its own counter, and the multiplier stands over whatever
+the ground and the world layer are already doing:
+
+| | healer | lodging | goods |
+|---|---|---|---|
+| Concordia | x0.6 | x0.8 | x1.2 |
+| Saturna | x1.3 | x0.5 | x0.9 |
+
+Concordia sells the cure and a clean bed cheaply and everything else dear:
+the infirmary heals what the temples cannot and the city takes its price
+somewhere. Saturna's bed is a place at the feast, which is free in every
+way that matters and costs something else; nobody in Saturna is in a hurry
+to heal you.
+
+## What they pay for
+
+The city is its country's capital and its only board, so it posts the full
+five ordinary slots over the whole ladder, its own culture's quest table
+plus the country-agnostic epics, and — like every board within three days
+of a ruin — the eight ruin jobs. Its own table is four rows a side, and
+every one of them lands **in the human countryside within three days'
+road**: a one-tile state's work is what it asks the neighbours to do,
+which is how a gate city is felt long before the player walks into it.
+
+- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *Bring the
+  Child Home* — the mother whose child went onto the register — and, as
+  its epic, *The Prefect's Levy*.
+- **Saturna** posts *Bring the Wine*, *Guard the Feast*, *Break the
+  Debt-House* and, as its epic, *The Hunt of Misrule*.
+
+The two epics are capital-only by construction rather than by a flag:
+there is no second board in either country to post them at.
+
+## On the map
+
+Both cities are drawn `G` in the settlement slot and both are in the map
+legend's GATES group, which now names them for what they are — *Concordia
+R18C26 (Heaven, city state in Umaia)*. Their permanent `gate-city` ring
+still stands on the tile and its land neighbours, with its patrols on the
+road; the ring is not a danger multiplier (part 1) and never was.

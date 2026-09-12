@@ -263,15 +263,22 @@ def sweep_gates(seeds: int) -> None:
     preferred: dict[str, int] = {key: 0 for key in places.GATE_KEYS}
     separations, capital_gaps = [], []
     tiles_seen: dict[str, set] = {key: set() for key in places.GATE_KEYS}
+    # The NINE painted capitals: the no-capital clause is about them, and
+    # since 2026-09-12 a city state's own capital is its rolled tile.
     capitals = [places.tile_row_column(tid)
-                for tid in places.CAPITAL_TILES.values()]
+                for tid in places.HISTORICAL_CAPITAL_TILES.values()]
     for _seed, world in worlds(seeds):
         placed = []
         for key in places.GATE_KEYS:
             spec = places.GATE_BY_KEY[key]
-            tile = world["tiles"][world["gates"][key]["tile"]]
-            assert tile["country"] in spec["lands"], key
-            lands[key][tile["country"]] += 1
+            record = world["gates"][key]
+            tile = world["tiles"][record["tile"]]
+            # A live city's tile flies its OWN flag after the takeover
+            # (2026-09-12, session 4), so the histogram counts the country
+            # it was cut out of -- which is what the eligibility rule says.
+            home = record.get("cut_from", tile["country"])
+            assert home in spec["lands"], key
+            lands[key][home] += 1
             cover = "" if tile["cover"] == "open" else f"/{tile['cover']}"
             terrain[key][tile["terrain"] + cover] += 1
             if spec["weight"](world, tile) > 1.0:

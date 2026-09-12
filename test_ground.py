@@ -177,7 +177,15 @@ class TheLandsPotential(unittest.TestCase):
         asserts their half."""
         rolled = set(places.TRADE_TAGS) | places.GATE_TAGS
         first, second = _world(1), _world(999)
+        # ...and so is a tile's COUNTRY on the two the gate cities took
+        # (2026-09-12, session 4): the takeover is the seed's business the
+        # same way the ring is.
+        ceded = {record["tile"] for world in (first, second)
+                 for record in world["gates"].values()
+                 if record["kind"] == "city"}
         for tid, tile in first["tiles"].items():
+            if tid in ceded:
+                continue
             other = second["tiles"][tid]
             ground = [tag for tag in tile["tags"] if tag not in rolled]
             theirs = [tag for tag in other["tags"] if tag not in rolled]
@@ -420,7 +428,7 @@ class TheDayRollReadsTheGround(unittest.TestCase):
     def test_a_land_the_party_is_not_in_reads_its_capital(self) -> None:
         self._stand("tile/r14/c14")                     # Rome
         self.assertEqual(worldsim.sky_tile(self.world, "phyrascia")["id"],
-                         places.CAPITAL_TILES["phyrascia"])
+                         places.capital_tile(self.world, "phyrascia"))
         self.assertEqual(worldsim.sky_tile(self.world, "byzantium")["id"],
                          "tile/r14/c14")
 
@@ -430,7 +438,7 @@ class TheDayRollReadsTheGround(unittest.TestCase):
                    and t["country"] == "byzantium")
         self._stand(sea["id"])
         self.assertEqual(worldsim.sky_tile(self.world, "byzantium")["id"],
-                         places.CAPITAL_TILES["byzantium"])
+                         places.capital_tile(self.world, "byzantium"))
 
     def test_the_roll_only_ever_says_a_legal_word(self) -> None:
         self._stand("tile/r17/c14")

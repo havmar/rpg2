@@ -141,10 +141,10 @@ import random
 
 import rulers                    # the politics rung's person half: the
                                  # weighted trait pool a crown is rolled off
-from places import (CAPITAL_TILES, CLIMATE_PROFILES, CULTURE_LANDS,
-                    CULTURE_OF, LAND_SPECS, add_state, clear_state,
-                    detail_wrap, land_id, stable_seed, tile_coordinate,
-                    tile_id, tile_label)
+from places import (CLIMATE_PROFILES, CULTURE_LANDS, HUMAN_COUNTRIES,
+                    CULTURE_OF, LAND_SPECS, add_state, capital_tile,
+                    clear_state, detail_wrap, land_id, stable_seed,
+                    tile_coordinate, tile_id, tile_label)
 from sites import (FOES,        # the encounter outlet's vocabulary: a card
                    GATE_SKINS, GATE_FEROCITY)   # ...and the gates' faces
                                  # that puts foes on a road names catalog rows
@@ -279,6 +279,11 @@ CRISIS_TENSION_ROLLS = 2        # ...and two when it opens in CRISIS, because
 # running out is simply what the mountain is now.
 
 STATE_WORDS = {                 # state id -> the readout's short phrase
+    # the two gate cities (2026-09-12, the gates arc's session 4 -- the STUB
+    # packets; section 11's full state list is session 5's)
+    "register-read": "the Pruners' list is out",
+    "feast-spilled": "the feast has spilled over the wall",
+    "gate-watched": "the other gate is watching this one",
     # the western culture
     "harvest-failed": "the harvest has failed",
     "bread-dear": "bread is expensive",
@@ -708,6 +713,11 @@ LIVE_KEY = {"crisis": "live", "weather": "weather_live",
 # runtime actually asks about, and it leaves ANY_LAND and a bare land key
 # alone.
 CULTURES = dict(CULTURE_LANDS)
+# THE NINE, written out as a card scope (2026-09-12, the gates arc's session
+# 4). `ANY_LAND` now reaches eleven, and two of them are one-tile city states
+# that no mine, no manor and no countryside belongs to. A card that is about
+# HUMAN ground says so with this.
+_HUMAN = tuple(HUMAN_COUNTRIES)
 
 
 def _expand(land: str | tuple[str, ...]) -> tuple[str, ...]:
@@ -1011,6 +1021,37 @@ _CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "no first among them at all: every fjord its own "
                      "jarl, and the law stops at the next headland"),
     ),
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Both
+    # packets are STUBS on purpose: the frame each one owes -- four
+    # constitutions, its tensions and their blocs, a card on each track, a
+    # standing fact -- authored off gates.md section 11's real content so
+    # session 5 extends them rather than replacing them.
+    "heaven": (
+        constitution("hierarchy", "THE HIERARCHY", 6,
+                     "ranks all the way up; the Prefect answers to the "
+                     "gate"),
+        constitution("mission", "THE MISSION", 2,
+                     "the Gardeners hold the city; the school and the "
+                     "infirmary come first"),
+        constitution("quarantine", "THE QUARANTINE", 1,
+                     "the Pruners hold the city; the gate is guarded from "
+                     "both sides"),
+        constitution("council-of-choirs", "THE COUNCIL OF CHOIRS", 1,
+                     "the choirs vote; the Prefect counts"),
+    ),
+    "hell": (
+        constitution("the-feast", "THE FEAST", 6,
+                     "a Lord of Misrule for a year and a day, elected at "
+                     "the long table"),
+        constitution("free-companies", "THE FREE COMPANIES", 2,
+                     "no lord; the captains hold the city between them"),
+        constitution("long-feast", "THE LONG FEAST", 1,
+                     "the Lord of Misrule did not step down; the Hunger "
+                     "holds the city"),
+        constitution("the-kennel", "THE KENNEL", 1,
+                     "the Master of Hounds rules; the feast is for the "
+                     "hounds"),
+    ),
 }
 
 # The blocs. Most are named by exactly one land's tensions; the shared ones
@@ -1058,6 +1099,19 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("missionaries", "the missionaries", face="wildcard"),
     faction("feud-house", "the house that struck first"),
     faction("rival-house", "the house that struck back"),
+    # -- the two gate cities (2026-09-12, the gates arc's session 4)
+    faction("gardeners", "the Gardeners"),
+    faction("pruners", "the Pruners"),
+    faction("prefect", "the Prefect", face="ruler"),
+    faction("bishops", "the host's bishops"),
+    faction("angels", "the angels of the city"),
+    faction("converts", "the converts", face="wildcard"),
+    faction("feast", "the Feast"),
+    faction("hunger", "the Hunger"),
+    faction("lord", "the Lord of Misrule", face="ruler"),
+    faction("captains", "the free companies' captains"),
+    faction("demons", "the demons of bargains", face="wildcard"),
+    faction("debtors", "the debtors"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
@@ -1128,12 +1182,39 @@ _TENSIONS: dict[str, tuple[dict, ...]] = {
                 "which face of the god rules the year",
                 factions=("penitents", "carnival")),
     ),
+    # The two gate cities (2026-09-12): the inner axis is STANDING on each
+    # side -- it is what the power IS, not what it happens to be arguing
+    # about this year -- and two rollable ones sit over it.
+    "heaven": (
+        tension("gardeners-vs-pruners",
+                "raise the world up, or make it clean",
+                factions=("gardeners", "pruners")),
+        tension("prefect-vs-church",
+                "the host's church against the Prefect",
+                factions=("prefect", "bishops")),
+        tension("angels-vs-converts",
+                "the gate's people against the city's",
+                factions=("angels", "converts")),
+    ),
+    "hell": (
+        tension("feast-vs-hunger",
+                "set them loose, or eat them",
+                factions=("feast", "hunger")),
+        tension("lord-vs-captains",
+                "the Lord against the free companies",
+                factions=("lord", "captains")),
+        tension("demons-vs-debtors",
+                "who owes whom a year",
+                factions=("demons", "debtors")),
+    ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
 # rollable pool. The western manor is the econ packet's oppression axis and
 # is simply what the land is.
 _STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
     "western": ("manor-vs-village",),
+    "heaven": ("gardeners-vs-pruners",),
+    "hell": ("feast-vs-hunger",),
 }
 
 # The authored tables are keyed by CULTURE (or by a single land where the
@@ -1219,6 +1300,31 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the grove priests have a pole up with a priest's name on it"),
     edge("norse", "feud-house", "kill", "rival-house",
          "the two houses are six men in and still counting"),
+    # the two gate cities (2026-09-12, the gates arc's session 4)
+    edge("heaven", "pruners", "list", "converts",
+         "the register names every half-blood in the city"),
+    edge("heaven", "gardeners", "heal", "converts",
+         "the infirmary takes anybody and asks afterwards"),
+    edge("heaven", "bishops", "preach-against", "angels",
+         "the host's pulpit calls the city's people a lie"),
+    edge("heaven", "prefect", "tax", "converts",
+         "the half-blood pays for the wall he lives behind"),
+    edge("heaven", "angels", "judge", "converts",
+         "the law applies to everybody equally, which is the trouble"),
+    edge("heaven", "converts", "petition", "prefect",
+         "the city's humans queue at the Prefecture every court day"),
+    edge("hell", "hunger", "own", "debtors",
+         "a year of a man's life, written in the debt-house"),
+    edge("hell", "feast", "free", "debtors",
+         "the Feast tears up what it can reach and drinks to it"),
+    edge("hell", "captains", "raid", "debtors",
+         "the free companies collect where the books say nothing"),
+    edge("hell", "lord", "pardon", "debtors",
+         "the Lord of Misrule cancels a year for the joke of it"),
+    edge("hell", "demons", "bargain", "debtors",
+         "the demons of bargains keep every promise they hate"),
+    edge("hell", "debtors", "petition", "lord",
+         "the long table hears anybody who can still stand"),
 )
 
 
@@ -1345,7 +1451,10 @@ def sky_tile(world: dict, polity: str) -> dict:
     tile = world["tiles"][world["party_tile"]]
     if tile["country"] == polity and tile["climate"] is not None:
         return tile
-    return world["tiles"][CAPITAL_TILES[polity]]
+    # WHERE THE CAPITAL IS is a per-world fact since 2026-09-12 (the gates
+    # arc's session 4): the nine take theirs off the authored answer key and
+    # the two city states off the gate roll, and both answer here.
+    return world["tiles"][capital_tile(world, polity)]
 
 
 def weather_phrase(climate: str, word: str,
@@ -1921,7 +2030,7 @@ CARDS = (
     # The rush CHAIN: the seam is found (a slot, so it outlives the card),
     # and the bust that follows admits on it, puts the slot back, and
     # settles the argument the find started.
-    card("mining/new-seam", "A new seam is found", ANY_LAND,
+    card("mining/new-seam", "A new seam is found", _HUMAN,
          wealth=("normal", "prosperous"), without=("claims-collide",),
          days=(15, 25),
          news="A new seam has been found in the hills. Two League "
@@ -1941,7 +2050,7 @@ CARDS = (
                               "claim went to the chapter with the most "
                               "men."),
              "pay": 1.20}),
-    card("mining/gold-rush", "The rush and the bust", ANY_LAND,
+    card("mining/gold-rush", "The rush and the bust", _HUMAN,
          states=("deposit-found",), days=(12, 20),
          news="Everyone who could walk came up for the new seam, and it is "
               "already thinning. The town has four times the people it can "
@@ -1969,18 +2078,18 @@ CARDS = (
              "pay": 1.15}),
     # The bust CHAIN: the vein runs out and the land goes to crisis, and
     # only the reopening takes it back out.
-    card("mining/vein-dries", "The vein runs out", ANY_LAND,
+    card("mining/vein-dries", "The vein runs out", _HUMAN,
          wealth=("normal", "prosperous"), days=None,
          news="The vein that fed the district is running out. The League's "
               "books say otherwise, and the League's books are the law.",
          state={"slot": {"deposit": "deposit-drying"}, "wealth": "crisis"}),
-    card("mining/veins-reopened", "The dead veins are reopened", ANY_LAND,
+    card("mining/veins-reopened", "The dead veins are reopened", _HUMAN,
          wealth=("crisis",), states=("deposit-drying",), days=None,
          news="An old engineer has found a way to work a seam everyone had "
               "written off. Every chapter with a dead pit wants him, and "
               "one of them wants him quiet.",
          state={"slot": {"deposit": "deposit-normal"}, "wealth": "normal"}),
-    card("mining/strike", "The pits stand idle", ANY_LAND,
+    card("mining/strike", "The pits stand idle", _HUMAN,
          wealth=("crisis",), days=(12, 20),
          news="The pits stand idle. The workers want their share of the "
               "new find before the League books it, and the company shop "
@@ -2003,7 +2112,7 @@ CARDS = (
     # until somebody else's harvest fails, and the edge is what tells the
     # mining country about it. The trade layer drew the road it walks (the
     # grain road to a mine that cannot feed itself) two sessions ago.
-    card("mining/food-caravan", "The food caravan", ANY_LAND,
+    card("mining/food-caravan", "The food caravan", _HUMAN,
          states=("grain-scarce",), days=(10, 18),
          news="A food caravan is coming up the mine road. Every chapter "
               "with an empty larder knows the day it is due, and so does "
@@ -2130,6 +2239,44 @@ CARDS = (
          news="Green is coming up through the black. Nobody alive will "
               "call it healed, but the deer are back.",
          state={"clear": ("burned-over",)}),
+
+    # -- THE TWO GATE CITIES (2026-09-12, the gates arc's session 4) -------- #
+    # A card on each of the three tracks a side, which is the floor a land
+    # owes, authored off gates.md section 11 so session 5's full packets
+    # grow out of these rather than over them.
+    card("heaven/the-register", "The register is read", "heaven",
+         tension=("gardeners-vs-pruners",),
+         news="The Pruners have posted the register on the Prefecture "
+              "wall: every half-blood born in twenty-seven years, named, "
+              "with the village written beside the name. Nobody outside "
+              "the walls has ever seen the list before.",
+         state={"set": ("register-read",)}),
+    card("heaven/clear-sky", "The sky over Concordia is clear", "heaven",
+         track="weather", chance=0.4, days=(3, 6), sky="clear",
+         news="The sky over the white walls is open and stays open. The "
+              "choirs are out on the roofs and nobody will say whether "
+              "that is the cause."),
+    card("heaven/the-choir-season", "The choir sings the year in",
+         "heaven", track="season", chance=0.3, days=(30, 60),
+         menu={"healer": 0.80},
+         news="The choir has begun the long rite and will not stop until "
+              "the season turns. The infirmary is taking anybody who "
+              "walks in while it lasts."),
+    card("hell/the-feast-spills", "The feast spills over the wall", "hell",
+         tension=("feast-vs-hunger",),
+         news="Saturna's feast has come out of the gate and gone up the "
+              "road. The nearest villages are drunk, unfenced and very "
+              "cheerful, and nobody is watching the herds.",
+         state={"set": ("feast-spilled",)}),
+    card("hell/feast-fires", "The feast-fires are lit", "hell",
+         track="weather", chance=0.4, days=(1, 2), sky="clear",
+         news="The sky over Saturna is red to the horizon and smells of "
+              "fat and pitch. It is not weather and it will not rain."),
+    card("hell/the-wild-season", "The hunt is on", "hell",
+         track="season", chance=0.3, days=(30, 60),
+         menu={"goods": 0.90},
+         news="The season's hunt is up. Hounds are cheap, horn is cheaper, "
+              "and the road is loud from dark to dark."),
 )
 
 # --------------------------------------------------------------------------- #
@@ -4385,6 +4532,17 @@ _RELATIONS = (
              when=("interdict", "relic-hunt", "bones-tested"),
              then="schism-near",
              because="the western church's accusations"),
+    # -- THE TWO GATES WATCH EACH OTHER ------------------------------------ #
+    # A STUB (2026-09-12, the gates arc's session 4), and the only edge
+    # either city state has. Section 11's real rows run between a city and
+    # its HOST -- ends that are rolled, so they have to be resolved off
+    # `world["gates"]` when the world opens rather than authored here. That
+    # is session 5's. What stands until then is the one relation whose ends
+    # are both known at import: each power notices what the other does.
+    relation("concordia", "saturna", "the gate", when=("register-read",),
+             then="gate-watched", because="the Pruners' list"),
+    relation("saturna", "concordia", "the gate", when=("feast-spilled",),
+             then="gate-watched", because="what came over Saturna's wall"),
 )
 
 RELATIONS = tuple(
@@ -4498,9 +4656,11 @@ FACTS = (
     # The standing colour behind the extraction cards. THE KNOCKERS comes
     # back word for word from the catalog the contraction cut: it was human
     # mining folklore when it was written and it is human mining folklore
-    # now. It is also the file's first ANY_LAND fact, because the belief
-    # follows the pits and every country has them.
-    fact(ANY_LAND, "knockers", "THE KNOCKERS",
+    # now. It was the file's first ANY_LAND fact, because the belief
+    # follows the pits and every country has them -- and since 2026-09-12
+    # it is scoped to the NINE with the six mining cards, for the same
+    # reason: a one-tile gate city has no pit for anything to knock in.
+    fact(_HUMAN, "knockers", "THE KNOCKERS",
          "The mine-spirits knock before a collapse and are paid for it: "
          "the last bite of every meal, left at the working face. "
          "Whistling underground is forbidden. Skeptics exist; they are "
@@ -4611,6 +4771,16 @@ FACTS = (
          "gives judgement the same hour, and writes nothing down. Its "
          "verdicts are obeyed by people who ignore every other court in "
          "the country."),
+    # -- the two gate cities (2026-09-12, session 4): one standing fact
+    # each, the first of the six section 11 authors for either side.
+    fact("heaven", "the-gate-concordia", "THE GATE",
+         "It stands in the middle of the city and it is open. Things come "
+         "through it that nobody here made, and the Prefect's wardens "
+         "count every one of them in and out."),
+    fact("hell", "the-gate-saturna", "THE GATE",
+         "It is a hollow in the middle of the town, and the town sits "
+         "round it the way a feast sits round a fire. Nobody guards it. "
+         "Anybody may walk down."),
     fact("umaia", "the-flood-mark", "THE FLOOD MARK",
          "The great river's flood is measured on a marked pillar every "
          "summer and the year's tax is set off the number. A low mark is "
@@ -4894,17 +5064,27 @@ def _belligerents(spec: dict,
     return tuple(attackers), tuple(defenders)
 
 
-def new_war(spec: dict, rng: random.Random, day: int) -> dict:
+def new_war(world: dict, spec: dict, rng: random.Random, day: int) -> dict:
     """One rolled war's record. `occupied` and `scars` are the campaign
     sim's ledgers (conquest.py) and open empty; `rolled_day` is its
-    watermark, so catching a war up is living through it."""
+    watermark, so catching a war up is living through it.
+
+    A theater cell one of the two GATE CITIES has taken is dropped
+    (2026-09-12, the gates arc's session 4): the standing wars are not
+    rolled over the city states, and the campaign sim burns, camps on and
+    besieges the ground in this list. A neutral one-tile state is not
+    anybody's front, and the theaters are hand-drawn over many cells, so
+    losing one costs the war nothing."""
     attackers, defenders = _belligerents(spec, rng)
+    theater = [tile_id(row, column) for row, column in spec["theater"]]
+    neutral = {record["tile"] for record in world["gates"].values()
+               if record["kind"] == "city"}
     return {
         "key": spec["key"],
         "name": spec["name"],
         "attackers": list(attackers),
         "defenders": list(defenders),
-        "theater": [tile_id(row, column) for row, column in spec["theater"]],
+        "theater": [tid for tid in theater if tid not in neutral],
         "posture": spec["posture"],
         "herald": spec["herald"],
         "rolled_day": day,
@@ -4926,7 +5106,7 @@ def roll_wars(world: dict, day: int = 0) -> list[dict]:
         land["liege"] = None
     liege = VASSALAGE[rng.randint(1, len(VASSALAGE)) - 1]
     world["lands"]["andalusia"]["liege"] = liege
-    wars = [new_war(spec, rng, day)
+    wars = [new_war(world, spec, rng, day)
             for spec in rng.sample(list(WAR_TEMPLATES), WARS_ROLLED)]
     world["wars"] = wars
     for war in wars:
@@ -6437,9 +6617,11 @@ def _validate_countries() -> None:
         if not [e for e in RELATIONS
                 if polity in (e["from"], e["to"])]:
             raise ValueError(f"{polity}: no relation reaches it")
-        if polity not in CAPITAL_TILES:
-            raise ValueError(f"{polity}: no capital Tile, so no sky to "
-                             f"read while the party is elsewhere")
+        # A land's CAPITAL TILE used to be checked here against a module
+        # constant. It is a per-world fact since 2026-09-12 (two of the
+        # eleven have a rolled one), so the clause moved to where world
+        # facts are checked: `places._validate_countries` walks every land
+        # record and stands its capital on its own ground.
 
 
 def validate_content() -> None:

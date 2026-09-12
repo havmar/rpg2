@@ -238,6 +238,19 @@ CULTURE_OF = {country: spec["culture"] for country, spec in LAND_SPECS.items()}
 CULTURE_LANDS = {culture: tuple(c for c in COUNTRIES
                                 if CULTURE_OF[c] == culture)
                  for culture in CULTURES}
+# THE TWO CITY STATES (2026-09-12, the gates arc's session 4). A land record
+# carries `rolled` when its ONE tile comes off the GATE ROLL instead of off
+# the country overlay. Concordia and Saturna are countries of this map the
+# way the nine are -- a land record, a culture, a tongue, a capital, name
+# pools, a ruler title, a card packet -- and nothing about them is painted
+# or pinned, because nothing about them is the same twice.
+# `HUMAN_COUNTRIES` is the NINE: what every authored answer key, every
+# pinned census, the country overlay and the birth roll mean when they say
+# "country". `CITY_STATES` is the two, keyed by their GATE key, which is
+# also their land key and their city's name in lower case.
+CITY_STATES = tuple(c for c, spec in LAND_SPECS.items() if spec.get("rolled"))
+HUMAN_COUNTRIES = tuple(c for c in COUNTRIES if c not in CITY_STATES)
+CITY_STATE_OF_SIDE = {LAND_SPECS[c]["side"]: c for c in CITY_STATES}
 AREA_SPECS: dict[str, dict] = {}
 SETTLEMENT_SITE_SPECS: dict[str, list[dict]] = {}
 NATURAL_SITE_SPECS: dict[str, list[dict]] = {}
@@ -881,6 +894,25 @@ TILE_MENU = {
 }
 CROSSROADS_ROUTES = 2       # routes crossing a Tile before it is a crossroads
 
+# The priced terms a catalog menu may name. `worldsim.MENU_TERMS` is the
+# authority and this is the written-out copy, because worldsim imports this
+# file and not the other way round -- the same arrangement the tile encounter
+# table's pools are in. `test_gates` pins the two lists together.
+MENU_TERM_WORDS = ("goods", "steel", "lodging", "healer", "toll", "ferry")
+
+# THE GATE CITIES' OWN SHELF (2026-09-12, the gates arc's session 4). The
+# `gate_city` template authors it in the catalog and this is where the
+# runtime reads it back: a one-tile state IS its city, so what the city
+# charges is what standing on that Tile charges, and the tile menu is
+# already the static hand `session.local_term` multiplies into the land's
+# dynamic one. Concordia sells the cure and a clean bed cheap and everything
+# else dear; Saturna's bed is a place at the feast and its healer is in no
+# hurry.
+GATE_CITY_MENU = {
+    side: dict(CULTURE_SPECS[CULTURE_OF[key]]["settlement_templates"][
+        "gate_city"]["menu"])
+    for side, key in CITY_STATE_OF_SIDE.items()}
+
 
 # SPARSE ORDINARY BOARDS (2026-08-15, Local Quest Geography). A settlement
 # is not a job dispenser: at materialization a stable derived roll decides
@@ -1024,6 +1056,13 @@ SETTLEMENT_NAMES = {
                    "Pratulum", "Turricula", "Silvula", "Fornacula",
                    "Pontulus", "Salinula"),
     },
+    # THE TWO CITY STATES (2026-09-12) author ONE name each: a state of one
+    # tile seats one settlement and it is authored, so a second pool would
+    # be districts nobody will ever see. The names are the two cities'
+    # own -- Latin abstractions of order for Heaven, the older Italic shapes
+    # under Latin for Hell (writing.md's two rows).
+    "concordia": {"city": ("Concordia",)},
+    "saturna": {"city": ("Saturna",)},
     "tergal": {
         "city": ("Altan-Ordu", "Sarugan", "Khorgat", "Bayan-Tal",
                  "Temughal"),
@@ -1502,6 +1541,11 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
         # Andalusia's is ever rolled (`worldsim.roll_wars`), but every land
         # carries the field, so a reader never has to tolerate its absence.
         "liege": None,
+        # WHERE THE CROWN SITS (2026-09-12, the gates arc's session 4): a
+        # per-world fact, because two of the eleven have no authored one.
+        # The nine take it from `HISTORICAL_CAPITAL_TILES`; the two city
+        # states take it from `roll_gates`, which is why it opens None.
+        "capital_tile": HISTORICAL_CAPITAL_TILES.get(polity),
         "areas": [], "tiles": [], "settlement_slots": [],
         "features": [], "states": [], "sequences": {},
     }
@@ -1601,7 +1645,8 @@ def _service_kind(site_name: str) -> list[str]:
         out.append("alchemist")
     if any(x in low for x in ("market", "main market", "horse market")):
         out.append("market")
-    if any(x in low for x in ("hall", "office", "palace", "high council")):
+    if any(x in low for x in ("hall", "office", "palace", "high council",
+                              "prefecture")):
         out.append("government")
     if any(x in low for x in ("healer", "apothecar", "infirmar", "temple",
                               "physician")):
@@ -1789,7 +1834,7 @@ def _validate_fixed_data(rows: tuple[str, ...]) -> None:
     counts = {biome: 0 for biome in PINNED_BIOME_COUNTS}
     countries = {country: {biome: 0 for biome in ("basic", "mountain",
                                                    "river")}
-                 for country in COUNTRIES}
+                 for country in HUMAN_COUNTRIES}
     for row, line in enumerate(rows, 1):
         for column, glyph in enumerate(line, 1):
             biome = BIOME_GLYPHS[glyph]
@@ -1817,8 +1862,9 @@ def _validate_fixed_data(rows: tuple[str, ...]) -> None:
         raise ValueError(f"historical capitals changed: {sorted(capitals)}")
     seated = {country for _r, _c, _n, country, _b, cap in HISTORICAL_CITIES
               if cap}
-    if seated != set(COUNTRIES):
-        raise ValueError(f"every country seats one capital; got {seated}")
+    if seated != set(HUMAN_COUNTRIES):
+        raise ValueError(f"every painted country seats one capital; got "
+                         f"{seated}")
 
 
 def _slot(slot_id: str, tier: str, seed: int, *, name: str | None = None,
@@ -1864,9 +1910,17 @@ def roll_census(world: dict) -> None:
     """
     seed = world["seed"]
     rng = random.Random(stable_seed(seed, "world", "census", 0))
+    # THE GATE CITIES (2026-09-12, session 4) are read like an authored
+    # historical tile, with one difference: a one-tile state IS its city and
+    # nothing else, so it draws no companions and `SLOT_CAP` never comes up.
+    cities = {record["tile"]: key for key, record in world["gates"].items()
+              if record["kind"] == "city"}
     for tid in world["tile_order"]:
         tile = world["tiles"][tid]
         if tile["biome"] == "sea":
+            continue
+        if tid in cities:
+            _seat_gate_city(world, tile, cities[tid])
             continue
         row, column = tile["row"], tile["column"]
         economy = tile_economy(tile["climate"], tile["terrain"],
@@ -1920,6 +1974,22 @@ def roll_census(world: dict) -> None:
             world["settlement_slots"][sid] = slot
             tile["settlement_slots"].append(sid)
             world["lands"][tile["country"]]["settlement_slots"].append(sid)
+
+
+def _seat_gate_city(world: dict, tile: dict, key: str) -> None:
+    """The one census slot a live gate city gets: its own city, authored,
+    capital, free, and KNOWN from day one -- everybody has heard of
+    Concordia the way everybody has heard of Paris. It consumes none of the
+    census rng: a state of one tile has nothing to roll."""
+    sid = f"{tile['id']}/settlement/01"
+    slot = _slot(sid, "city",
+                 stable_seed(world["seed"], tile["id"], "settlement-slot", 1),
+                 name=GATE_BY_KEY[key]["name"], capital=True, authored=True,
+                 charter="free")
+    slot.update(tile=tile["id"], index=1)
+    world["settlement_slots"][sid] = slot
+    tile["settlement_slots"].append(sid)
+    world["lands"][key]["settlement_slots"].append(sid)
 
 
 def population_band(world: dict, tile: dict | str) -> str:
@@ -2071,7 +2141,11 @@ def roll_routes(world: dict) -> None:
                             in GOODS_AUTHORED.items() if "arms" in goods},
         "cloth": {tile_id(*rc) for rc, goods in GOODS_AUTHORED.items()
                   if "cloth" in goods},
-        "capitals": set(CAPITAL_TILES.values()),
+        # The nine painted capitals. A one-tile gate city is a MARKET
+        # like any other city on the map (the census seats a city on it, so
+        # `cities` above already holds it), but nobody carts produce to a
+        # 27-year-old colony because it is somebody's capital.
+        "capitals": human_capital_tiles(world),
     }
 
     raw: list[dict] = []
@@ -2084,7 +2158,7 @@ def roll_routes(world: dict) -> None:
         for (kind, count, max_days), goods in by_rule.items():
             if kind == "capital":
                 row, column = tile_row_column(min(origin["tiles"]))
-                targets = {CAPITAL_TILES[country_at(row, column)]}
+                targets = {capital_tile(world, country_at(row, column))}
             else:
                 targets = demand[kind]
             ranked = []
@@ -2696,7 +2770,7 @@ def gate_candidates(world: dict, spec: dict,
     country it is cut out of, because the enclave's whole point is that its
     donor stays its neighbour.
     """
-    capitals = {tile_row_column(tid) for tid in CAPITAL_TILES.values()}
+    capitals = {tile_row_column(tid) for tid in human_capital_tiles(world)}
     out = []
     for tid in world["tile_order"]:
         tile = world["tiles"][tid]
@@ -2842,6 +2916,38 @@ def roll_gates(world: dict) -> None:
         if spec["kind"] == "ruin":
             area = _ruin_area(world, spec, tile)
             _build_ruin_sites(world, spec, area)
+        else:
+            _city_takeover(world, spec, tile)
+
+
+def _city_takeover(world: dict, spec: dict, tile: dict) -> None:
+    """THE TILE TAKEOVER (2026-09-12, session 4): one tile leaves its
+    country and becomes a country.
+
+    A live gate city is a state of exactly one tile, so the takeover is the
+    whole of its geography: the Tile changes hands, the natural Area
+    standing on it changes hands with it, and the land record learns where
+    its capital is. What does NOT change is the GROUND -- climate, terrain,
+    harvest, goods, the natural Area's own template and inventory all stay
+    exactly what the donor's countryside was, because a wall round a plain
+    does not move the plain. Concordia's fields are still Seraptanian
+    fields; the flag over them is not.
+
+    `roll_census` seats the city itself; this runs before it, which is what
+    lets the census read `tile["country"]` and find the city state there."""
+    key = spec["key"]
+    donor = world["gates"][key]["cut_from"]
+    tile["country"] = key
+    tile["tags"] = [key if tag == donor else tag for tag in tile["tags"]]
+    world["lands"][donor]["tiles"].remove(tile["id"])
+    world["lands"][key]["tiles"].append(tile["id"])
+    for aid in tile["areas"]:
+        area = world["areas"][aid]
+        area["land"] = area["homeland"] = key
+        area["tags"] = [key if tag == donor else tag for tag in area["tags"]]
+        world["lands"][donor]["areas"].remove(aid)
+        world["lands"][key]["areas"].append(aid)
+    world["lands"][key]["capital_tile"] = tile["id"]
 
 
 # --- the readers ----------------------------------------------------------- #
@@ -2941,15 +3047,41 @@ def _validate_gates(world: dict) -> None:
     gates = world["gates"]
     if tuple(gates) != GATE_KEYS:
         raise ValueError(f"the gates are {list(GATE_KEYS)}, got {list(gates)}")
-    capitals = {tile_row_column(tid) for tid in CAPITAL_TILES.values()}
+    capitals = {tile_row_column(tid) for tid in human_capital_tiles(world)}
     tiles = [world["tiles"][gates[key]["tile"]] for key in GATE_KEYS]
     for key, tile in zip(GATE_KEYS, tiles):
         spec = GATE_BY_KEY[key]
         record = gates[key]
         if (record["side"], record["kind"]) != (spec["side"], spec["kind"]):
             raise ValueError(f"{key}: the record disagrees with the spec")
-        if tile["country"] not in spec["lands"]:
-            raise ValueError(f"{key}: {tile['country']} is not in its set")
+        # After the takeover (session 4) a LIVE city's tile belongs to the
+        # city state, and the country it came out of is on the record.
+        home = (record["cut_from"] if record["kind"] == "city"
+                else tile["country"])
+        if home not in spec["lands"]:
+            raise ValueError(f"{key}: {home} is not in its set")
+        if record["kind"] == "city":
+            if tile["country"] != key:
+                raise ValueError(f"{key}: its tile flies "
+                                 f"{tile['country']}'s flag")
+            land = world["lands"][key]
+            if land["tiles"] != [tile["id"]]:
+                raise ValueError(f"{key}: a city state is one tile, holds "
+                                 f"{land['tiles']}")
+            if land["capital_tile"] != tile["id"]:
+                raise ValueError(f"{key}: its capital is not its own tile")
+            if tile["id"] in world["lands"][home]["tiles"]:
+                raise ValueError(f"{key}: {home} still holds the ceded tile")
+            slots = [world["settlement_slots"][sid]
+                     for sid in tile["settlement_slots"]]
+            if len(slots) != 1:
+                raise ValueError(f"{key}: a city state seats one "
+                                 f"settlement, got {len(slots)}")
+            seat = slots[0]
+            if (seat["tier"], seat["name"], seat["capital"],
+                    seat["authored"], seat["charter"], seat["known"]) != (
+                    "city", spec["name"], True, True, "free", True):
+                raise ValueError(f"{key}: {seat} is not its authored city")
         here = (tile["row"], tile["column"])
         if tile["biome"] == "sea":
             raise ValueError(f"{key}: a gate stands on land")
@@ -3112,8 +3244,13 @@ def create_geography(seed: int | None) -> dict:
 
     # The uniform start draw skips HAMLETS (2026-08-21): a hundred souls
     # with no inn, no smith and no board is not a place to begin a career.
+    # ...and the two GATE CITIES (2026-09-12, session 4): a campaign opens
+    # in the human world. Concordia and Saturna are 27 years old, foreign
+    # and famous, and they are somewhere the party WALKS to.
     candidates = [sid for sid, slot in world["settlement_slots"].items()
-                  if slot["tier"] != "hamlet"]
+                  if slot["tier"] != "hamlet"
+                  and world["tiles"][slot["tile"]]["country"]
+                  not in CITY_STATES]
     if not candidates:
         raise ValueError("fixed Europe population produced no settlement slots")
     start_slot = random.Random(stable_seed(seed, "world", "start-slot", 0)).choice(
@@ -3138,14 +3275,37 @@ CAPITAL_TOWNS = frozenset(name for *_r, name, _p, _b, capital
                           in HISTORICAL_CITIES if capital)
 # The Tile a land's own sky is read off when the party is somewhere else
 # (2026-08-21, the ground session). The day roll takes its weights from the
-# ground the party is standing on, which leaves the other eight lands
-# needing a reference: their CAPITAL is the concrete, pinned answer -- London
-# weather for Phyrascia, Cairo's for Umaia, Stockholm's for Thule -- and it
-# is also what stands in for the party itself when it is out at sea, where
-# there is no ground to read.
-CAPITAL_TILES = {country: tile_id(row, column)
-                 for row, column, _name, country, _biome, capital
-                 in HISTORICAL_CITIES if capital}
+# ground the party is standing on, which leaves the other lands needing a
+# reference: their CAPITAL is the concrete answer -- London weather for
+# Phyrascia, Cairo's for Umaia, Stockholm's for Thule -- and it is also what
+# stands in for the party itself when it is out at sea, where there is no
+# ground to read.
+#
+# THE NINE ONLY (2026-09-12, the gates arc's session 4). This is an
+# AUTHORED answer key, like `HISTORICAL_CITIES` itself: it is what the nine
+# painted countries seat. The two city states seat a capital that is rolled,
+# so the question "where is this land's capital" is a per-world one now and
+# `world["lands"][country]["capital_tile"]` is where it is answered. Read it
+# through `capital_tile(world, country)` and never through this table.
+HISTORICAL_CAPITAL_TILES = {country: tile_id(row, column)
+                            for row, column, _name, country, _biome, capital
+                            in HISTORICAL_CITIES if capital}
+
+
+def capital_tile(world: dict, country: str) -> str:
+    """Where this land's capital stands, in THIS world. Strict: every land
+    record carries the field and worldgen fills it, so a None here is a
+    broken world rather than a land that happens to have no seat."""
+    tid = world["lands"][country]["capital_tile"]
+    if tid is None:
+        raise ValueError(f"{country}: no capital Tile")
+    return tid
+
+
+def human_capital_tiles(world: dict) -> set[str]:
+    """The NINE painted capitals' Tiles. The gate roll's no-capital clause
+    means these: a city state's own seat is the thing being placed."""
+    return {capital_tile(world, country) for country in HUMAN_COUNTRIES}
 
 
 def _validate_ground(world: dict) -> None:
@@ -3239,26 +3399,43 @@ def _validate_town_names(town_tiles: set[tuple[int, int]]) -> None:
 
 def _validate_countries(world: dict) -> None:
     """The country overlay against the world built from it (2026-08-21, the
-    nine). Same shape of lint as `_validate_ground`: the picture is
-    authored, so nothing here computes where a border ought to run -- it
-    checks that every Tile wears the letter that was painted on it, that the
-    sea derives instead of being painted, that each of the nine seats one
-    capital, and that the two censuses are the ones the grid was signed off
-    with. The BAND census is in here rather than in the suite because the
+    nine; the two city states since 2026-09-12). Same shape of lint as
+    `_validate_ground`: the picture is authored, so nothing here computes
+    where a border ought to run -- it checks that every Tile wears the
+    letter that was painted on it, that the sea derives instead of being
+    painted, that every land seats a capital standing on its own ground, and
+    that the two censuses are the ones the grid was signed off with MINUS
+    the one tile each gate city took out of its donor. The BAND census is
+    in here rather than in the suite because the
     band is campaign-invariant: it can only move when the overlay does. The
     TOWN NAMES ride along in the same sweep for the same reason and to spare
     the world a second walk: which tiles can ever seat a town is a fact about
     the ground, so the authored table has to cover exactly those."""
     biomes = {country: {biome: 0 for biome in ("basic", "mountain", "river")}
-              for country in COUNTRIES}
+              for country in HUMAN_COUNTRIES}
     bands = {country: {band: 0 for band in BAND_WORDS}
-             for country in COUNTRIES}
+             for country in HUMAN_COUNTRIES}
+    # THE CEDED TILES (2026-09-12, session 4): the two live gate cities
+    # stand on ground the overlay paints for somebody else, so the pinned
+    # censuses are checked against the nine MINUS what each of them lost.
+    # `cut_from` is the record's own word for it.
+    ceded = {record["tile"]: record["cut_from"]
+             for record in world["gates"].values()
+             if record["kind"] == "city"}
+    expected_biomes = {country: dict(row) for country, row
+                       in PINNED_COUNTRY_BIOMES.items()}
+    expected_bands = {country: dict(row) for country, row
+                      in PINNED_COUNTRY_BANDS.items()}
     town_tiles: set[tuple[int, int]] = set()
     for tid in world["tile_order"]:
         tile = world["tiles"][tid]
         row, column = tile["row"], tile["column"]
         where = tile_coordinate(row, column)
-        if tile["country"] != country_at(row, column):
+        if tid in ceded:
+            if tile["country"] not in CITY_STATES:
+                raise ValueError(f"{where}: the tile {ceded[tid]} ceded "
+                                 f"flies {tile['country']}'s flag")
+        elif tile["country"] != country_at(row, column):
             raise ValueError(f"{where}: the overlay says "
                              f"{country_at(row, column)}, the Tile says "
                              f"{tile['country']}")
@@ -3269,20 +3446,32 @@ def _validate_countries(world: dict) -> None:
                 raise ValueError(f"{where}: the sea is derived, never "
                                  f"painted")
             continue
-        biomes[tile["country"]][tile["biome"]] += 1
         band = population_band(world, tile)
-        bands[tile["country"]][band] += 1
         if band in TOWN_BANDS:
             town_tiles.add((row, column))
-    if biomes != PINNED_COUNTRY_BIOMES:
+        if tid in ceded:
+            # A city state's own tile is nobody's census: it is counted
+            # OUT of its donor's expected totals below instead.
+            expected_biomes[ceded[tid]][tile["biome"]] -= 1
+            expected_bands[ceded[tid]][band] -= 1
+            continue
+        biomes[tile["country"]][tile["biome"]] += 1
+        bands[tile["country"]][band] += 1
+    if biomes != expected_biomes:
         raise ValueError(f"the per-country biome census changed: {biomes}")
-    if bands != PINNED_COUNTRY_BANDS:
+    if bands != expected_bands:
         raise ValueError(f"the per-country band census changed: {bands}")
+    for key in CITY_STATES:
+        held = world["lands"][key]["tiles"]
+        if len(held) != 1:
+            raise ValueError(f"{key}: a city state holds one tile, "
+                             f"got {held}")
+        if held[0] not in ceded:
+            raise ValueError(f"{key}: {held[0]} is not a rolled gate-city "
+                             f"tile")
     _validate_town_names(town_tiles)
-    if set(CAPITAL_TILES) != set(COUNTRIES):
-        raise ValueError(f"every country seats one capital; got "
-                         f"{sorted(CAPITAL_TILES)}")
-    for country, tid in CAPITAL_TILES.items():
+    for country in COUNTRIES:
+        tid = capital_tile(world, country)
         if world["tiles"][tid]["country"] != country:
             raise ValueError(f"{country}: its capital stands in "
                              f"{world['tiles'][tid]['country']}")
@@ -3337,7 +3526,12 @@ def validate_world(world: dict) -> None:
             raise ValueError(f"{tid}: the sea is never populated")
         historical = HISTORICAL_BY_TILE.get((tile["row"], tile["column"]))
         mine = MINES.get((tile["row"], tile["column"]))
-        if historical:
+        gate_city = tile["country"] in CITY_STATES
+        if gate_city:
+            # The one-tile state: its city is the whole census, it is
+            # authored, and `_validate_gates` checks the record itself.
+            pass
+        elif historical:
             name, country, biome, capital = historical
             if (tile["biome"], tile["country"]) != (biome, country):
                 raise ValueError(f"{tid}: {name} declares {country}/{biome}")
@@ -3367,8 +3561,8 @@ def validate_world(world: dict) -> None:
             if any(slot["tier"] not in ("village", "hamlet")
                    for slot in slots):
                 raise ValueError(f"{tid}: only an AUTHORED town -- a "
-                                 f"historical city or a mine -- sits on a "
-                                 f"mountain")
+                                 f"historical city, a mine or a gate city "
+                                 f"-- sits on a mountain")
         if len(slots) > SLOT_CAP:
             raise ValueError(f"{tid}: {len(slots)} settlements on a Tile "
                              f"the lattice seats {SLOT_CAP}")
@@ -3408,8 +3602,10 @@ def validate_world(world: dict) -> None:
 
     if slot_ids != set(world["settlement_slots"]):
         raise ValueError("the slot store and the Tiles disagree")
-    if capitals != CAPITAL_TOWNS:
-        raise ValueError(f"the three capitals are {sorted(CAPITAL_TOWNS)}, "
+    seats = set(CAPITAL_TOWNS) | {GATE_BY_KEY[key]["name"]
+                                  for key in CITY_STATES}
+    if capitals != seats:
+        raise ValueError(f"the capitals are {sorted(seats)}, "
                          f"got {sorted(capitals)}")
     if world["start_slot"] not in world["settlement_slots"]:
         raise ValueError("the start is not a settlement slot")
@@ -3892,14 +4088,22 @@ def _legend_group(prefix: str, items: list[str], width: int = 40) -> list[str]:
 def gate_legend_lines(world: dict, width: int = 40) -> list[str]:
     """All four gates with their coordinate and their side, in roll order.
     They are known from day one -- everybody has heard of Concordia, and
-    the white ruin is on every map that was ever drawn."""
+    the white ruin is on every map that was ever drawn.
+
+    Since session 4 the two LIVE ones read as what they now are: countries
+    of one tile, cut out of the country named beside them."""
     items = []
     for key in GATE_KEYS:
         record = world["gates"][key]
         tile = world["tiles"][record["tile"]]
+        if record["kind"] == "city":
+            what = (f"{SIDE_WORDS[record['side']]}, city state in "
+                    f"{world['lands'][record['cut_from']]['name']}")
+        else:
+            what = f"{SIDE_WORDS[record['side']]}, ruin"
         items.append(f"{GATE_BY_KEY[key]['name']} "
                      f"{tile_coordinate(tile['row'], tile['column'])} "
-                     f"({SIDE_WORDS[record['side']]}, {record['kind']})")
+                     f"({what})")
     return _legend_group("GATES: ", items, width)
 
 
@@ -4101,6 +4305,9 @@ def tile_terms(world: dict, tile: dict | str) -> dict[str, float]:
         rows.append(TILE_MENU["mine"])
     if len(tile_routes(world, tile)) >= CROSSROADS_ROUTES:
         rows.append(TILE_MENU["crossroads"])
+    for side, menu in GATE_CITY_MENU.items():
+        if f"{side}-city" in tile["tags"]:
+            rows.append(menu)
     for row in rows:
         for name, mult in row.items():
             terms[name] = terms.get(name, 1.0) * mult
@@ -4345,12 +4552,20 @@ HOUSE_FOOD = {
                "smoked fish", "pot of stew"),
     "norse": ("flat barley bread", "onions", "hard cheese", "dried berries",
               "salt fish", "pot of stew"),
+    # The two gate cities (2026-09-12): 27 years old and eating what the
+    # country around them grows, with one foreign thing on every table.
+    "heaven": ("white bread", "onions", "hard cheese", "dried figs",
+               "clear water", "pot of stew"),
+    "hell": ("dark bread", "onions", "hard cheese", "smoked pork",
+             "jug of wine", "pot of stew"),
 }
 HOUSE_HEAT = {
     "western": ("stone hearth", "iron stove"),
     "southern": ("stone hearth", "iron stove", "tiled hearth"),
     "steppe": ("stone hearth", "iron stove", "clay stove"),
     "norse": ("long hearth", "stone hearth", "iron stove"),
+    "heaven": ("stone hearth", "iron stove", "lamp that does not burn"),
+    "hell": ("open fire pit", "long hearth", "stone hearth"),
 }
 HOUSE_LIVELIHOOD = {
     "western": ("account book", "fishing net", "grain sack", "reed knife",
@@ -4361,6 +4576,10 @@ HOUSE_LIVELIHOOD = {
                "wool shears", "salt scoop", "water skin"),
     "norse": ("fishing net", "rope coil", "splitting axe", "net needle",
               "tar pot", "wool shears"),
+    "heaven": ("writing case", "measuring rule", "lamp bracket",
+               "register slip", "white stone chip"),
+    "hell": ("tally stick", "hound collar", "wine jug", "hunting horn",
+             "debt slip"),
 }
 # The livelihood a particular ROLE keeps in its houses. Keyed by (culture,
 # template role), and a role with no row falls back to the culture's own
@@ -4708,12 +4927,15 @@ TILE_FIT_TAGS = ("coast", "riverside", "mountain-foot", "border", "island",
 
 
 def validate_catalog() -> None:
-    if _CATALOG.get("version") != 3:
-        raise ValueError("place catalog must be version 3: cultures and "
-                         "lands")
-    if len(LAND_SPECS) != 9:
-        raise ValueError(f"the map is nine countries, catalog has "
-                         f"{len(LAND_SPECS)}")
+    if _CATALOG.get("version") != 4:
+        raise ValueError("place catalog must be version 4: cultures, lands "
+                         "and the two rolled city states")
+    if len(HUMAN_COUNTRIES) != 9:
+        raise ValueError(f"the overlay paints nine countries, catalog has "
+                         f"{len(HUMAN_COUNTRIES)}")
+    if len(CITY_STATES) != 2:
+        raise ValueError(f"the map carries two rolled city states, catalog "
+                         f"has {list(CITY_STATES)}")
     if any(key in _CATALOG for key in OBSOLETE_CATALOG_KEYS):
         raise ValueError("place catalog still contains obsolete geography")
     for country, spec in LAND_SPECS.items():
@@ -4726,13 +4948,33 @@ def validate_catalog() -> None:
         if spec["culture"] not in CULTURE_SPECS:
             raise ValueError(f"{country}: no such culture: "
                              f"{spec['culture']}")
-        if country not in COUNTRY_LETTERS.values():
+        if spec.get("rolled"):
+            # A ROLLED land (2026-09-12): no overlay letter -- its one tile
+            # comes off the gate roll -- and a `side` the skins, the pools,
+            # the rings and the menu all read.
+            if country not in GATE_BY_KEY:
+                raise ValueError(f"{country}: a rolled land is a gate")
+            if spec.get("side") != GATE_BY_KEY[country]["side"]:
+                raise ValueError(f"{country}: its side disagrees with the "
+                                 f"gate roll's")
+            if country in COUNTRY_LETTERS.values():
+                raise ValueError(f"{country}: a rolled land is not painted")
+            if CULTURE_LANDS[spec["culture"]] != (country,):
+                raise ValueError(f"{country}: a city state's culture is its "
+                                 f"own")
+        elif country not in COUNTRY_LETTERS.values():
             raise ValueError(f"{country}: no letter on the country overlay")
     unworn = [culture for culture in CULTURE_SPECS
               if not CULTURE_LANDS[culture]]
     if unworn:
         raise ValueError(f"a culture no country wears: {unworn}")
     for polity, land in CULTURE_SPECS.items():
+        # A ROLLED culture is worn by one-tile city states and by nothing
+        # else, so what it owes is one seat and no countryside: its lands'
+        # natural Areas were built from the DONOR's inventory before the
+        # takeover and keep it (Concordia's fields are Seraptanian fields).
+        rolled = all(LAND_SPECS[c].get("rolled")
+                     for c in CULTURE_LANDS[polity])
         stale = [key for key in OBSOLETE_LAND_KEYS if key in land]
         if stale:
             raise ValueError(f"{polity}: the fixed settlement census is "
@@ -4741,8 +4983,13 @@ def validate_catalog() -> None:
             raise ValueError(f"{polity}: the environment profile retired "
                              f"with the climate overlay (2026-08-21)")
         natural = land["natural"]
-        missing = [character for character in NATURAL_CHARACTERS
-                   if character != "sea" and character not in natural]
+        if rolled:
+            if natural or land["natural_sites"]:
+                raise ValueError(f"{polity}: a rolled culture authors no "
+                                 f"countryside of its own")
+        missing = [] if rolled else [
+            character for character in NATURAL_CHARACTERS
+            if character != "sea" and character not in natural]
         if missing:
             raise ValueError(f"{polity}: every ground a Tile can be needs a "
                              f"natural inventory; missing {missing}")
@@ -4764,16 +5011,21 @@ def validate_catalog() -> None:
         tiers = {spec["tier"] for spec in templates.values()}
         # METROPOLIS is deliberately absent: it draws the city role until
         # the Settlements-revisited round gives it its own (2026-08-21).
-        if tiers != {"capital", "city", "town", "village", "hamlet"}:
+        # EVERY TIER THE CULTURE'S LANDS CAN SEAT (2026-09-12): for the nine
+        # that is all five, and for a one-tile city state it is the capital
+        # seat and nothing else -- its census rolls no second settlement, so
+        # a village role there would be content nobody could ever reach.
+        owed = {"capital"} if rolled else {"capital", "city", "town",
+                                           "village", "hamlet"}
+        if tiers != owed:
             raise ValueError(f"{polity}: settlement templates must cover "
-                             f"capital, city, town, village and hamlet; "
-                             f"got {sorted(tiers)}")
+                             f"{sorted(owed)}; got {sorted(tiers)}")
         capitals = [r for r, s in templates.items()
                     if s["tier"] == "capital"]
         if len(capitals) != 1:
             raise ValueError(f"{polity}: expected one capital template, "
                              f"got {capitals}")
-        for tier in ("city", "town", "village", "hamlet"):
+        for tier in sorted(owed - {"capital"}):
             free = [r for r, s in templates.items()
                     if s["tier"] == tier and not s["fits"]]
             if not free:
@@ -4781,6 +5033,14 @@ def validate_catalog() -> None:
                     f"{polity}: every tier needs a {tier} template that "
                     f"asks for no Tile tag, or a plain inland Tile can "
                     f"draw nothing")
+        if rolled:
+            menu = templates[capitals[0]].get("menu") or {}
+            bad = [term for term in menu if term not in MENU_TERM_WORDS]
+            if bad:
+                raise ValueError(f"{polity}: no such priced term: {bad}")
+            if not menu:
+                raise ValueError(f"{polity}: a gate city prices its own "
+                                 f"counter")
         for role, spec in templates.items():
             bad = [tag for tag in spec["fits"] if tag not in TILE_FIT_TAGS]
             if bad:
@@ -4805,12 +5065,16 @@ def validate_catalog() -> None:
         raise ValueError("every country keeps its own settlement name "
                          f"pools; got {sorted(SETTLEMENT_NAMES)}")
     for country in COUNTRIES:
-        # Every tier the census can roll GENERATED needs a name reserve;
-        # metropolis carries none because it never rolls one.
+        # Every tier the COUNTRY CAN SEAT needs a name reserve; metropolis
+        # carries none because it never rolls one, and a one-tile city state
+        # can only ever seat its own city (2026-09-12 -- authoring districts
+        # nobody will see would be authoring dead content).
         pools = SETTLEMENT_NAMES[country]
-        if set(pools) != {"city", "town", "village", "hamlet"}:
-            raise ValueError(f"{country}: the name reserves are the four "
-                             f"generated tiers; got {sorted(pools)}")
+        owed = ({"city"} if country in CITY_STATES
+                else {"city", "town", "village", "hamlet"})
+        if set(pools) != owed:
+            raise ValueError(f"{country}: the name reserves are "
+                             f"{sorted(owed)}; got {sorted(pools)}")
         for tier, names in pools.items():
             if not names or len(names) != len(set(names)):
                 raise ValueError(f"invalid {country} {tier} name reserve")

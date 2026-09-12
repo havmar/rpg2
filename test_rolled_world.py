@@ -227,10 +227,12 @@ class TheCensus(unittest.TestCase):
         capitals = {slot["name"] for slot
                     in self.world["settlement_slots"].values()
                     if slot["capital"]}
+        # Nine painted crowns and the two rolled ones (2026-09-12): a
+        # one-tile city state seats one settlement and it is its capital.
         self.assertEqual(capitals,
                          {"London", "Paris", "Prague", "Stockholm",
                           "Moscow", "Constantinople", "Toledo", "Cairo",
-                          "Kyiv"})
+                          "Kyiv", "Concordia", "Saturna"})
 
     def test_the_mine_towns_are_seated_by_name(self) -> None:
         self.assertEqual(len(places.MINES), 9)
@@ -257,6 +259,9 @@ class TheCensus(unittest.TestCase):
         for seed in range(10):
             world = _world(seed)
             for tile in _land(world):
+                if tile["country"] in places.CITY_STATES:
+                    continue    # an authored city, on whatever ground the
+                                # gate roll picked (2026-09-12)
                 for slot in _slots(world, tile):
                     if slot["tier"] in places.CITY_GRADE \
                             and slot["name"] not in places.HISTORICAL_TIERS:
@@ -299,7 +304,9 @@ class TheCensus(unittest.TestCase):
                              for s in world["settlement_slots"].values()))
         per = {tier: total / SWEEP for tier, total in totals.items()}
         self.assertEqual(per["metropolis"], 4.0)        # always the four
-        self.assertAlmostEqual(per["city"], 18, delta=3)
+        # Two of these are always the gate cities (2026-09-12): a one-tile
+        # city state seats a city wherever the roll put it.
+        self.assertAlmostEqual(per["city"], 21.5, delta=3)
         self.assertAlmostEqual(per["town"], 101, delta=8)
         self.assertAlmostEqual(per["village"], 402, delta=20)
         self.assertAlmostEqual(per["hamlet"], 92, delta=12)

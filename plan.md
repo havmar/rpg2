@@ -43,12 +43,12 @@ Heaven and Hell come into the world: two foreign powers beyond two doors,
 opposed for longer than either remembers, each of which wants this world.
 The design is **`gates.md`** — the spec companion, in worldsim.md's
 shape, and a section is CUT when the session that builds it lands. What
-is left in it after session 3 is the city half of the gate layer, the
-two city states, the two world-layer packets, the human side and the two
-city quest tables. The SETTING, the ruins, the two sentinels, the bars,
-the ruin jobs and the Nephilim are no longer there: they are rules.md's
-Heaven & Hell add-on parts 1, 2 and 3, dm.md's "The gates" and "The
-player character", and writing.md's two name rows.
+is left in it after session 4 is section 11: the two world-layer packets
+in full and the human side. The SETTING, the ruins, the two sentinels,
+the bars, the ruin jobs, the Nephilim and the two city states are no
+longer there: they are rules.md's Heaven & Hell add-on parts 1, 2, 3 and
+4, dm.md's "The gates", "The nine countries" and "The player character",
+and writing.md's two name rows.
 Its calls are made; a build session reads its
 section and does not reopen them. Its section 0 records the directives
 this arc stands on, three of which every session must keep in view:
@@ -62,20 +62,16 @@ the map, shipped 2026-09-12** (designlog 2026-09-12 (A); a new world now
 has two ruins to walk into at any level, at `R` on the map),
 **session 2, the two sentinels and the ruin jobs, shipped 2026-09-12**
 (designlog 2026-09-12 (B); something stands at the bottom of each ruin,
-holding the bar Tom set across that gate), and **session 3, the Nephilim,
+holding the bar Tom set across that gate), **session 3, the Nephilim,
 shipped 2026-09-12** (designlog 2026-09-12 (C); half of all player
-characters are now half-bloods, and the setting walks in with the party).
+characters are now half-bloods, and the setting walks in with the party),
+and **session 4, the two city states, shipped 2026-09-12** (designlog
+2026-09-12 (D); the world is ELEVEN lands — Concordia and Saturna are
+one-tile countries with their own crowns, prices, boards and quest
+tables, and their packets stand as stubs).
 Each ends with the standard paperwork (develop.md, "Where a finished
 feature is written up") and CUTS its sections from gates.md.
 
-4. **The two city states** (sections 6 city half, 10, the minimum of
-   11). Catalog v4 with `concordia`/`saturna` and the `heaven`/`hell`
-   cultures; the tile takeover; `capital_tile` as a per-world land fact;
-   the three validators taught the gates; name pools, `RULER_TITLES`,
-   `DEFENDER_ROLES`, `HUMAN_HOMELANDS`; the `gate_city` templates and
-   menus; the two culture quest tables (section 14); a STUB packet each
-   so `worldsim.validate_content` passes with eleven lands. The world
-   must boot green with eleven lands at the end of it.
 5. **The packets and the human side** (section 11 in full). The two
    full packets (constitutions, tensions, edges, facts, options, eight
    crisis cards, a weather and a season card each), the state words,

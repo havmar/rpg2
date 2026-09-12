@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "cultures": {
   "western": {
    "natural": {
@@ -7250,6 +7250,448 @@
      ]
     }
    }
+  },
+  "heaven": {
+   "natural": {},
+   "natural_sites": {},
+   "settlement_templates": {
+    "gate_city": {
+     "tier": "capital",
+     "fits": [],
+     "tags": [
+      "capital",
+      "city",
+      "market",
+      "walls",
+      "road",
+      "gate-city",
+      "heaven-city"
+     ],
+     "description": "White walls laid out square on the open ground, and a gate in the middle of them that nobody here made. The lamps burn without oil and the stone carries its own porters.",
+     "menu": {
+      "healer": 0.6,
+      "lodging": 0.8,
+      "goods": 1.2
+     },
+     "sites": [
+      {
+       "id": "the-gate",
+       "name": "THE GATE",
+       "rooms": [
+        {
+         "id": "approach",
+         "name": "THE APPROACH",
+         "anchors": []
+        },
+        {
+         "id": "ring",
+         "name": "THE RING",
+         "anchors": []
+        },
+        {
+         "id": "gate",
+         "name": "THE GATE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-prefecture",
+       "name": "THE PREFECTURE",
+       "rooms": [
+        {
+         "id": "court",
+         "name": "THE COURT",
+         "anchors": []
+        },
+        {
+         "id": "cells",
+         "name": "THE CELLS",
+         "anchors": []
+        },
+        {
+         "id": "archive",
+         "name": "THE ARCHIVE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-infirmary",
+       "name": "THE INFIRMARY",
+       "rooms": [
+        {
+         "id": "ward",
+         "name": "THE WARD",
+         "anchors": []
+        },
+        {
+         "id": "dispensary",
+         "name": "THE DISPENSARY",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-school-of-measures",
+       "name": "THE SCHOOL OF MEASURES",
+       "rooms": [
+        {
+         "id": "hall",
+         "name": "THE HALL",
+         "anchors": []
+        },
+        {
+         "id": "library",
+         "name": "THE LIBRARY",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-market-of-lamps",
+       "name": "THE MARKET OF LAMPS",
+       "rooms": [
+        {
+         "id": "lamp-row",
+         "name": "LAMP ROW",
+         "anchors": []
+        },
+        {
+         "id": "food-row",
+         "name": "FOOD ROW",
+         "anchors": []
+        },
+        {
+         "id": "foreign-yard",
+         "name": "FOREIGN YARD",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-choir",
+       "name": "THE CHOIR",
+       "rooms": [
+        {
+         "id": "nave",
+         "name": "THE NAVE",
+         "anchors": []
+        },
+        {
+         "id": "loft",
+         "name": "THE LOFT",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-white-inn",
+       "name": "THE WHITE INN",
+       "rooms": [
+        {
+         "id": "common-room",
+         "name": "COMMON ROOM",
+         "anchors": []
+        },
+        {
+         "id": "kitchen",
+         "name": "KITCHEN",
+         "anchors": []
+        },
+        {
+         "id": "guest-room",
+         "name": "GUEST ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-masons-forge",
+       "name": "THE MASONS' FORGE",
+       "rooms": [
+        {
+         "id": "forge",
+         "name": "FORGE",
+         "anchors": []
+        },
+        {
+         "id": "yard",
+         "name": "YARD",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "general-shop",
+       "name": "GENERAL SHOP",
+       "rooms": [
+        {
+         "id": "sales-room",
+         "name": "SALES ROOM",
+         "anchors": []
+        },
+        {
+         "id": "store-room",
+         "name": "STORE ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-alchemists-dispensary",
+       "name": "THE ALCHEMIST'S DISPENSARY",
+       "rooms": [
+        {
+         "id": "shop",
+         "name": "SHOP",
+         "anchors": []
+        },
+        {
+         "id": "work-room",
+         "name": "WORK ROOM",
+         "anchors": []
+        },
+        {
+         "id": "locked-store",
+         "name": "LOCKED STORE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      }
+     ]
+    }
+   }
+  },
+  "hell": {
+   "natural": {},
+   "natural_sites": {},
+   "settlement_templates": {
+    "gate_city": {
+     "tier": "capital",
+     "fits": [],
+     "tags": [
+      "capital",
+      "city",
+      "market",
+      "gate-city",
+      "hell-city"
+     ],
+     "description": "A wooden town thrown up round a hollow in the ground, smoke over it and a fire in the middle of every street. The feast is on somewhere in it every week of the year.",
+     "menu": {
+      "lodging": 0.5,
+      "goods": 0.9,
+      "healer": 1.3
+     },
+     "sites": [
+      {
+       "id": "the-gate",
+       "name": "THE GATE",
+       "rooms": [
+        {
+         "id": "descent",
+         "name": "THE DESCENT",
+         "anchors": []
+        },
+        {
+         "id": "ring",
+         "name": "THE RING",
+         "anchors": []
+        },
+        {
+         "id": "gate",
+         "name": "THE GATE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-feast-hall",
+       "name": "THE FEAST-HALL",
+       "rooms": [
+        {
+         "id": "long-table",
+         "name": "THE LONG TABLE",
+         "anchors": []
+        },
+        {
+         "id": "kitchens",
+         "name": "THE KITCHENS",
+         "anchors": []
+        },
+        {
+         "id": "cellar",
+         "name": "THE CELLAR",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-kennels",
+       "name": "THE KENNELS",
+       "rooms": [
+        {
+         "id": "runs",
+         "name": "THE RUNS",
+         "anchors": []
+        },
+        {
+         "id": "masters-house",
+         "name": "THE MASTER'S HOUSE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-fire-school",
+       "name": "THE FIRE SCHOOL",
+       "rooms": [
+        {
+         "id": "forge-hall",
+         "name": "THE FORGE HALL",
+         "anchors": []
+        },
+        {
+         "id": "still-room",
+         "name": "THE STILL-ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-wild-market",
+       "name": "THE WILD MARKET",
+       "rooms": [
+        {
+         "id": "stalls",
+         "name": "THE STALLS",
+         "anchors": []
+        },
+        {
+         "id": "cages",
+         "name": "THE CAGES",
+         "anchors": []
+        },
+        {
+         "id": "counting-house",
+         "name": "THE COUNTING HOUSE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-debt-house",
+       "name": "THE DEBT-HOUSE",
+       "rooms": [
+        {
+         "id": "writing-room",
+         "name": "THE WRITING ROOM",
+         "anchors": []
+        },
+        {
+         "id": "strong-room",
+         "name": "THE STRONG ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-hound-and-cup-inn",
+       "name": "THE HOUND AND CUP INN",
+       "rooms": [
+        {
+         "id": "common-room",
+         "name": "COMMON ROOM",
+         "anchors": []
+        },
+        {
+         "id": "kitchen",
+         "name": "KITCHEN",
+         "anchors": []
+        },
+        {
+         "id": "guest-room",
+         "name": "GUEST ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-horn-forge",
+       "name": "THE HORN FORGE",
+       "rooms": [
+        {
+         "id": "forge",
+         "name": "FORGE",
+         "anchors": []
+        },
+        {
+         "id": "yard",
+         "name": "YARD",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "general-store",
+       "name": "GENERAL STORE",
+       "rooms": [
+        {
+         "id": "sales-room",
+         "name": "SALES ROOM",
+         "anchors": []
+        },
+        {
+         "id": "store-room",
+         "name": "STORE ROOM",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      },
+      {
+       "id": "the-alchemists-still",
+       "name": "THE ALCHEMIST'S STILL",
+       "rooms": [
+        {
+         "id": "shop",
+         "name": "SHOP",
+         "anchors": []
+        },
+        {
+         "id": "work-room",
+         "name": "WORK ROOM",
+         "anchors": []
+        },
+        {
+         "id": "locked-store",
+         "name": "LOCKED STORE",
+         "anchors": []
+        }
+       ],
+       "anchors": []
+      }
+     ]
+    }
+   }
   }
  },
  "lands": {
@@ -7306,6 +7748,22 @@
    "culture": "steppe",
    "tongue": "Tergal",
    "description": "The realm of the open grass: herd roads, river crossings and dry basins, held by clans under one high chief."
+  },
+  "concordia": {
+   "name": "Concordia",
+   "culture": "heaven",
+   "tongue": "Latin",
+   "rolled": true,
+   "side": "heaven",
+   "description": "Heaven's gate city, 27 years old: white walls on a plain, a gate in the middle of it, a Prefect over it."
+  },
+  "saturna": {
+   "name": "Saturna",
+   "culture": "hell",
+   "tongue": "Old Tongue",
+   "rolled": true,
+   "side": "hell",
+   "description": "Hell's gate city, 27 years old: a wooden town round a hollow, a feast every week, a Lord of Misrule for a year and a day."
   }
  }
 }

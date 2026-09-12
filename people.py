@@ -50,12 +50,19 @@ import random
 
 import rpg
 from rpg import Entity, MEDS_INTERVAL_DAYS, MEDS_PRICE
-from places import LAND_SPECS
+from places import CITY_STATES, LAND_SPECS
 from quests import HOMELANDS
 
 # --------------------------------------------------------------------------- #
-# Homelands (the nine countries; quests.HOMELANDS is the source of truth)
+# Homelands (quests.HOMELANDS is the source of truth: every land on the map)
 # --------------------------------------------------------------------------- #
+# WHERE A PERSON CAN BE BORN (2026-09-12, the gates arc's session 4) is the
+# NINE and not the eleven. Concordia and Saturna are 27 years old and their
+# people came through a gate; nobody rolls a homeland into one. What the two
+# city states DO own is a name pool like everybody else, because the smith at
+# Concordia's counter is an angel and `quests.cast_service_providers` casts
+# him out of the country he is standing in.
+HUMAN_HOMELANDS = tuple(c for c in HOMELANDS if c not in CITY_STATES)
 SEXES = ("m", "f")
 
 
@@ -86,6 +93,12 @@ def roll_age(rng: random.Random) -> int:
 # is the whole of the rule in play.
 LANGUAGES = {country: LAND_SPECS[country]["tongue"] for country in HOMELANDS}
 LATIN = LANGUAGES["byzantium"]
+# The two gate cities have tongues of their own -- Heaven's high register IS
+# the church's Latin, and Hell speaks the Old Tongue -- but neither is a
+# SECOND tongue a human rolls: the eight a Byzantine can have learned are the
+# eight other human ones (rules.md's Heaven & Hell add-on, "the tongue").
+HUMAN_TONGUES = tuple(dict.fromkeys(LANGUAGES[c] for c in HUMAN_HOMELANDS
+                                    if LANGUAGES[c] != LATIN))
 
 
 def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
@@ -93,8 +106,7 @@ def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
     or, for a Byzantine, one other tongue drawn from the eight."""
     home = LANGUAGES[homeland]
     if home == LATIN:
-        home = rng.choice([LANGUAGES[c] for c in HOMELANDS
-                           if LANGUAGES[c] != LATIN])
+        home = rng.choice(list(HUMAN_TONGUES))
     return [LATIN, home]
 
 
@@ -266,6 +278,37 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
               "Yasmin", "Zahra", "Aisha", "Halima", "Nusayba", "Rania",
               "Salma"),
     },
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Nobody
+    # is BORN here; these are the faces behind the two cities' counters and
+    # the people the party meets inside the walls. One language family, two
+    # registers (writing.md's two rows): Heaven's names are BOUND, every one
+    # of them ending in the suffix that means "of the Law", and its women
+    # carry the root with the soft ending instead; Hell's are UNBOUND -- a
+    # bare root, a hard ending, never -el, and rank is an epithet the table
+    # hangs on afterwards rather than a suffix.
+    "concordia": {
+        "m": ("Oriel", "Zohariel", "Dinael", "Emetiel", "Chesediel",
+              "Tzedekiel", "Mishpatiel", "Nuriel", "Barkiel", "Chokmiel",
+              "Binael", "Yashariel", "Tamiel", "Zakiel", "Hodael",
+              "Ramiel", "Sheliel", "Amitiel", "Meturgiel", "Kavodiel",
+              "Sedariel", "Tohoriel", "Gadriel", "Machaniel", "Peniel"),
+        "f": ("Orah", "Zohara", "Tohara", "Noga", "Emeta", "Dina",
+              "Chesda", "Tzedaka", "Nuria", "Barka", "Chokma", "Bina",
+              "Yeshara", "Tamah", "Zaka", "Hodaya", "Rama", "Shelah",
+              "Amita", "Kavoda", "Sedara", "Meira", "Gadara", "Machana",
+              "Peninah"),
+    },
+    "saturna": {
+        "m": ("Lahav", "Saar", "Dror", "Resheph", "Zaam", "Gever",
+              "Kerem", "Nesheq", "Shod", "Balak", "Tzayid", "Zeev",
+              "Layish", "Tirosh", "Qeren", "Raav", "Choshek", "Peretz",
+              "Mered", "Shachal", "Ragaz", "Hamon", "Naval", "Tzachok",
+              "Rahav"),
+        "f": ("Simcha", "Taava", "Dama", "Chaga", "Rina", "Hedva", "Gila",
+              "Tzama", "Lahava", "Sera", "Zima", "Rava", "Nedava",
+              "Chamda", "Ayala", "Shikra", "Marah", "Chava", "Nesha",
+              "Hamona", "Tzela", "Haya", "Rimona", "Shulah", "Kesem"),
+    },
     "tergal": {
         "m": ("Gruk", "Marok", "Thokk", "Drog", "Urzag", "Karg", "Snagg",
               "Bolg", "Ruk", "Ghor", "Muzgash", "Ogrim", "Varg", "Zug",
@@ -398,7 +441,7 @@ def _detail_traits(traits: dict[str, str], rng: random.Random, homeland: str,
                            f"{rng.randint(8, 12)})")
     elif quirk == "has an enemy":
         enemy_home = (homeland if rng.random() < 0.5
-                      else rng.choice(HOMELANDS))
+                      else rng.choice(HUMAN_HOMELANDS))
         sex = rng.choice(SEXES)
         name = pick_name(rng, enemy_home, sex, used)
         traits["quirk"] = (f"has an enemy ({name}, a {enemy_home} "
@@ -470,7 +513,7 @@ def make_character(rng: random.Random, level: int = 1,
     `blood` (2026-09-12) is the Nephilim hook: None ROLLS the companion
     odds (roll_blood), and a word -- "" included -- is taken as given,
     which is how the PC's own d6 reaches the generator."""
-    homeland = homeland or rng.choice(HOMELANDS)
+    homeland = homeland or rng.choice(HUMAN_HOMELANDS)
     sex = sex or rng.choice(SEXES)
     name = pick_name(rng, homeland, sex, used_names)
     blood = roll_blood(rng) if blood is None else blood
@@ -514,7 +557,7 @@ def make_pair(rng: random.Random, level: int,
     both at the option's level; parent/child share a homeland; ages fixed up
     the relationship reads (parent 16+ years older, mentor 10+)."""
     kind = rng.choice(PAIR_KINDS)
-    first_homeland = homeland or rng.choice(HOMELANDS)
+    first_homeland = homeland or rng.choice(HUMAN_HOMELANDS)
     a = make_character(rng, level, homeland=first_homeland,
                        used_names=used_names)
     b = make_character(rng, level,

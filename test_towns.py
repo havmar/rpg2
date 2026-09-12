@@ -96,7 +96,9 @@ class TheTownNameTable(unittest.TestCase):
         """A name is the most country-shaped thing in the game: the table is
         pinned per country, so a repaint of the overlay has to be a decision
         rather than a drift."""
-        census: dict[str, int] = {c: 0 for c in places.COUNTRIES}
+        # The NINE the overlay paints: the table is authored against the
+        # picture, and the two rolled city states are not on it.
+        census: dict[str, int] = {c: 0 for c in places.HUMAN_COUNTRIES}
         for row, column in places.TILE_TOWN_NAMES:
             census[places.country_at(row, column)] += 1
         self.assertEqual(census, TOWNS_PER_COUNTRY)
@@ -188,6 +190,8 @@ class TheChiefSlotTakesTheTownName(unittest.TestCase):
             where = (tile["row"], tile["column"])
             if where not in places.TILE_TOWN_NAMES:
                 continue
+            if tile["country"] in places.CITY_STATES:
+                continue    # a gate city is named by the gate roll
             slots = _slots(world, tile)
             if not slots or slots[0]["tier"] not in places.TOWN_GRADE:
                 continue
@@ -292,7 +296,14 @@ class TheChiefSlotTakesTheTownName(unittest.TestCase):
 class TheTongues(unittest.TestCase):
     def test_nine_tongues_named_by_their_country(self):
         self.assertEqual(set(people.LANGUAGES), set(quests.HOMELANDS))
-        self.assertEqual(len(set(people.LANGUAGES.values())), 9)
+        # Nine human tongues, one of them Latin -- plus the Old Tongue
+        # (2026-09-12): Heaven's high register IS the church's Latin, so
+        # Concordia adds no word and Saturna adds exactly one.
+        self.assertEqual(len({people.LANGUAGES[c]
+                              for c in people.HUMAN_HOMELANDS}), 9)
+        self.assertEqual(len(set(people.LANGUAGES.values())), 10)
+        self.assertEqual(people.LANGUAGES["concordia"], people.LATIN)
+        self.assertEqual(people.LANGUAGES["saturna"], "Old Tongue")
         for country, tongue in people.LANGUAGES.items():
             self.assertEqual(tongue, places.LAND_SPECS[country]["tongue"])
             self.assertTrue(tongue.isascii(), tongue)
@@ -303,7 +314,7 @@ class TheTongues(unittest.TestCase):
 
     def test_everyone_speaks_latin_plus_their_homeland(self):
         rng = random.Random(3)
-        for country in quests.HOMELANDS:
+        for country in people.HUMAN_HOMELANDS:
             if country == "byzantium":
                 continue
             for _ in range(5):
@@ -319,11 +330,11 @@ class TheTongues(unittest.TestCase):
             self.assertEqual(len(spoken), 2)
             self.assertEqual(spoken[0], people.LATIN)
             self.assertNotEqual(spoken[1], people.LATIN)
-            self.assertIn(spoken[1], set(people.LANGUAGES.values()))
+            self.assertIn(spoken[1], set(people.HUMAN_TONGUES))
             second.add(spoken[1])
-        self.assertEqual(second,
-                         {t for t in people.LANGUAGES.values()
-                          if t != people.LATIN})
+        # The eight other HUMAN tongues. The Old Tongue is Hell's and is
+        # not something an empire's man picked up on his travels.
+        self.assertEqual(second, set(people.HUMAN_TONGUES))
 
     def test_the_roll_is_seeded(self):
         self.assertEqual(people.roll_tongues(random.Random(11), "byzantium"),

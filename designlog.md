@@ -7981,3 +7981,325 @@ not know it was leaving open.
   REACTION is the payload, which is table protocol; if that reaction never
   materializes in play, the mechanical half will read thin. The city
   packets (session 5) are where it either lands or does not.
+
+---
+
+## 2026-09-12 (D) — Session 4 of the Gates arc: the two city states
+
+The arc's fourth build session, off `plan.md` item 4 and `gates.md`'s
+section 6 (the CITY half), section 10, the minimum of section 11 and the
+two city tables of section 14. Sessions 1-3 put two dead cities on the
+map, a sentinel at the bottom of each and the half-blood in the party.
+This one turns the two LIVE colonies into COUNTRIES: **the world is
+eleven lands now, not nine**, and that sentence is the whole session.
+Everything the spec decided is built as decided; what follows records
+where it went, every **[build settles]** call, every per-reader
+in-or-out decision the one-tile states forced, and exactly what session 5
+owes on the two packets.
+
+### What shipped, and where
+
+- **`place_catalog.json` v4.** Two `lands` — `concordia` and `saturna`,
+  with `rolled: true` and `side` beside the usual four words — and two
+  `cultures`, `heaven` and `hell`, each worn by exactly one land, each
+  authoring no countryside at all and exactly one settlement template,
+  `gate_city`, with its tags, its ten sites and its priced `menu`.
+  `validate_catalog`'s culture clauses were rewritten around "every tier
+  the culture's lands can SEAT", which is five for the nine and one for a
+  one-tile state.
+- **The takeover** — `places._city_takeover`, called from `roll_gates`'
+  second loop. The Tile's `country` and its country TAG are re-homed, the
+  tile moves between the two lands' `tiles` lists, the natural Area
+  standing on it moves with it (`land` / `homeland` / the two `areas`
+  lists / its copy of the country tag), and `land["capital_tile"]` is
+  set. The GROUND is untouched: climate, terrain, harvest, goods and the
+  Area's own `template` stay the donor's.
+- **The census** — `places._seat_gate_city`, called from `roll_census`.
+  One slot: tier `city`, the gate's authored name, `capital`, `authored`,
+  `charter="free"`, no companions, `known` from day one, and no rng
+  consumed.
+- **`capital_tile` as a per-world land fact.** `places.CAPITAL_TILES` is
+  DELETED. The authored answer key for the nine is
+  `HISTORICAL_CAPITAL_TILES`; a world's answer is
+  `land["capital_tile"]`, set in `_new_land_record` for the nine and by
+  the takeover for the two; the readers are `capital_tile(world,
+  country)` (strict — a None raises) and `human_capital_tiles(world)`,
+  which is what the gate roll's no-capital clause means. `worldsim.sky_tile`
+  and `places.gate_candidates` both re-pointed, and worldsim's
+  import-time "no capital Tile" clause moved into
+  `places._validate_countries`, where world facts are checked.
+- **The validators taught the gates.** `_validate_fixed_data` is
+  unchanged in intent and now says `HUMAN_COUNTRIES` where it said
+  `COUNTRIES`. `_validate_countries` compares the LIVE per-country biome
+  and band censuses against the pinned ones MINUS the ceded tile (read off
+  `world["gates"]`), checks that a ceded tile flies a city state's flag,
+  that each city state holds exactly one tile and that it is a rolled
+  gate-city tile, and that every one of the eleven seats a capital
+  standing on its own ground. `_validate_gates` grew the city half: the
+  flag, the single tile, the capital, the donor no longer holding it, and
+  the authored seat field by field.
+- **Identity.** `quests.RULER_TITLES` (prefect / lord of misrule),
+  `conquest.DEFENDER_ROLES` (warden of the gate / master of hounds),
+  `places.SETTLEMENT_NAMES` (one `city` name each),
+  `people.NAMES` (25 + 25 a side in the two registers),
+  `people.HUMAN_HOMELANDS` and `people.HUMAN_TONGUES`.
+- **The two quest tables** — `quests.TEMPLATES["heaven"]` and
+  `["hell"]`, four rows each with their eight
+  `QUEST_PLACE_REQUIREMENTS`, plus the eight ruin jobs (the append loop
+  moved below the new tables so they land on these two as well).
+- **Two STUB world-layer packets** under the culture keys, and
+  **`_HUMAN`** — the nine written out as a card scope — for the six
+  `mining/*` cards and THE KNOCKERS.
+- **The surfaces.** `places.GATE_CITY_MENU` in `tile_terms`,
+  `gate_legend_lines` naming the two as city states in their donor, and
+  eleven lands everywhere a country list is printed (`world`, `map`,
+  `lore`, `service`, `prices`, the polity page) with no change needed:
+  they all iterate `world["lands"]`.
+- Paperwork: rules.md's **Heaven & Hell add-on part 4** and three touched
+  lines in the World & Navigation add-on; dm.md's "The gates" (seven new
+  bullets) and "The nine countries" (an eleven-lands note and two crowns);
+  develop.md's Files, dev map and the bench note; benchlog's 2026-09-12
+  (D); this entry; `gates.md` loses section 6's city half, section 10 and
+  section 14's two tables and marks what the stubs carry in section 11;
+  `plan.md` loses item 4.
+
+### The [build settles] calls
+
+1. **The `gate_city` template's tier is `capital`, not `city`.** Section
+   10 says tier `city`, but a template's `tier` is the ROLE's tier — what
+   `_settlement_template` indexes roles by — and that reader takes the
+   CAPITAL role whenever a slot is `capital`. The design's `city` is the
+   CENSUS SLOT's tier, and that is exactly what it is; the Area's subtype
+   comes off the slot, so it reads `city` at the table. This is precisely
+   the shape London and Paris already have (a `capital` role worn by a
+   slot whose tier is `city` or `metropolis`), so nothing new was
+   invented.
+2. **Four service doors a city, on top of the six authored sites.**
+   Section 10's six places do not include an inn, a forge, a shop or an
+   apothecary, and `_attach_services` requires a capital to have all of
+   them plus a market, a government hall and a healer. Rather than
+   soften the requirement, the build authored the missing doors in
+   register: THE WHITE INN, THE MASONS' FORGE, GENERAL SHOP and THE
+   ALCHEMIST'S DISPENSARY in Concordia; THE HOUND AND CUP INN, THE HORN
+   FORGE, GENERAL STORE and THE ALCHEMIST'S STILL in Saturna. THE
+   INFIRMARY is Concordia's healer and THE MARKET OF LAMPS its market;
+   Saturna's THE FEAST-HALL sniffs as its government hall and its healer
+   falls to the alchemist through `_HEALER_HOSTS`, which is the right
+   answer for a city that charges x1.3 for one.
+3. **`_service_kind` learned one word: `prefecture`.** THE PREFECTURE is
+   Concordia's government, and the alternative was renaming the authored
+   site to contain "hall". One word in the sniffer's government group kept
+   gates.md's name.
+4. **The priced counter is carried on the TEMPLATE and applied through
+   the TILE menu.** Section 10 calls it "the `gate_city` template's priced
+   menu", so it is a `menu` key in the catalog — the first template to
+   carry one — read back into `places.GATE_CITY_MENU` and multiplied in
+   by `tile_terms`. A one-tile state's city and its ground are the same
+   map cell, the tile menu is already the STATIC hand `session.local_term`
+   multiplies into the land's dynamic one, and the product hits the same
+   `MENU_FLOOR` / `MENU_CEILING` clamps. The consequence is visible and
+   correct: on a gate city that also stands on a granary the two rows
+   multiply (seed 1 puts Concordia on the Nile, and a bed there is 0.90 x
+   0.80). `places.MENU_TERM_WORDS` is the written-out copy of
+   `worldsim.MENU_TERMS` (places cannot import worldsim), pinned against
+   it by `test_gates`.
+5. **The two EPIC rows are capital-only by CONSTRUCTION.** THE PREFECT'S
+   LEVY and THE HUNT OF MISRULE sit on their own culture's table, not in
+   `EPIC_TEMPLATES` — that list is country-agnostic and would have posted
+   the Prefect's levy at Moscow. The culture is worn by one land, that
+   land has one board, and that board is a capital: the constraint the
+   spec asked for is already true with no flag.
+6. **None of the eight new placements is `strict`.** The design says the
+   jobs land "within three days' road, in the human countryside around
+   it", which is exactly what the ORDINARY target radius already does.
+   `strict` exists for a requirement only one Area in the world can honor
+   (the ruin jobs); ordinary ground honors all eight of these.
+7. **Eight failure epilogues were written.** Section 14's two tables
+   author `desc` and `epilogue`; every other template in `quests.py`
+   carries a `failure_epilogue`, so the build wrote them rather than
+   shipping eight rows that go quiet when a job is failed.
+8. **Heaven's women do not take the -el suffix.** writing.md's row says
+   Heaven's names are BOUND and every one ends in the suffix meaning "of
+   the Law", but the same row's example women are Orah, Zohara, Tohara
+   and Noga. The examples win: the men are bound (-el / -iel), the women
+   carry the same roots with the soft ending. `test_gates` pins both
+   halves and pins that no Saturna name of either sex ends in -el.
+9. **25 + 25 names a city state, not the design's seed list.**
+   `people.NAMES`'s standing contract is 25 distinct names per country and
+   sex; relaxing it for two countries would have been softening a reader
+   for a state the content can simply avoid.
+10. **The natural Area goes with the tile.** The design's "keeps the DONOR
+    culture's inventory" is about the INVENTORY, which is already stamped
+    on the Area (`area["template"]` names the donor culture's natural
+    template and still resolves). Ownership moves — otherwise a land would
+    hold an Area standing on a tile it does not own. `test_gates` pins
+    both halves: the Area is Concordia's, and its template is
+    Seraptania's (or whoever's).
+11. **Both weather cards take `sky="clear"`.** The spec left the word to
+    the build for both; the clear sky is the only one of the nine weather
+    words that says "the sky over this city is doing something nobody
+    else's is doing" without being weather.
+12. **The stub relation edges are a pair between the two cities, on a
+    placeholder state.** Section 11's four real rows run between a city
+    and its HOST, whose key is rolled, so they cannot be authored at
+    import — and resolving them at `open_world` is session 5's contract.
+    What stands until then is `concordia --the gate--> saturna` on
+    `register-read` and the mirror on `feast-spilled`, both deriving
+    `gate-watched` ("the other gate is watching this one"). Each is fired
+    by that side's own stub crisis card, so neither is dead data.
+13. **A theater cell a gate city takes is dropped from the war.**
+    `worldsim.new_war` takes the world now and filters its `theater`.
+    The standing wars are not rolled over the city states (section 0) and
+    `conquest.roll_campaigns` WRITES on theater ground — it burns, camps
+    on and besieges it. A neutral one-tile state is nobody's front, and
+    the hand-drawn theaters are wide enough that losing a cell costs a war
+    nothing (measured: no theater lost its settlements over 100 worlds).
+14. **`ANY_LAND` now means eleven, and two card families had to say the
+    nine instead.** The six `mining/*` cards and THE KNOCKERS are about
+    PITS, and a 27-year-old one-tile colony has none: a gold rush in
+    Concordia was the first thing the scratch playthrough's `lore` page
+    printed. `_HUMAN` is the scope they took.
+15. **No campaign opens inside a gate city.** The start draw skips a slot
+    on a city state's tile, beside the hamlet rule it already had.
+16. **`_validate_countries` compares the LIVE census against pinned MINUS
+    the ceded tile**, rather than counting the ceded tile back under its
+    donor and comparing against the pins unchanged. Both express the same
+    arithmetic; only the first actually checks that the tile LEFT.
+
+### Every reader, in or out
+
+The session's real work was deciding, one reader at a time, whether a
+one-tile foreign colony is a country for that reader's purposes. The rule
+that fell out of it and is now in develop.md's dev map: **authored answer
+keys, pinned censuses and anything a person is BORN into mean the nine;
+anything a land HAS means eleven.**
+
+| reader | in / out | why |
+|---|---|---|
+| the world layer (`open_world`, decks, wealth, weather, politics, news, the priced menu) | IN | a land has a layer; that is what a land is |
+| the relations table | IN (two stub edges) | the validator demands a relation reaches every land |
+| `RULER_TITLES`, `DEFENDER_ROLES`, `people.NAMES`, `cast_service_providers`, `_cast_the_land` | IN | a crown, a wall commander and the faces behind the counters |
+| `quests.TEMPLATES` / the board / `board_slots` | IN | the city is a capital and posts five ordinary jobs |
+| `quests.wild_pool` | IN | the countryside on its own tile is its own |
+| `land_homeland` and everything through it (karma, crime, conquest, the posse code) | IN | a settlement's land is its land |
+| the map legend, `world`, `lore`, `service`, `prices`, the polity page | IN | eleven rows, no code change: they iterate `world["lands"]` |
+| `econmap.py` | IN | it is a renderer over a built world; it prints eleven rows, one tile each |
+| the trade network's MARKETS | IN | the census seats a city there, and a city is a market |
+| the trade network's CAPITAL destinations | OUT | `human_capital_tiles`; nobody carts produce to a colony because it is somebody's capital |
+| the birth roll (`HUMAN_HOMELANDS`) | OUT | nobody is born in one |
+| a Byzantine's second tongue (`HUMAN_TONGUES`) | OUT | the Old Tongue is Hell's, not a travel souvenir |
+| the start draw | OUT | a campaign opens in the human world |
+| the rolled wars' belligerents | OUT | the authored templates name the nine |
+| a war's theater cells | OUT (the ceded cell is dropped) | the sim writes on theater ground |
+| the campaign sim | OUT by consequence | it only walks theaters |
+| the Miners' League (six cards + THE KNOCKERS) | OUT | no pits |
+| the ANY_LAND magic cards (`wild-talent`, `the-hunt`) | IN | a wild talent in Concordia is the Pruners' own subject matter |
+| the ANY_LAND weather and season cards | IN | a sky is a sky |
+| `TILE_TOWN_NAMES` / `_validate_town_names` | the ground stays IN, the city never reads it | which tiles can seat a town is a fact about the ground; the gate city's slot is named by the roll |
+| `PINNED_COUNTRY_BIOMES` / `_BANDS`, `_validate_fixed_data`, `HISTORICAL_CITIES` | the NINE | authored answer keys about a painted picture |
+| `bench_worldgen`'s census / trade / harvest sweeps | IN by construction | they walk land tiles |
+| `bench_worldgen`'s gates sweep | reads `cut_from` and the nine's capitals | the eligibility rule is about the donor |
+
+### What session 5 owes — the packets, precisely
+
+The two packets under the culture keys `heaven` and `hell` are STUBS and
+`test_worldsim.test_the_two_gate_packets_are_stubs_and_say_so` pins
+exactly what they carry, so "it is a stub" stays a fact rather than a
+memory. **What is there** (all of it authored off section 11's real
+content, so session 5 EXTENDS rather than replaces):
+
+- four constitutions a side at 6/2/1/1 — THE HIERARCHY / THE MISSION /
+  THE QUARANTINE / THE COUNCIL OF CHOIRS, and THE FEAST / THE FREE
+  COMPANIES / THE LONG FEAST / THE KENNEL;
+- three tensions a side with the inner axis STANDING
+  (`gardeners-vs-pruners`, `prefect-vs-church`, `angels-vs-converts`;
+  `feast-vs-hunger`, `lord-vs-captains`, `demons-vs-debtors`) and their
+  twelve blocs, three of which carry a `face` (prefect and lord are
+  RULER, converts and demons are WILDCARD);
+- all six faction edges a side, word for word from section 11;
+- ONE card per track a side: `heaven/the-register` and
+  `hell/the-feast-spills` on crisis, `heaven/clear-sky` and
+  `hell/feast-fires` on weather, `heaven/the-choir-season` and
+  `hell/the-wild-season` on season;
+- ONE fact a side — THE GATE, in each city's own words;
+- three state words: `register-read`, `feast-spilled` and the
+  placeholder `gate-watched`;
+- two placeholder relation edges between the two cities.
+
+**What session 5 still owes:**
+
+1. **The seven other crisis cards a side** (section 11's tables): Heaven's
+   the-removal, the-cure-line, the-gate-guarded, a-stranded-one,
+   the-lamp-thieves, the-sermon, the-servant-loose; Hell's the-debt-book,
+   the-lord-hanged, the-kennels-open, a-stranded-one, the-cages,
+   the-election, the-horned-ones. Two of them are the CHAINS the stubs
+   already set up: `the-removal` admits on `register-read` and
+   `the-debt-book` on `feast-spilled`, and both must CLEAR the state they
+   admit on (the chain rule).
+2. **The two OPTIONS a side** — `heaven/choir-blessing` and
+   `heaven/school-of-measures`, `hell/the-feast` and
+   `hell/the-fire-school`. Neither city sells anything today: `service`
+   in Concordia prints "selling nothing out of the ordinary this week",
+   which is the most visible hole the stubs leave.
+3. **The five remaining facts a side** — THE LAMPS, THE REGISTER, THE
+   CURE, THE MARBLE SERVANTS, SAINT TOM; THE YEAR, THE FEAST, THE HOUNDS,
+   THE WILD MARKET, TOM THE THIEF. A city state's lore page is currently
+   one line long.
+4. **The rest of the state words and their price and encounter rows**:
+   `removal`, `gate-shut`, `preached-against`, `year-owed`,
+   `lord-hanged`, `cages-open`, and the standing `hosts-heaven` /
+   `hosts-hell` / `keeps-candor` / `keeps-libera` / `pagan-host` stamped
+   at worldgen; the `STATE_MENU` rows for `gate-shut`, `feast-spilled`,
+   `year-owed`, `hosts-heaven` and `hosts-hell`; the `STATE_ENCOUNTERS`
+   rows for `gate-shut`, `feast-spilled` and `lord-hanged`.
+5. **The four HOST-resolved relations rows**, which must REPLACE the two
+   placeholder `concordia`<->`saturna` edges and retire `gate-watched`
+   with them. `RELATIONS` is a module constant and the host is rolled, so
+   this is the one piece of the packet that needs a mechanism rather than
+   a table: section 11's `[decided]` is to resolve the HOST placeholder
+   inside `open_world` off `world["gates"]`, with the reachability pass
+   run on the resolved table.
+6. **The whole human side**: the synod question card, the four
+   per-culture Tom facts (section 4's last line), the four host-specific
+   facts stamped at worldgen, the crusade tension and its card where
+   Hell's host is a Sun-communion land, and the one-line pact pointer at
+   the head of rules.md's Hell Pact section.
+
+Two smaller things it should pick up while it is in there: `rulers.py`
+rolls a HUMAN crown sheet for both city states (Saturna's Lord of Misrule
+came out "crippled, zealot, cultivated" with a brother's body behind the
+throne), and the country-agnostic epics keep their authored givers inside
+the two cities ("the king's general" in Concordia). Neither is wrong
+enough to hold a session for; both would be cheap beside the packets.
+
+### What felt wrong
+
+- **The catalog's five-tier contract was the session's real cost.** Every
+  clause in `validate_catalog` was written for a country with a
+  countryside, and four of them had to learn the phrase "every tier the
+  culture's lands can seat". That is the right generalization and the
+  code reads better for it, but it is worth knowing that the NEXT
+  one-settlement polity (a conquest-era city state, say) will be cheap
+  only because this session paid for it.
+- **`ANY_LAND` is now a slightly dangerous word.** It used to mean "every
+  country", and every country was a country with fields, pits and
+  villages. It means eleven lands now, two of which are a walled colony
+  and a feast town, and the two card families that had to be re-scoped
+  were found by READING a lore page rather than by any validator. There
+  is no lint that would have caught them, and there probably should be
+  one when session 5 doubles the amount of authored content pointed at
+  these two lands.
+- **The city states have no countryside of their own and it shows in one
+  place**: `quests.wild_pool("concordia")` is the heaven table's pools,
+  so the wilderness on Concordia's own tile fields its own quest rosters
+  rather than the donor's peasants and wolves. It is defensible (the
+  fields inside the walls' shadow are patrolled by the city) and nothing
+  reads it today except a DM's reference, but it is the one place where
+  "the ground stays the donor's" and "the tile is the city's" disagree.
+- **Seed 1 put Concordia on the Nile delta**, which is both funny and a
+  useful reminder that the weight is not a filter: Heaven's colony can
+  land on the best farmland in the world or on a Balkan hillside, and the
+  `gate_city` template's description has to be true of both. The first
+  draft said "white walls on a plain" and the scratch playthrough printed
+  it over a hills tile, which is exactly the failure the catalog rule
+  about template descriptions exists to prevent.

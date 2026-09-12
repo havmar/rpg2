@@ -97,114 +97,17 @@ built: **one fact line per culture on the lore page**, the table of Toms
 in the culture's own words, which belongs with session 5's packets and
 lore pages (section 11's human side).
 
-## 6. The gate layer: the CITY half (session 4)
-
-Session 1 shipped `places.roll_gates(world)` -- the roll, `world["gates"]`,
-all four rings, the tile tags and the two ruins (see rules.md's Heaven &
-Hell add-on and develop.md's dev map for what exists). What it
-deliberately did NOT do is the city tiles' TAKEOVER. The city tiles today
-are ordinary tiles of their countries wearing a ring, two tags, a record
-entry and the map glyph `G`. This is what session 4 adds on top.
-
-**The takeover.** For each **city** in `world["gates"]`: `tile["country"]`
-re-homed to the city state; the tile moved from the donor land's `tiles`
-list to the city state's; the land record's `capital_tile` set (see the
-validator note); the census then seats the city (below). `cut_from` on the
-record already names the donor.
-
-**The census and the city.** `roll_census` treats a gate-city tile like
-an authored historical tile: ONE slot, tier `city`, `name` the authored
-city name, `capital=True`, `authored=True`, `charter="free"`, no
-companions (`SLOT_CAP` does not apply: a one-tile state is its city and
-nothing else). The city's settlement template is the culture's
-`gate_city` template (section 10). The city is `known=True` from day one,
-like every authored city: everyone has heard of Concordia.
-
-**The validators.** Three of today's checks assume the nine and must be
-taught the gates, and the fix is one shape:
-
-- `_validate_fixed_data` keeps checking the AUTHORED overlay against the
-  pinned nine-country censuses exactly as now (it runs before the gate
-  layer; the map file has not changed).
-- `_validate_countries` (world level) compares each of the nine against
-  its pinned biome and band counts **minus the tile it ceded**, read off
-  `world["gates"]`, and checks the two city states hold exactly one tile
-  each, of the right set.
-- **The capital tile becomes a per-world land fact.** `CAPITAL_TILES` is
-  a module constant today, consumed by `worldsim.capital_tile` for the
-  sky read AND by `places.gate_candidates` for the no-capital clause. It
-  becomes `land["capital_tile"]`, set for the nine from
-  `HISTORICAL_CITIES` and for the two from the roll; `worldsim.capital_tile`
-  reads the land record. The "nine capitals named explicitly" check in
-  `_validate_fixed_data` stays about the nine.
-- `quests.generate_world`'s `capital = next(s for s in setts if
-  s.get("capital"))` works unchanged once the city slot is `capital`.
-- `places._validate_gates` (session 1's clause) will need its city half
-  widened the same way: it checks the placement rule, and after the
-  takeover a city tile's `country` is no longer its `cut_from`.
-
-**Homelands.** `people.HOMELANDS` (the birth roll for the PC, companions
-and recruits) becomes `HUMAN_HOMELANDS`: the nine. Nobody is *born* in
-Concordia or Saturna in the roll; the city states' name pools serve the
-NPCs cast at their counters (the smith in Concordia is an angel, and
-`cast_service_providers` casts from the country's pool as it does
-everywhere). `RULER_TITLES` gains `concordia: prefect/prefect` and
-`saturna: lord of misrule/lady of misrule`; `conquest.DEFENDER_ROLES`
-gains `warden of the gate` and `master of hounds`.
-
-**Name reserves.** `SETTLEMENT_NAMES` requires four non-empty tiers per
-country; a city state seats exactly one settlement, so its validator
-clause relaxes to "every tier the country can seat", and each city state
-authors one `city` name and nothing else. [decided: relax the clause,
-don't author districts nobody will see.]
-
-
-## 10. The two city states (the catalog)
-
-`place_catalog.json` goes to version 4. Two new `lands` and two new
-`cultures`:
-
-```
-"lands": {
-  "concordia": {"name": "Concordia", "culture": "heaven", "tongue": "Latin",
-                "rolled": true, "side": "heaven",
-                "description": "Heaven's gate city, 27 years old: white walls on a plain, a gate in the middle of it, a Prefect over it."},
-  "saturna":   {"name": "Saturna", "culture": "hell", "tongue": "Old Tongue",
-                "rolled": true, "side": "hell",
-                "description": "Hell's gate city, 27 years old: a wooden town round a hollow, a feast every week, a Lord of Misrule for a year and a day."}}
-```
-
-`rolled` is the flag the map layer reads (no overlay letter, tile from
-the roll); `side` is what the skins, pools and rings read.
-
-Each culture record carries `natural` (unused: a one-tile state's natural
-Area is the tile's own ground and keeps the DONOR culture's inventory —
-Concordia's countryside is still Seraptanian fields), `natural_sites`
-(empty), and ONE settlement template, `gate_city`:
-
-- **Concordia's**: tier `city`, tags `(capital, city, market, walls, road,
-  gate-city, heaven-city)`, sites: THE GATE (the standing crossing;
-  rooms: the approach, the ring, the gate), THE PREFECTURE (court, cells,
-  archive), THE INFIRMARY (the ward, the dispensary), THE SCHOOL OF
-  MEASURES (the hall, the library), THE MARKET OF LAMPS, THE CHOIR.
-- **Saturna's**: tier `city`, tags `(capital, city, market, gate-city,
-  hell-city)`, sites: THE GATE (the descent, the ring, the gate), THE
-  FEAST-HALL (the long table, the kitchens, the cellar), THE KENNELS
-  (the runs, the master's house), THE FIRE SCHOOL (the forge hall, the
-  still-room), THE WILD MARKET (the stalls, the cages, the counting
-  house), THE DEBT-HOUSE (where oaths are written and the year is owed).
-
-Both cities post work: the city is `capital`, so its board draws its
-culture's quest table plus `EPIC_TEMPLATES`, five ordinary slots, the
-whole ladder. Its jobs land within three days' road — in the human
-countryside around it. That is how a city state is FELT before the
-player ever walks in.
-
-**Prices.** The `gate_city` template's priced menu: Concordia `healer`
-×0.6 and `lodging` ×0.8 (clean beds, the cure), `goods` ×1.2; Saturna
-`lodging` ×0.5 (a bed is a place at the feast), `goods` ×0.9, `healer`
-×1.3 (nobody in Saturna is in a hurry to heal you). Ordinary menu terms;
-the band and states multiply over them as everywhere.
+> **Section 6's CITY half, section 10 and section 14's two city tables
+> are CUT** (2026-09-12, session 4 shipped). Where they went: the tile
+> takeover, the one-tile state, its city and its counters, its prices, its
+> board, its two crowns and its two name registers are **rules.md's
+> `Heaven & Hell - Add-on, part 4`**; the table manner is **dm.md's "The
+> gates" and "The nine countries"**; the code pointers are **develop.md's
+> Files and dev map**, the numbers **benchlog.md's 2026-09-12 (D) entry**,
+> and the build record (with every [build settles] call, every per-reader
+> in/out decision for a one-tile state, and exactly what session 5 owes on
+> the two packets) **designlog.md's 2026-09-12 (D)**. What remains below
+> is session 5: section 11 in full, plus the one line of section 4.
 
 ## 11. The world layer: two packets
 
@@ -215,6 +118,24 @@ card per land on each of the three tracks (`crisis`, `weather`,
 `season`), at least one standing fact, at least one relation edge, a
 capital tile. Both packets are authored under their CULTURE key
 (`heaven`, `hell`), the Thule precedent.
+
+> **What session 4 already SHIPPED as a stub** (2026-09-12), authored off
+> the rows below so this section extends rather than replaces it: both
+> sides' **four constitutions**, all **three tensions** each with the
+> inner axis STANDING, all **twelve blocs**, all **twelve faction edges**,
+> ONE crisis card each (`heaven/the-register`, `hell/the-feast-spills`),
+> the **weather** card each (`heaven/clear-sky`, `hell/feast-fires`, both
+> with `sky="clear"` -- the [build settles] call), the **season** card
+> each (`heaven/the-choir-season`, `hell/the-wild-season`), the first
+> **fact** each (THE GATE, in each city's own words), and three state
+> words (`register-read`, `feast-spilled`, plus a placeholder
+> `gate-watched`). **What session 5 still owes is everything else on this
+> page**: the seven other crisis cards a side, the two OPTIONS a side, the
+> five remaining facts a side, the rest of the state words with their
+> `STATE_MENU` and `STATE_ENCOUNTERS` rows, the four HOST-resolved
+> relations rows (which must REPLACE the two placeholder
+> concordia<->saturna edges and retire `gate-watched` with them), and the
+> whole human side below.
 
 ### Heaven (`heaven`, worn by `concordia`)
 
@@ -396,21 +317,23 @@ deleted, the section here CUT).
 
 **Session 1, the four sites on the map, SHIPPED 2026-09-12** (designlog
 2026-09-12 (A)), **session 2, the two sentinels and the ruin jobs,
-SHIPPED 2026-09-12** (designlog 2026-09-12 (B)) and **session 3, the
-Nephilim, SHIPPED 2026-09-12** (designlog 2026-09-12 (C)); their sections
-are cut from this file. Two remain.
+SHIPPED 2026-09-12** (designlog (B)), **session 3, the Nephilim, SHIPPED
+2026-09-12** (designlog (C)) and **session 4, the two city states, SHIPPED
+2026-09-12** (designlog (D)); their sections are cut from this file. One
+remains.
 
 | # | session | ships | this file's sections |
 |---|---|---|---|
-| 4 | **The two city states** | catalog v4, the city half of `roll_gates` (tile takeover, census, capital_tile as a land fact, the validators), name pools, `RULER_TITLES`/`DEFENDER_ROLES`, `HUMAN_HOMELANDS`, the `gate_city` templates and their menus, the two culture quest tables (section 14), a STUB packet each (the validator's minimum: four constitutions, two tensions, one card a track, one fact, one relation) | 6 (the city half), 10, the minimum of 11 |
 | 5 | **The packets and the human side** | the full two packets, the state words, menus and encounters, the HOST-resolved relations, the synod card, the four culture facts, the host facts, the crusade tension and card, the pact pointer line, the lore pages | 11 in full |
 
 Session 1 was the biggest and is what made the arc PLAYABLE: a new world
 now has two ruins to walk into at any level, session 2 put something at
-the bottom of each, and session 3 put the setting in the party itself.
-Session 4 is the one that touches validators and the country machinery
-and must leave the world booting with eleven lands; its packet stubs
-exist only so the validator passes, and session 5 replaces them.
+the bottom of each, session 3 put the setting in the party itself, and
+session 4 made the two live colonies COUNTRIES -- eleven lands, two
+boards, two crowns, two priced counters. What session 5 has left is the
+CONTENT the frame is now waiting for: the two packets in full (the stubs
+mark what stands), the human side's reaction to all of it, and the one
+Tom line per culture on the lore page.
 
 ## 14. The quest templates
 
@@ -418,56 +341,7 @@ Authored in writing.md's register (a problem already happening, who
 wants it changed, a visible objective, at most one complication). `pool`
 sets the band; `sites` are the stems the job's places are named by.
 
-The eight "Into the ruins" rows are CUT (2026-09-12, session 2 shipped
-them as `quests.RUIN_TEMPLATES`). The two CITY tables below are session
-4's, and land with the two `gate_city` cultures.
-
-**Concordia's table (culture `heaven`):**
-
-- **Escort the Healers** — LADDER_POOL[:4], skins {}, sites ("the
-  road",), giver "the infirmary's warden", desc "Two healers walk to the
-  villages every week. Raiders have taken to walking with them. Walk
-  with them instead.", epilogue "The healers make their rounds. The
-  raiders do not."
-- **The Lamp Thieves** — LADDER_POOL[:5], sites ("the thieves' camp",),
-  giver "the Market of Lamps", proof "the lamps", desc "Six lamps of
-  Concordia were stolen off a cart. Bring them back. The thieves are
-  camped in the hills and the lamps show at night.", epilogue "Six lamps
-  back on the counter. The hills are dark again."
-- **Bring the Child Home** — LADDER_POOL[:5] + ("soldier",), skins
-  heaven, sites ("the warden's post",), giver "a mother from the host
-  village", align good, desc "The Pruners took a child off the register
-  to Concordia. The mother wants the child back. The wardens at the post
-  will not hand it over.", epilogue "The child is home. The register has
-  one name crossed out and nobody in Concordia says by whom."
-- **The Prefect's Levy** (EPIC, capital only) — LADDER_POOL, skins heaven,
-  sites ("the muster field", "the raiders' hold"), places 2, giver "the
-  Prefect", desc "The Prefect wants the raiders who burned a lamp-cart
-  made an example of. Muster with the wardens and take the hold.",
-  epilogue "The hold is taken. The wardens hang nobody; the Prefect's law
-  does not hang. It registers."
-
-**Saturna's table (culture `hell`):**
-
-- **Bring the Wine** — BANDIT_POOL, skins {}, sites ("the cart road",),
-  giver "the Feast-hall", desc "The feast is in four days and the wine
-  cart is stuck at a bridge held by toll-men. Bring the wine.", epilogue
-  "The wine arrives. The toll-men are invited."
-- **Guard the Feast** — LADDER_POOL[:5] + ("dire wolf",), skins hell,
-  sites ("the long table",), giver "the Lord of Misrule", desc "Every
-  feast somebody starts a fight and every fight somebody dies. This
-  week, stop it.", epilogue "Nobody dies. It is the quietest feast in
-  Saturna's memory and the Lord of Misrule is not pleased."
-- **Break the Debt-House** — LADDER_POOL[:6], skins hell, sites ("the
-  debt-house",), giver "a village elder from the host land", align good,
-  desc "Half the village owes a year to Saturna's debt-house. The elder
-  wants the books burned. The demons of bargains keep the books.",
-  epilogue "The books burn. Half the village is a year richer and
-  Saturna's demons of bargains write it down as a lesson."
-- **The Hunt of Misrule** (EPIC, capital only) — HELL_RUIN_POOL, skins
-  hell, sites ("the hunt's yard", "the quarry's ground"), places 2, giver
-  "the Master of Hounds", desc "Once a year the feast hunts something
-  that hunts back. This year it is a horned giant off Libera. Ride with
-  the hounds.", epilogue "The giant's horns hang in the feast-hall. The
-  hounds ate well."
-
+> **The two CITY tables are CUT** (2026-09-12, session 4 shipped them as
+> `quests.TEMPLATES["heaven"]` and `quests.TEMPLATES["hell"]`, four rows
+> each with the failure epilogues the build had to write). Nothing of
+> section 14 remains to build.

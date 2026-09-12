@@ -389,6 +389,11 @@ table:
 | Umaia | Africa, the Levant and southern Iberia | Umaian | desert behind, a green shore, the great river's granary |
 | Tergal | the Pontic steppe | Tergal | herd roads, clans, one high chief |
 
+- **Eleven lands, nine countries** (2026-09-12). The table above is the
+  painted world and it is what "a country" means for names, homelands and
+  tongues. Two more lands stand on the map: Concordia and Saturna, the
+  one-tile gate city states (below, "The gates"). They have crowns, lore
+  pages, prices and boards like anybody else, and nobody is from one.
 - **A country is names and identity; a CULTURE is content.** Phyrascia and
   Teutonia draw the same world cards and the same settlement shapes, and
   share nothing else — not a name, not a crown's title, not a tongue. When
@@ -397,7 +402,8 @@ table:
 - **The crown has a different name in each**: king in Phyrascia and
   Seraptania, emperor in Teutonia and Byzantium, grand prince in
   Vellisclavia, sea-king in Thule, prince in Andalusia, sultan in Umaia,
-  high chief in Tergal. The script prints it; use it.
+  high chief in Tergal -- and prefect in Concordia, lord (or lady) of
+  misrule in Saturna. The script prints it; use it.
 - **Nine capitals**: London, Paris, Prague, Stockholm, Moscow,
   Constantinople, Toledo, Cairo, Kyiv. The four great cities of the age
   are Paris, Venice, Constantinople and Cairo.
@@ -835,6 +841,43 @@ Hell add-on is the setting; this is how it plays at the table.
   - **A fire-born follows the Old Tongue.** He is the party's ear at a
     Hell table -- let him catch the terms the others miss, and let the
     demons notice him doing it.
+- **The two LIVE cities are countries** (2026-09-12, session 4), of one
+  tile each, cut out of whichever of the nine the roll put them in. `world`
+  lists eleven lands, `lore concordia` and `lore saturna` are pages like
+  any other, and the map legend's GATES group says which country each city
+  was cut out of. The tile is theirs; the FIELDS on it are still the
+  neighbours' fields, farmed by the same people, and the city's work is
+  posted to them.
+  - **Entering is ordinary.** `travel` to the tile and `go` into the city
+    like any settlement: it is known from day one, it has an inn, a forge,
+    a shop and an apothecary, and it posts five jobs over the whole
+    ladder. Nobody stops the party at the gate -- that would be a rule the
+    engine does not have. Play the WATCHING instead: in Concordia
+    everything the party does is written down somewhere, and in Saturna
+    everything the party accepts is owed.
+  - **Concordia** is white walls laid out square on whatever open ground
+    the roll gave it, with the gate standing open in the middle of them. Its counters: THE INFIRMARY
+    (the cure is cheap and the wardens ask who you are), THE MARKET OF
+    LAMPS, THE SCHOOL OF MEASURES, THE CHOIR, and THE PREFECTURE, where the
+    **Prefect** holds court. Healing x0.6, a bed x0.8, everything else
+    x1.2.
+  - **Saturna** is a wooden town round a hollow, smoke over it, a fire in
+    every street. Its counters: THE FEAST-HALL (a bed is a place at the
+    long table), THE KENNELS, THE FIRE SCHOOL, THE WILD MARKET and THE
+    DEBT-HOUSE, where a year of a life is written down. The **Lord of
+    Misrule** holds it for a year and a day. A bed x0.5, goods x0.9, the
+    healer x1.3 -- nobody here is in a hurry to fix you.
+  - **Their work goes out to the neighbours.** Concordia hires escorts for
+    its healers, lamp-thief hunters, and once a mother from a host village
+    asking for her child back off the register; the Prefect musters a levy
+    against a raiders' hold. Saturna wants its wine cart through, its feast
+    kept quiet, its debt-house burned by whoever the elder can hire, and
+    once a year it hunts something that hunts back. Play the giver as
+    somebody with a job to fill, not as a power making a move.
+  - **Nobody is BORN in either.** Every face behind a counter came through
+    the gate or walked in as a convert; no PC, companion or recruit is ever
+    from one. If the party asks where somebody is from, the answer is the
+    other side of the gate and it is said plainly.
 - **Do not promise the endgame.** What one would DO to a live gate is not
   designed. The party can reach the bottom, take the bar, and the ruin
   goes quiet. Say nothing about what comes next.

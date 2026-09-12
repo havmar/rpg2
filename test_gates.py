@@ -41,6 +41,7 @@ from contextlib import redirect_stdout
 
 import dataclasses
 
+import conquest
 import crime
 import karma
 import people
@@ -128,18 +129,23 @@ class ThePlacementRule(unittest.TestCase):
 
     def test_the_sets_are_north_and_south(self):
         """Hell is north and pagan-coded; Heaven is south and church-coded.
-        The two sets are disjoint and between them are the nine."""
+        The two sets are disjoint and between them are the nine -- the
+        HUMAN nine: a gate never rolls into the other gate's city state."""
         self.assertEqual(set(places.HEAVEN_LANDS) | set(places.HELL_LANDS),
-                         set(places.COUNTRIES))
+                         set(places.HUMAN_COUNTRIES))
         self.assertFalse(set(places.HEAVEN_LANDS) & set(places.HELL_LANDS))
 
     def test_every_site_lands_in_its_own_set(self):
+        """A ruin's tile still flies its keeper's flag; a live city's flies
+        its own after the takeover (2026-09-12, session 4), so the set is
+        checked against the country it was cut out of."""
         for seed in range(SWEEP):
             built = world(seed)
             for key in places.GATE_KEYS:
-                tile = built["tiles"][built["gates"][key]["tile"]]
-                self.assertIn(tile["country"],
-                              places.GATE_BY_KEY[key]["lands"],
+                record = built["gates"][key]
+                tile = built["tiles"][record["tile"]]
+                home = record.get("cut_from", tile["country"])
+                self.assertIn(home, places.GATE_BY_KEY[key]["lands"],
                               f"{seed}: {key}")
 
     def test_no_site_stands_on_an_authored_tile_or_a_mine(self):
@@ -153,8 +159,10 @@ class ThePlacementRule(unittest.TestCase):
                 self.assertNotIn(here, places.MINES, key)
 
     def test_no_site_stands_on_or_beside_a_capital(self):
+        # The NINE painted capitals: a city state's own capital IS the
+        # tile being placed (2026-09-12).
         capitals = [places.tile_row_column(tid)
-                    for tid in places.CAPITAL_TILES.values()]
+                    for tid in places.HISTORICAL_CAPITAL_TILES.values()]
         for seed in range(SWEEP):
             built = world(seed)
             for key in places.GATE_KEYS:
@@ -185,10 +193,12 @@ class ThePlacementRule(unittest.TestCase):
         for seed in range(SWEEP):
             built = world(seed)
             for key in ("concordia", "saturna"):
-                tile = built["tiles"][built["gates"][key]["tile"]]
+                record = built["gates"][key]
+                tile = built["tiles"][record["tile"]]
                 self.assertTrue(
                     any(built["tiles"][nid]["biome"] != "sea"
-                        and built["tiles"][nid]["country"] == tile["country"]
+                        and built["tiles"][nid]["country"]
+                        == record["cut_from"]
                         for nid in tile["neighbors"]), f"{seed}: {key}")
 
     def test_the_terrain_preference_is_a_weight_and_not_a_filter(self):
@@ -250,8 +260,15 @@ class TheRecordAndTheRing(unittest.TestCase):
             self.assertEqual(set(record), {"side", "kind", "tile", owner})
             self.assertEqual(record["side"], spec["side"])
             self.assertEqual(record["kind"], spec["kind"])
-            self.assertEqual(record[owner],
-                             self.built["tiles"][record["tile"]]["country"])
+            tile = self.built["tiles"][record["tile"]]
+            if spec["kind"] == "ruin":
+                # A ruin's country KEEPS it.
+                self.assertEqual(record["keeper"], tile["country"])
+            else:
+                # ...and a city's country lost the tile to the takeover
+                # (2026-09-12), so `cut_from` is where it came from.
+                self.assertEqual(tile["country"], key)
+                self.assertNotEqual(record["cut_from"], key)
 
     def test_the_record_rides_the_save(self):
         self.assertEqual(json.loads(json.dumps(self.built["gates"])),
@@ -327,19 +344,244 @@ class TheRecordAndTheRing(unittest.TestCase):
         self.assertIn("R gate ruin", places.MAP_GATE_LEGEND)
         self.assertIn("G gate city", places.MAP_GATE_LEGEND)
 
-    def test_the_city_tiles_are_still_ordinary_tiles_of_their_country(self):
-        """Session 1 stamps the ring and stops: the takeover is session
-        4's, and until then Concordia's ground is Umaia's (or whoever's)."""
+    def test_a_live_city_has_no_ruin_on_its_tile(self):
+        for key in ("concordia", "saturna"):
+            tile = self.built["tiles"][self.built["gates"][key]["tile"]]
+            self.assertIsNone(places.ruin_area(self.built, tile))
+
+
+# =========================================================================== #
+# THE TAKEOVER: the two city states (2026-09-12, session 4)
+# =========================================================================== #
+
+class TheTakeover(unittest.TestCase):
+    """One tile leaves its country and becomes a country. What moves is the
+    FLAG -- the tile, the natural Area standing on it, the land's capital --
+    and what does not move is the GROUND: a wall round a plain does not move
+    the plain, so climate, terrain, harvest, goods and the countryside's own
+    inventory are exactly the donor's still."""
+
+    def setUp(self):
+        self.built = world(1)
+
+    def test_the_tile_changes_hands_and_the_land_lists_agree(self):
+        for seed in range(6):
+            built = world(seed)
+            for key in ("concordia", "saturna"):
+                record = built["gates"][key]
+                tid = record["tile"]
+                donor = record["cut_from"]
+                tile = built["tiles"][tid]
+                self.assertEqual(tile["country"], key)
+                self.assertIn(key, tile["tags"])
+                self.assertNotIn(donor, tile["tags"])
+                self.assertEqual(built["lands"][key]["tiles"], [tid])
+                self.assertNotIn(tid, built["lands"][donor]["tiles"])
+                self.assertEqual(built["lands"][key]["capital_tile"], tid)
+
+    def test_the_countryside_goes_with_the_tile_and_keeps_its_ground(self):
+        """The natural Area changes hands and NOTHING else about it: it was
+        cut from the donor culture's inventory before the takeover and it
+        keeps it. Concordia's fields are still Seraptanian fields."""
         for key in ("concordia", "saturna"):
             record = self.built["gates"][key]
             tile = self.built["tiles"][record["tile"]]
-            self.assertEqual(tile["country"], record["cut_from"])
-            self.assertIn(tile["id"],
-                          self.built["lands"][record["cut_from"]]["tiles"])
-            self.assertIsNone(places.ruin_area(self.built, tile))
-            names = {self.built["settlement_slots"][sid]["name"]
-                     for sid in tile["settlement_slots"]}
-            self.assertNotIn(places.GATE_BY_KEY[key]["name"], names)
+            area = self.built["areas"][tile["natural_area"]]
+            self.assertEqual(area["land"], key)
+            self.assertEqual(area["homeland"], key)
+            self.assertIn(area["id"], self.built["lands"][key]["areas"])
+            self.assertNotIn(area["id"],
+                             self.built["lands"][record["cut_from"]]["areas"])
+            donor_culture = places.CULTURE_OF[record["cut_from"]]
+            self.assertIn(f"/{donor_culture}/", area["template"])
+            self.assertIn(area["template"].rsplit("/", 1)[-1],
+                          places.CULTURE_SPECS[donor_culture][
+                              "natural_sites"])
+            self.assertIsNotNone(tile["climate"])
+            self.assertIsNotNone(tile["harvest"])
+
+    def test_the_census_seats_the_city_and_nothing_else(self):
+        for seed in range(6):
+            built = world(seed)
+            for key in ("concordia", "saturna"):
+                tile = built["tiles"][built["gates"][key]["tile"]]
+                slots = [built["settlement_slots"][sid]
+                         for sid in tile["settlement_slots"]]
+                self.assertEqual(len(slots), 1, key)
+                slot = slots[0]
+                self.assertEqual(slot["tier"], "city")
+                self.assertEqual(slot["name"],
+                                 places.GATE_BY_KEY[key]["name"])
+                self.assertTrue(slot["capital"])
+                self.assertTrue(slot["authored"])
+                self.assertTrue(slot["known"])
+                self.assertEqual(slot["charter"], "free")
+                self.assertIsNone(slot["manor"])
+
+    def test_the_city_is_built_at_worldgen_and_wears_the_gate_template(self):
+        for key in ("concordia", "saturna"):
+            tile = self.built["tiles"][self.built["gates"][key]["tile"]]
+            slot = self.built["settlement_slots"][tile["settlement_slots"][0]]
+            area = self.built["areas"][slot["area"]]
+            self.assertEqual(area["name"], places.GATE_BY_KEY[key]["name"])
+            self.assertEqual(area["subtype"], "city")
+            self.assertTrue(area["capital"])
+            self.assertTrue(area["known"])
+            culture = places.CULTURE_OF[key]
+            spec = places.AREA_SPECS[places.template_id(culture,
+                                                        "gate_city")]
+            self.assertEqual(area["description"], spec["description"])
+            for tag in spec["tags"]:
+                self.assertIn(tag, area["tags"], (key, tag))
+            side = places.LAND_SPECS[key]["side"]
+            self.assertIn(f"{side}-city", area["tags"])
+            kinds = {service["kind"] for service in area["services"]}
+            self.assertTrue({"lodging", "smith", "general_goods", "healer",
+                             "alchemist", "market", "government"} <= kinds,
+                            (key, sorted(kinds)))
+
+    def test_the_capital_tile_is_a_land_fact_and_the_readers_use_it(self):
+        here = self.built["tiles"][self.built["party_tile"]]["country"]
+        for country in places.COUNTRIES:
+            tid = places.capital_tile(self.built, country)
+            self.assertEqual(self.built["lands"][country]["capital_tile"],
+                             tid)
+            self.assertEqual(self.built["tiles"][tid]["country"], country)
+            # ...and worldsim reads the same field for the land's own sky
+            # while the party is somewhere else.
+            if country != here:
+                self.assertEqual(
+                    worldsim.sky_tile(self.built, country)["id"], tid)
+        self.assertFalse(hasattr(places, "CAPITAL_TILES"))
+        self.assertEqual(set(places.HISTORICAL_CAPITAL_TILES),
+                         set(places.HUMAN_COUNTRIES))
+
+    def test_the_priced_counter_is_the_catalog_s_and_reaches_the_tile(self):
+        want = {"concordia": {"healer": 0.6, "lodging": 0.8, "goods": 1.2},
+                "saturna": {"lodging": 0.5, "goods": 0.9, "healer": 1.3}}
+        for key, terms in want.items():
+            side = places.LAND_SPECS[key]["side"]
+            self.assertEqual(places.GATE_CITY_MENU[side], terms)
+            tile = self.built["tiles"][self.built["gates"][key]["tile"]]
+            here = places.tile_terms(self.built, tile)
+            # The city's row MULTIPLIES over whatever else the ground is
+            # doing (a granary, a pithead, a crossroads), exactly as the
+            # tile menu's own rows multiply over each other.
+            bare = copy.deepcopy(tile)
+            bare["tags"] = [t for t in tile["tags"]
+                            if t != f"{side}-city"]
+            base = places.tile_terms(self.built, bare)
+            for name, mult in terms.items():
+                self.assertAlmostEqual(here[name],
+                                       base.get(name, 1.0) * mult, places=6)
+        for term in set(places.MENU_TERM_WORDS):
+            self.assertIn(term, worldsim.MENU_TERMS)
+        self.assertEqual(set(places.MENU_TERM_WORDS),
+                         set(worldsim.MENU_TERMS))
+
+    def test_the_world_boots_with_eleven_lands(self):
+        built = quests.generate_world(3)
+        self.assertEqual(len(built["lands"]), 11)
+        for key in places.CITY_STATES:
+            land = built["lands"][key]
+            self.assertTrue(land["world"]["deck"], key)
+            self.assertTrue(worldsim.constitution_of(built, key), key)
+            self.assertTrue(worldsim.facts_of(key), key)
+            seat = next(s for s in quests.settlements_by_land(built)[key]
+                        if s["capital"])
+            self.assertEqual(seat["name"], places.GATE_BY_KEY[key]["name"])
+
+    def test_no_campaign_opens_inside_a_gate_city(self):
+        for seed in range(30):
+            built = world(seed)
+            slot = built["settlement_slots"][built["start_slot"]]
+            self.assertNotIn(built["tiles"][slot["tile"]]["country"],
+                             places.CITY_STATES, seed)
+
+    def test_the_map_legend_calls_them_countries(self):
+        legend = "\n".join(places.gate_legend_lines(self.built, width=200))
+        for key in ("concordia", "saturna"):
+            record = self.built["gates"][key]
+            donor = self.built["lands"][record["cut_from"]]["name"]
+            self.assertIn(f"city state in {donor}", legend)
+
+    def test_the_two_crowns_and_the_two_defenders(self):
+        self.assertEqual(quests.RULER_TITLES["concordia"],
+                         {"m": "prefect", "f": "prefect"})
+        self.assertEqual(quests.RULER_TITLES["saturna"],
+                         {"m": "lord of misrule", "f": "lady of misrule"})
+        self.assertEqual(conquest.DEFENDER_ROLES["concordia"],
+                         "warden of the gate")
+        self.assertEqual(conquest.DEFENDER_ROLES["saturna"],
+                         "master of hounds")
+
+    def test_the_two_name_pools_are_one_tongue_in_two_registers(self):
+        """Heaven's names are BOUND -- every one of the men's ends in the
+        suffix that means "of the Law" -- and Hell's are UNBOUND: never
+        -el, and rank is an epithet the table hangs on instead."""
+        for sex in ("m", "f"):
+            self.assertEqual(len(set(people.NAMES["concordia"][sex])), 25)
+            self.assertEqual(len(set(people.NAMES["saturna"][sex])), 25)
+        for name in people.NAMES["concordia"]["m"]:
+            self.assertTrue(name.endswith(("el", "iel")), name)
+        for sex in ("m", "f"):
+            for name in people.NAMES["saturna"][sex]:
+                self.assertFalse(name.endswith("el"), name)
+        for pool in (people.NAMES["concordia"], people.NAMES["saturna"]):
+            for names in pool.values():
+                for name in names:
+                    self.assertTrue(name.isascii(), name)
+
+    def test_the_counters_are_staffed_out_of_the_city_s_own_pool(self):
+        built = quests.generate_world(5)
+        for key in places.CITY_STATES:
+            seat = next(s for s in quests.settlements_by_land(built)[key])
+            providers = [npc for npc in built["npcs"]
+                         if npc["seat"] == seat["id"]]
+            self.assertTrue(providers, key)
+            pool = {n for names in people.NAMES[key].values() for n in names}
+            for npc in providers:
+                self.assertEqual(npc["homeland"], key)
+                self.assertIn(npc["name"].split()[0], pool)
+
+    def test_the_two_tables_land_in_the_human_countryside(self):
+        """The city is the capital and the only board in its country, so
+        its four rows are what it posts -- and every one of them lands on
+        ordinary ground within the three-day radius."""
+        built = quests.generate_world(7)
+        for key, titles in (("concordia", ("Escort the Healers",
+                                           "The Lamp Thieves",
+                                           "Bring the Child Home",
+                                           "The Prefect's Levy")),
+                            ("saturna", ("Bring the Wine", "Guard the Feast",
+                                         "Break the Debt-House",
+                                         "The Hunt of Misrule"))):
+            table = [t["title"] for t
+                     in quests.TEMPLATES[places.CULTURE_OF[key]]]
+            for title in titles:
+                self.assertIn(title, table, key)
+                place = quests.quest_place_requirement(
+                    next(t for t in quests.TEMPLATES[places.CULTURE_OF[key]]
+                         if t["title"] == title))
+                self.assertFalse(place.get("strict"), title)
+            seat = next(s for s in quests.settlements_by_land(built)[key])
+            rng = random.Random(9)
+            for _ in range(6):
+                quest = quests._post_quest(built, seat, rng)
+                self.assertIn(quest["name"],
+                              table + [t["title"]
+                                       for t in quests.EPIC_TEMPLATES])
+
+    def test_the_two_epics_are_the_city_s_own_and_nobody_else_s(self):
+        """Capital-only by construction: the two EPIC rows sit on their own
+        culture's table, which exactly one land in the world wears."""
+        for title in ("The Prefect's Levy", "The Hunt of Misrule"):
+            wearing = [c for c, table in quests.TEMPLATES.items()
+                       if any(t["title"] == title for t in table)]
+            self.assertEqual(len(wearing), 1, title)
+            self.assertIn(wearing[0], ("heaven", "hell"))
+            self.assertNotIn(title, [t["title"]
+                                     for t in quests.EPIC_TEMPLATES])
 
 
 # =========================================================================== #
@@ -1196,6 +1438,12 @@ class TheRuinTemplates(unittest.TestCase):
             for aid in tile["areas"]:
                 area = self.built["areas"][aid]
                 if area["kind"] == "ruin":
+                    continue
+                if area["land"] in places.CITY_STATES:
+                    # The CITY words are the gate city's OWN settlement
+                    # template's (2026-09-12, session 4; gates.md section
+                    # 10): a `gate_city` Area says what it is.
+                    self.assertNotIn("gate-ruin", area["tags"], aid)
                     continue
                 for tag in places.GATE_TAGS:
                     self.assertNotIn(tag, area["tags"], aid)

@@ -182,6 +182,12 @@ class TheReservePool(unittest.TestCase):
     def test_unmaterialized_slots_wait_in_the_fixed_census(self) -> None:
         for polity in self.world["lands"]:
             waiting = places.reserve_settlements(self.world, polity)
+            if polity in places.CITY_STATES:
+                # A one-tile state's whole census is its city, and that is
+                # authored and built on day one (2026-09-12): there is
+                # nothing left for a reserve to hold.
+                self.assertFalse(waiting, polity)
+                continue
             self.assertTrue(waiting, polity)
             self.assertTrue(all(slot["area"] is None for slot in waiting))
 
@@ -1688,7 +1694,11 @@ class TheEconomyFloorContent(unittest.TestCase):
     """What the session was asked to author, asserted as data."""
 
     def test_the_floor_is_five_crisis_cards_a_land(self) -> None:
-        for polity in places.LAND_SPECS:
+        # The nine. The two gate city states carry STUB packets until
+        # session 5 (2026-09-12), and
+        # `test_the_two_gate_packets_are_stubs_and_say_so` pins what they
+        # do carry so "stub" stays a fact rather than a memory.
+        for polity in places.HUMAN_COUNTRIES:
             own = [c for c in worldsim.CARDS
                    if c["track"] == "crisis" and worldsim.in_land(c, polity)]
             self.assertGreaterEqual(len(own), 5, polity)
@@ -1700,8 +1710,8 @@ class TheEconomyFloorContent(unittest.TestCase):
         GOOD bands and leaves the land better off in at least one outlet:
         something cheaper (on the card or through the state it sets), more
         work posted, or better pay for it."""
-        for polity in places.LAND_SPECS:
-            good = []
+        for polity in places.HUMAN_COUNTRIES:    # ...the stub packets owe
+            good = []                               # this too (session 5)
             for spec in worldsim.CARDS:
                 if spec["track"] != "crisis" or not worldsim.in_land(spec,
                                                                      polity):
@@ -1770,7 +1780,10 @@ class TheEconomyFloorContent(unittest.TestCase):
         between named countries, every land reached, no edge naming a
         culture any more, and every `when` a state some card of the SOURCE
         land can actually hold."""
-        self.assertEqual(len(worldsim.RELATIONS), 20)
+        # Twenty, plus the two PLACEHOLDER edges between the two gate
+        # cities (2026-09-12, session 4): section 11's real rows run
+        # between a city and its rolled HOST and are session 5's.
+        self.assertEqual(len(worldsim.RELATIONS), 22)
         self.assertEqual(len(worldsim._RELATIONS), len(worldsim.RELATIONS))
         reached = {p for e in worldsim.RELATIONS
                    for p in (e["from"], e["to"])}
@@ -2405,10 +2418,33 @@ class ThePoliticsContent(unittest.TestCase):
             self.assertFalse(chained - settable, spec["key"])
 
     def test_every_land_has_politics_of_its_own(self) -> None:
-        for polity in places.LAND_SPECS:
+        for polity in places.HUMAN_COUNTRIES:
             own = [c for c in _politics_cards()
                    if worldsim.in_land(c, polity)]
             self.assertGreaterEqual(len(own), 3, polity)
+
+    def test_the_two_gate_packets_are_stubs_and_say_so(self) -> None:
+        """The two city states (2026-09-12, the gates arc's session 4)
+        carry the FLOOR the frame demands and no more: a card on each
+        track, a standing fact, a constitution slot, tensions with blocs
+        and one relation edge. Session 5 authors the packets; this is the
+        clause that keeps "it is a stub" a fact rather than a memory."""
+        for polity in places.CITY_STATES:
+            for track in worldsim.TRACKS:
+                own = [c for c in worldsim.CARDS
+                       if c["track"] == track and c["land"] == (polity,)]
+                self.assertEqual(len(own), 1, (polity, track))
+            self.assertEqual(len(worldsim.CONSTITUTIONS[polity]), 4, polity)
+            self.assertEqual(len(worldsim.TENSIONS[polity]), 3, polity)
+            self.assertEqual(len(worldsim.STANDING_TENSIONS[polity]), 1,
+                             polity)
+            self.assertEqual(len([f for f in worldsim.FACTS
+                                  if f["land"] == (polity,)]), 1, polity)
+            self.assertEqual(len([e for e in worldsim.FACTION_EDGES
+                                  if e["land"] == (polity,)]), 6, polity)
+            # ...and no OPTION at all yet: both counters are session 5's.
+            self.assertFalse([o for o in worldsim.OPTIONS
+                              if o["land"] == (polity,)], polity)
 
     def test_the_baseline_land_takes_the_deepest_packet(self) -> None:
         """The asymmetry doctrine, as a number: Phyrascia carries more
@@ -2498,6 +2534,7 @@ class ThePoliticsContent(unittest.TestCase):
                 worldsim.drop_state(world, polity, state_id, 2)
 
     def test_the_authored_politics_fits_and_stays_ascii(self) -> None:
+        # (the gate packets' tensions and blocs are in this sweep too)
         labels = ([c["name"] for c in worldsim.CONSTITUTIONS["phyrascia"]]
                   + [t["line"] for ts in worldsim.TENSIONS.values()
                      for t in ts]
@@ -2608,7 +2645,11 @@ class TheLastTwoRecordKinds(unittest.TestCase):
         of its own now wears (Andalusia: the two southern facts, THE
         KNOCKERS and THE WATER COURT); Thule's packet took it to eight."""
         for polity in places.LAND_SPECS:
-            self.assertGreaterEqual(len(worldsim.facts_of(polity)), 4,
+            # The two city states' packets are STUBS (2026-09-12): one fact
+            # each, which `test_the_two_gate_packets_are_stubs_and_say_so`
+            # pins and session 5 grows to six.
+            floor = 1 if polity in places.CITY_STATES else 4
+            self.assertGreaterEqual(len(worldsim.facts_of(polity)), floor,
                                     polity)
             own = [f for f in worldsim.facts_of(polity)
                    if f["land"] == (polity,)]
@@ -2863,7 +2904,7 @@ class TheReligionAndMagicContent(unittest.TestCase):
     def test_the_magic_packets_reach_every_land_too(self) -> None:
         """Three magic cards a land -- Thule included since the norse
         packet landed (2026-08-22: the seer and the oath)."""
-        for polity in places.LAND_SPECS:
+        for polity in places.HUMAN_COUNTRIES:
             own = [c for c in worldsim.MAGIC_CARDS
                    if worldsim.in_land(c, polity)]
             self.assertGreaterEqual(len(own), 3, polity)

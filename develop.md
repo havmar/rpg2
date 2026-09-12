@@ -175,8 +175,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (design in `gates.md`) -- two
-  sessions now, sessions 1, 2 and 3 having shipped the same day.
+  one build contract, THE GATES ARC (design in `gates.md`) -- ONE session
+  now, sessions 1, 2, 3 and 4 having shipped the same day.
   Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
@@ -249,8 +249,12 @@ a pointer: what the file is, how it's run, where its docs are.
   2): they are rules.md's add-on part 2 and dm.md's "The gates" again.
   **Section 12, the Nephilim, is CUT** (2026-09-12, session 3): it is
   rules.md's add-on part 3, dm.md's "The gates" and "The player
-  character". What remains is sessions 4-5, and the one line of section 4
-  that session 5 still owes (a Tom fact per culture on the lore page).
+  character". **Section 6's city half, section 10 and section 14's two
+  city tables are CUT** (2026-09-12, session 4): they are rules.md's add-on
+  part 4, dm.md's "The gates" and "The nine countries". What remains is
+  session 5 -- section 11 in full (its head now marks which rows the STUB
+  packets already carry), the one line of section 4 (a Tom fact per
+  culture on the lore page), and section 11's human side.
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -279,7 +283,8 @@ a pointer: what the file is, how it's run, where its docs are.
   surviving country or nothing in particular.
 - `places.py` — **the fixed-geography and procedural-place runtime**: loads and
   validates the immutable 30x18 Europe map, derives stable BLAKE2 child
-  seeds, creates the nine countries, 540 Tiles and 540 natural Areas,
+  seeds, creates the eleven lands (the nine painted countries and, since
+  2026-09-12, the two rolled city states), 540 Tiles and 540 natural Areas,
   rolls fixed settlement slots and materializes them lazily, including the
   historical towns, required settlement Sites, ordinary natural Sites and houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation
@@ -515,15 +520,57 @@ a pointer: what the file is, how it's run, where its docs are.
   names a `who`), `map_glyph` draws `R` and `G` over the settlement glyph,
   `map_legend_lines` opens with `gate_legend_lines`, and
   `tile_brief_lines` leads with `gate_line`.
+  **THE TAKEOVER** (2026-09-12, session 4; rules.md's add-on part 4) is
+  the city half of the same section and it is what makes this file's
+  country list ELEVEN. `CITY_STATES` / `HUMAN_COUNTRIES` /
+  `CITY_STATE_OF_SIDE` split the catalog's lands by the `rolled` flag and
+  are the vocabulary every "the nine" reader now uses (`_validate_fixed_data`,
+  `_validate_countries`' expected censuses, the name-reserve clause,
+  `human_capital_tiles`). `_city_takeover(world, spec, tile)` runs inside
+  `roll_gates`' second loop, where the ruins are built: the Tile's
+  `country` and its country TAG are re-homed, the tile moves between the
+  two lands' `tiles` lists, every Area standing on it (the natural one)
+  moves with it, and `land["capital_tile"]` is set. The GROUND is
+  untouched -- climate, terrain, harvest, goods and the natural Area's own
+  `template` stay the donor's, which is the design's "Concordia's fields
+  are still Seraptanian fields". `roll_census` then calls
+  `_seat_gate_city`, which seats ONE authored slot (tier `city`, the gate's
+  name, `capital`, `authored`, `charter="free"`, no companions, no rng
+  consumed). **`CAPITAL_TILES` is GONE**: the nine's authored answer key is
+  `HISTORICAL_CAPITAL_TILES`, a world's answer is `land["capital_tile"]`,
+  and the two readers are `capital_tile(world, country)` (strict) and
+  `human_capital_tiles(world)` (what the gate roll's no-capital clause
+  means). `GATE_CITY_MENU` is the catalog's `gate_city` menu read back and
+  multiplied in by `tile_terms`; `gate_legend_lines` names the two cities
+  as city states in their donor; the START draw skips a city state's slot;
+  and `_validate_gates` grew the city half (the flag, the one tile, the
+  capital, the donor no longer holding it, the authored seat).
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
-  since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
-  2026-08-21** (the medieval world arc's session 2), and the version
+  since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 4 since
+  2026-09-12** (the gates arc's session 4), and the version
   number is what `validate_catalog` checks first. Two top-level keys:
-  `cultures` (four — `western`, `southern` and `steppe` are the old
+  `cultures` (SIX — `western`, `southern` and `steppe` are the old
   Firascir, Mortellaria and Tergal content moved under culture names
-  UNCHANGED, plus the new `norse`) and `lands` (nine records of `name` /
+  UNCHANGED, plus `norse`, plus the two GATE cultures `heaven` and `hell`)
+  and `lands` (ELEVEN records of `name` /
   `culture` / `tongue` / `description` and nothing else; per-land template
-  overrides are possible later and there are none now). A CULTURE carries
+  overrides are possible later and there are none now).
+  **The two ROLLED lands** (2026-09-12) are `concordia` and `saturna`, and
+  they carry two words more: `rolled` (their one tile comes off
+  `places.roll_gates`, so they have no letter on the country overlay) and
+  `side` (`heaven` / `hell`, which the skins, the pools, the rings and the
+  priced menu all read). Their cultures are the limiting case of a
+  culture: worn by ONE land, authoring no `natural` inventory and no
+  `natural_sites` at all (a city state's countryside was cut from the
+  DONOR's culture before the takeover and keeps it) and exactly ONE
+  settlement template, `gate_city`, at tier `capital` — which is the role
+  `_settlement_template` looks up for a capital slot, and a one-tile state
+  seats nothing else. `gate_city` is also the first template to carry a
+  `menu`: the city's own priced counter, read back by
+  `places.GATE_CITY_MENU` and applied by `tile_terms`.
+  `validate_catalog`'s culture clauses ask a ROLLED culture for exactly
+  what its lands can seat, which is where the five-tier and
+  every-ground-an-inventory rules stop being universal. A CULTURE carries
   its `natural` CHARACTER-to-inventory map (the seven land characters, a
   list per character so a culture can author two kinds of hill country;
   the `environment` key retired with the climate overlay), its
@@ -595,6 +642,24 @@ a pointer: what the file is, how it's run, where its docs are.
   them posted only inside the radius, and Tom's stone in every western and
   southern inventory and no steppe or norse one, authored as a shrine and
   materializing as one.
+  **Session 4 added `TheTakeover`** (2026-09-12), fourteen tests on the two
+  city states: the tile changing hands with its land lists and its country
+  tag, the countryside going with it and keeping the donor's inventory and
+  its ground, the one census slot and everything authored about it, the
+  city built at worldgen off the `gate_city` template with the seven
+  services a capital owes, `capital_tile` as a land fact that `sky_tile`
+  reads (and `CAPITAL_TILES` being gone), the catalog's priced counter
+  multiplying over the tile menu's own rows, eleven lands booting with a
+  deck, a constitution, a fact and a seat each, no campaign opening inside
+  one, the legend calling them countries, the two crowns and the two
+  defenders, the two name pools in their two registers, the counters
+  staffed out of the city's own pool, both tables landing on ordinary
+  ground inside the radius, and the two EPIC rows being capital-only by
+  construction. `ThePlacementRule` and `TheRecordAndTheRing` were widened
+  to read a live city's `cut_from` where they used to read its tile's
+  country, and session 1's "the city tiles are still ordinary tiles"
+  clause is deleted -- it was the hook, and this is the session that
+  spent it.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -633,7 +698,11 @@ a pointer: what the file is, how it's run, where its docs are.
   hidden facts, ASCII, 40-column display wrapping, and ONE BROKEN WORLD
   per clause of `places.validate_world`. *The nine countries*
   (`TheNineCountries`, 2026-08-21 — it replaced
-  `TheThreeHumanCountries`): the closed homeland set over NINE, the four
+  `TheThreeHumanCountries`; ELEVEN LANDS since 2026-09-12, and the class
+  now says which claims are about the nine the overlay PAINTS and which
+  are about every land -- plus two clauses of its own: nobody is born in a
+  city state, and a city state is painted nowhere and rolled every
+  time): the closed land set over ELEVEN, the four
   cultures that carry the shared content and the country/culture split
   itself, each country's own name pools and tongue, the country overlay
   painting the land and deriving the sea, both per-country censuses
@@ -1084,6 +1153,21 @@ a pointer: what the file is, how it's run, where its docs are.
   because quests imports this file), `STATE_DANGER`, and the readers
   `tile_encounter_entries` / `tile_encounter` / `tile_danger`.
   `ENCOUNTER_KEYS` gained `ferocity` and `_validate_encounter` checks it.
+  **THE TWO GATE PACKETS are STUBS** (2026-09-12, the gates arc's session
+  4): `heaven` and `hell` are culture keys like `norse`, and what is
+  authored under them is the floor eleven lands make the validators
+  demand -- four constitutions each at 6/2/1/1, three tensions each (the
+  inner axis STANDING), twelve new blocs, twelve faction edges, ONE card
+  per track a side, one standing fact a side, and two placeholder relation
+  edges between the two cities. Every row is section 11's real content, so
+  session 5 grows the packets rather than replacing them; what is NOT
+  there is named in designlog 2026-09-12 (D). Three new `STATE_WORDS`
+  (`register-read`, `feast-spilled`, and the placeholder `gate-watched`).
+  `_HUMAN` is the nine written out as a card scope, and the six `mining/*`
+  cards took it instead of `ANY_LAND` -- a one-tile colony has no pit.
+  `sky_tile` reads `places.capital_tile(world, polity)` now that a capital
+  is a per-world fact, and `_validate_countries`' capital clause moved with
+  it into `places._validate_countries`.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check; since 2026-08-22 it settles the wars to the same day).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -1279,6 +1363,10 @@ a pointer: what the file is, how it's run, where its docs are.
   IS reproducible — the layers are deterministic per seed — so it can
   clear a change. Re-run and append to benchlog after touching any
   constant in places.py's rolled half.
+  Since 2026-09-12 (session 4) the gates sweep reads a live city's
+  `cut_from` for its country histogram and the NINE painted capitals for
+  its capital gap, because a gate city's tile now flies its own flag and
+  its own capital is the tile being placed.
   **The GATES sweep** (2026-09-12, the gates arc's session 1) is the fifth,
   and the only one whose contract is enforced elsewhere:
   `places._validate_gates` raises inside every `create_geography`, so what
@@ -2859,6 +2947,40 @@ mechanic *does* and *why* is rules.md's job.
   never import people.py and `blood=""` is byte-identical behaviour, which
   `sites.py --seed 3` and `bench_training.py` were diffed against the
   previous commit to confirm.
+- **The gates: the two city states** (2026-09-12, THE GATES ARC's session
+  4 — rules.md's Heaven & Hell add-on part 4, dm.md's "The gates" and "The
+  nine countries", `gates.md` for what session 5 still owes) — the session
+  that made the world ELEVEN LANDS, and the only one in the arc that
+  touched the country machinery. **The thing to hold in your head before
+  touching any country-keyed reader: "the nine" and "every land" are now
+  two different questions.** `places.HUMAN_COUNTRIES` is the nine the
+  overlay paints and `places.COUNTRIES` is all eleven; the rule of thumb
+  is that AUTHORED answer keys, pinned censuses and anything a person is
+  BORN into mean the nine, and everything a land HAS — a record, a
+  culture, a capital, a deck, a lore page, a crown, prices, a board — means
+  eleven. Split four ways.
+  `place_catalog.json` goes to **v4** (see Files): two `lands` with
+  `rolled` / `side`, two one-template `cultures`, and the first template
+  `menu`. `places.py` TAKES THE TILE: `_city_takeover` inside `roll_gates`,
+  `_seat_gate_city` inside `roll_census`, `CAPITAL_TILES` retired into
+  `HISTORICAL_CAPITAL_TILES` + `land["capital_tile"]` + `capital_tile()` /
+  `human_capital_tiles()`, `GATE_CITY_MENU` in `tile_terms`, the start
+  draw skipping a city state, and the three validators taught the gates
+  (`_validate_fixed_data` stays about the nine; `_validate_countries`
+  checks the pinned censuses MINUS the ceded tile and the two states'
+  single tiles; `_validate_gates` grew the city half). `worldsim.py` GIVES
+  THEM A LAYER: two STUB packets under the culture keys (see Files), the
+  `_HUMAN` scope for the Miners' League, and `sky_tile` off the land
+  record. `quests.py` / `people.py` / `conquest.py` GIVE THEM IDENTITY:
+  `TEMPLATES["heaven"]` and `TEMPLATES["hell"]` (four rows each, the EPIC
+  one capital-only by construction because the culture has exactly one
+  land and that land has exactly one board), their eight
+  `QUEST_PLACE_REQUIREMENTS` rows (none strict — the work lands in the
+  human countryside inside the ordinary three-day radius),
+  `RULER_TITLES` and `DEFENDER_ROLES` rows, `people.NAMES` pools of 25+25
+  in the two registers, and `people.HUMAN_HOMELANDS` / `HUMAN_TONGUES` —
+  the birth roll and the Byzantine's second tongue are the NINE.
+  `test_gates.TheTakeover` is the contract.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,

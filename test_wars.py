@@ -241,6 +241,12 @@ class TheWarRoll(unittest.TestCase):
             for war in built["wars"]:
                 fighting = set(war["attackers"]) | set(war["defenders"])
                 for tid in war["theater"]:
+                    # A cell one of the gate cities took is NOT in the
+                    # theater (2026-09-12): `new_war` drops it, because
+                    # the standing wars are not rolled over the city
+                    # states.
+                    self.assertNotIn(built["tiles"][tid]["country"],
+                                     places.CITY_STATES, tid)
                     self.assertIn(built["tiles"][tid]["country"], fighting,
                                   f"{seed}/{war['key']}/{tid}")
 

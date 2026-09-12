@@ -609,6 +609,121 @@ RUIN_TEMPLATES: list[dict] = [
                           "older than he was and will not say by how much."),
 ]
 
+# THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Two cultures
+# worn by one land each, so these tables are as close to a COUNTRY's own work
+# as this game has: what Concordia and Saturna pay people to do. The city is
+# its state's capital and its only settlement, which is what makes the two
+# EPIC rows capital-only without a flag -- there is no other board in either
+# country to post them at. The jobs land in the human countryside within
+# three days' road, which is how a city state is FELT before the player ever
+# walks in.
+TEMPLATES["heaven"] = [
+    dict(title="Escort the Healers",
+         desc="Two healers walk to the villages every week. Raiders have "
+              "taken to walking with them. Walk with them instead.",
+         pool=LADDER_POOL[:4], skins={},
+         sites=("the road",),
+         giver="the infirmary's warden",
+         epilogue="The healers make their rounds. The raiders do not.",
+         failure_epilogue="The healers did not come back. Concordia has "
+                          "stopped sending them and the villages have "
+                          "noticed."),
+    dict(title="The Lamp Thieves",
+         desc="Six lamps of Concordia were stolen off a cart. Bring them "
+              "back. The thieves are camped in the hills and the lamps "
+              "show at night.",
+         pool=LADDER_POOL[:5], skins={}, proof="the lamps",
+         sites=("the thieves' camp",),
+         giver="the Market of Lamps",
+         epilogue="Six lamps back on the counter. The hills are dark "
+                  "again.",
+         failure_epilogue="The lamps are sold and scattered. Somebody four "
+                          "countries off is paying a horse apiece for "
+                          "them."),
+    dict(title="Bring the Child Home",
+         desc="The Pruners took a child off the register to Concordia. The "
+              "mother wants the child back. The wardens at the post will "
+              "not hand it over.",
+         pool=LADDER_POOL[:5] + ("soldier",),
+         skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), align="good",
+         sites=("the warden's post",),
+         giver="a mother from the host village",
+         epilogue="The child is home. The register has one name crossed "
+                  "out and nobody in Concordia says by whom.",
+         failure_epilogue="The post is shut and the child is inside the "
+                          "walls. The mother walks to the gate every "
+                          "morning."),
+    dict(title="The Prefect's Levy",
+         desc="The Prefect wants the raiders who burned a lamp-cart made "
+              "an example of. Muster with the wardens and take the hold.",
+         pool=LADDER_POOL, skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), places=2,
+         sites=("the muster field", "the raiders' hold"),
+         giver="the Prefect",
+         epilogue="The hold is taken. The wardens hang nobody; the "
+                  "Prefect's law does not hang. It registers.",
+         failure_epilogue="The levy came home short and the hold still "
+                          "stands. The Prefect has written down who "
+                          "walked away."),
+]
+
+TEMPLATES["hell"] = [
+    dict(title="Bring the Wine",
+         desc="The feast is in four days and the wine cart is stuck at a "
+              "bridge held by toll-men. Bring the wine.",
+         pool=BANDIT_POOL, skins={},
+         sites=("the cart road",),
+         giver="the Feast-hall",
+         epilogue="The wine arrives. The toll-men are invited.",
+         failure_epilogue="The feast drank the town dry instead. The "
+                          "toll-men are still on the bridge and the cart "
+                          "is still theirs."),
+    dict(title="Guard the Feast",
+         desc="Every feast somebody starts a fight and every fight "
+              "somebody dies. This week, stop it.",
+         pool=LADDER_POOL[:5] + ("dire wolf",),
+         skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the long table",),
+         giver="the Lord of Misrule",
+         epilogue="Nobody dies. It is the quietest feast in Saturna's "
+                  "memory and the Lord of Misrule is not pleased.",
+         failure_epilogue="Three dead over a cup and a dog. The Lord of "
+                          "Misrule calls it a good feast."),
+    dict(title="Break the Debt-House",
+         desc="Half the village owes a year to Saturna's debt-house. The "
+              "elder wants the books burned. The demons of bargains keep "
+              "the books.",
+         pool=LADDER_POOL[:6], skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), align="good",
+         sites=("the debt-house",),
+         giver="a village elder from the host land",
+         epilogue="The books burn. Half the village is a year richer and "
+                  "Saturna's demons of bargains write it down as a "
+                  "lesson.",
+         failure_epilogue="The books are still written and the collectors "
+                          "came early. The elder is owed to somebody now "
+                          "as well."),
+    dict(title="The Hunt of Misrule",
+         desc="Once a year the feast hunts something that hunts back. This "
+              "year it is a horned giant off Libera. Ride with the "
+              "hounds.",
+         pool=HELL_RUIN_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), places=2,
+         sites=("the hunt's yard", "the quarry's ground"),
+         giver="the Master of Hounds",
+         epilogue="The giant's horns hang in the feast-hall. The hounds "
+                  "ate well.",
+         failure_epilogue="The hunt came home with nothing and fewer "
+                          "hounds. The giant is somewhere east of the "
+                          "road and moving."),
+]
+
+
+# ...and the eight ruin jobs go on EVERY culture's table, the two gate
+# cities' included: what comes out of Candor and Libera is everybody's
+# problem (the three-day radius is what keeps the table local).
 for _culture in TEMPLATES:
     TEMPLATES[_culture].extend(dict(_template) for _template in RUIN_TEMPLATES)
 
@@ -712,6 +827,34 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "Blood in the Grove": dict(
         area_any=("forest", "hills", "pasture"),
         site_template="grove", domain="natural", reuse="never"),
+    # THE TWO GATE CITIES (2026-09-12, session 4): every one of these lands
+    # in the HUMAN countryside inside the three-day radius -- the city state
+    # is one tile, so its own work is what it asks the neighbours to do.
+    # None is strict: ordinary ground honors all eight.
+    "Escort the Healers": dict(
+        area_any=("road", "farmland", "pasture", "coast"),
+        site_template="road", domain="mixed", reuse="never"),
+    "The Lamp Thieves": dict(
+        area_any=("hills", "forest", "pasture"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Bring the Child Home": dict(
+        area_any=("road", "farmland", "settlement"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "The Prefect's Levy": dict(
+        area_any=("road", "farmland", "hills"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Bring the Wine": dict(
+        area_any=("road", "farmland", "riverside"),
+        site_template="road", domain="mixed", reuse="never"),
+    "Guard the Feast": dict(
+        area_any=("settlement",),
+        site_template="camp", domain="built", reuse="prefer"),
+    "Break the Debt-House": dict(
+        area_any=("settlement",),
+        site_template="tower", domain="built", reuse="prefer"),
+    "The Hunt of Misrule": dict(
+        area_any=("forest", "hills", "pasture", "marsh"),
+        site_template="den", domain="natural", reuse="never"),
     # INTO THE RUINS: one Area in the world can honor each of these, so the
     # requirement is STRICT -- no fallback to the origin's countryside, and
     # a board with no reachable ruin never draws the template at all.
@@ -1498,6 +1641,10 @@ RULER_TITLES = {
     "andalusia": {"m": "prince", "f": "princess"},
     "umaia": {"m": "sultan", "f": "sultana"},
     "tergal": {"m": "high chief", "f": "high chief"},
+    # The two gate cities (2026-09-12): Heaven's seat is an office and Hell's
+    # is a year-long joke that is obeyed anyway.
+    "concordia": {"m": "prefect", "f": "prefect"},
+    "saturna": {"m": "lord of misrule", "f": "lady of misrule"},
 }
 SAGE_ROLES = ("loremaster", "court wizard", "keeper of records",
               "temple scholar", "star-reader")

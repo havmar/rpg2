@@ -3242,3 +3242,88 @@ fire-born" instead of a flat 2 (`test_towns`), and the wealthy companion's
 joining gift now pins the wealthy+luxurious SUM instead of assuming a body
 can carry only one silver trait (`test_start`) — the second was a latent
 bug in the assertion that the new rng stream simply walked into.
+
+---
+
+## 2026-09-12 (D) — the gates arc's session 4: the two city states
+
+`python bench_worldgen.py` (100 seeds, 38s), measured against the SAME
+sweep run on the previous commit (`5e853a4`, in a scratch worktree) so the
+two columns below are both real numbers and not a memory. `--seeds 50
+--only gates` was run first as the quick check.
+
+**The census rng stream shifted**, because `roll_census` no longer draws
+an arrangement for the two ceded tiles — a gate city is SEATED, not
+rolled — so every world's settlement pattern is a different (equally
+legal) one than it was yesterday. That is a save break, not a balance
+change, and it is why the town/village rows move by a few tenths.
+
+**THE SETTLEMENT CENSUS** (100 worlds):
+
+```
+                              5e853a4          now
+  metropolis                      4.0          4.0
+  city                           19.6         21.7   (+2: the two cities)
+  town                          101.8        101.1
+  village                       403.1        399.5
+  hamlet                         90.9         90.7
+  total                         619.4        617.0
+  slots a land tile              1.97         1.97
+  empty tiles (of 314)             50           50
+  souls                     1,521,141    1,571,381   (+2 cities at 25k)
+  quiet rich country              38%          38%
+  free (chartered)               68.0         69.8   (+2, both free)
+  manors                         50.5         50.2
+```
+
+The two authored cities and their two charters are the whole of the
+structural move; everything else is the reshuffled stream. The two ceded
+tiles are subtracted from their donors' pinned biome and band censuses
+inside `_validate_countries`, so the authored picture still holds in every
+world or `create_geography` raises.
+
+**THE GATES** (100 worlds) — the placement rule did not change and the
+histogram is IDENTICAL to the previous commit's, line for line: Candor
+70% preferred ground over 65 distinct tiles (byzantium 44%, umaia 40%),
+Libera 73% over 58 (vellisclavia 46%, thule 24%), Concordia 63% over 65
+(umaia 47%, byzantium 34%), Saturna 74% over 63 (vellisclavia 39%, thule
+30%); pairwise separation mean 11.8 (min 4), capital gap mean 3.5 (min 2).
+That is the point of the check: the sweep now reads `cut_from` for the two
+live cities and the nine PAINTED capitals for the gap, and it gets the
+same numbers the takeover was built on top of. **Umaia is the host of
+Heaven in 47% of worlds and Vellisclavia the host of Hell in 39%** —
+session 1's note that `cut_from` would start to matter is now live.
+
+**THE ROLLED WARS** (100 worlds, campaign to day 365) — unmoved:
+3 wars a world, all six templates dealt at 60/51/51/50/47/41%, 2.00 crowns
+take the cross, Andalusia independent 52%, 6.0 countries at war, 47.0
+standing marks, scars 4.79 (was 4.78), occupations 5.83 (was 5.81), the
+two caps hold, siege rates village 50% / town 50% / city 45% unchanged.
+`new_war` now drops a theater cell a gate city has taken; over 100 worlds
+that never cost a war its settlements.
+
+**THE TRADE NETWORK** is a pure function of the census, so it moved
+exactly as much as the census did: routes 59.2 (was 59.0), land tiles on
+a road 115.2 (114.7), ports 26.4 (27.0), sea-lane tiles 25.6 (26.0),
+crossroads 32.3 (32.5), Falun unfed in 100/100. A gate city IS a market
+(its census seats a city), which is where the extra fifth of a route
+comes from.
+
+**THE LAST HARVEST** rolls on its own stream and did not move: coverage
+18.2% (was 18.3), 5.2 regions, region size 11.3, the drought guarantee
+holds in 100/100. The one number that wandered is *trouble within 5 days
+of the start* — **87%, from 91%** — which is the moved start draw, not a
+moved harvest: the nudge reads `world["party_tile"]`, and the census
+shift moved where some worlds open.
+
+**Sanity runs, all clean with eleven lands**: `worldsim.py --seed 1 --days
+60` (both city states roll a constitution, a standing tension, a ruler's
+sheet and all three tracks, and both post news — Concordia's register goes
+up on day 47, Saturna's feast spills on day 15), `quests.py --seed 1
+--demo` (Concordia posts THE PREFECT'S LEVY at L18 and Saturna GUARD THE
+FEAST at L5, cast out of their own name pools — Chokmiel the Prefect,
+Rina the Lord of Misrule), `rulers.py --seed 1 --count 8`, `econmap.py
+routes 7`, and a scratch playthrough that walked into both cities.
+
+Test suite: **1195 OK** (1178 before, +17 — fourteen in `test_gates`'s new
+`TheTakeover`, two in `test_places`, one in `test_worldsim`).

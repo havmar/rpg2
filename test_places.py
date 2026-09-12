@@ -72,10 +72,17 @@ class PlaceGenerationTests(unittest.TestCase):
         country_counts = {
             country: {biome: 0 for biome in ("basic", "mountain", "river")}
             for country in EXPECTED_COUNTRY_BIOMES}
+        # The two tiles the gate cities took (2026-09-12) are counted where
+        # the OVERLAY paints them: the partition is a fact about the
+        # authored picture, and a city state is not a repaint of it.
+        ceded = {record["tile"]: record["cut_from"]
+                 for record in self.world["gates"].values()
+                 if record["kind"] == "city"}
         for tile in self.world["tiles"].values():
             counts[tile["biome"]] += 1
             if tile["biome"] != "sea":
-                country_counts[tile["country"]][tile["biome"]] += 1
+                country_counts[ceded.get(tile["id"],
+                                         tile["country"])][tile["biome"]] += 1
         self.assertEqual(counts, places.PINNED_BIOME_COUNTS)
         self.assertEqual(country_counts, EXPECTED_COUNTRY_BIOMES)
         self.assertEqual(
@@ -190,8 +197,14 @@ class PlaceGenerationTests(unittest.TestCase):
         again = quests.generate_world(73025)
         other = quests.generate_world(73026)
         self.assertEqual(self.world, again)
+        # The two gate-city tiles are the SEED's business: their country
+        # is rolled, exactly as their tags are (`places.GATE_TAGS`).
+        rolled = {record["tile"] for w in (self.world, other)
+                  for record in w["gates"].values()
+                  if record["kind"] == "city"}
         terrain = lambda w: [(t["id"], t["biome"], t["country"], t["name"])
-                             for t in w["tiles"].values()]
+                             for t in w["tiles"].values()
+                             if t["id"] not in rolled]
         population = lambda w: [(t["id"], tuple(
             w["settlement_slots"][sid]["tier"]
             for sid in t["settlement_slots"])) for t in w["tiles"].values()]
@@ -239,8 +252,10 @@ class PlaceGenerationTests(unittest.TestCase):
         world = places.create_geography(13)
         for area in quests.settlements(world):
             kinds = {service["kind"] for service in area["services"]}
-            self.assertTrue({"lodging", "smith", "general_goods"} <= kinds,
-                            area["name"])
+            # A HAMLET has no smith by design (2026-08-21): what each tier
+            # owes is `places.REQUIRED_SERVICES` and nothing else.
+            self.assertTrue(set(places.REQUIRED_SERVICES[area["subtype"]])
+                            <= kinds, area["name"])
             if area["capital"]:
                 self.assertTrue(
                     {"alchemist", "market", "government"} <= kinds,
@@ -263,9 +278,13 @@ class PlaceGenerationTests(unittest.TestCase):
                 set(places.OBSOLETE_LAND_KEYS).intersection(spec), culture)
             self.assertTrue(spec["settlement_templates"], culture)
         for country, spec in places.LAND_SPECS.items():
-            self.assertEqual(set(spec),
-                             {"name", "culture", "tongue", "description"},
-                             country)
+            owed = {"name", "culture", "tongue", "description"}
+            if country in places.CITY_STATES:
+                # A ROLLED land carries two more words and still no
+                # position: `rolled` says its tile comes off the gate roll
+                # and `side` is which power's it is.
+                owed |= {"rolled", "side"}
+            self.assertEqual(set(spec), owed, country)
 
     def test_a_settlement_is_cut_from_a_template_its_tile_can_honor(self
                                                                     ) -> None:
@@ -370,7 +389,9 @@ class PlaceGenerationTests(unittest.TestCase):
 
     def test_name_exhaustion_is_persisted_per_country_and_tier(self) -> None:
         world = places.create_geography(131)
-        for country in places.COUNTRIES:
+        # The two city states keep a `city` reserve and nothing else: they
+        # seat one authored settlement and can never draw a generated name.
+        for country in places.HUMAN_COUNTRIES:
             for tier in ("town", "village"):
                 world["name_reserves"][country][tier].clear()
                 first = places._next_settlement_name(world, country, tier)
@@ -387,7 +408,9 @@ class PlaceGenerationTests(unittest.TestCase):
             self.assertEqual(slot["area"], world["start_area"])
             countries.add(world["tiles"][slot["tile"]]["country"])
             tiers.add(slot["tier"])
-        self.assertEqual(countries, set(places.COUNTRIES))
+        # The NINE: a campaign opens in the human world, never inside
+        # Concordia or Saturna (2026-09-12, session 4).
+        self.assertEqual(countries, set(places.HUMAN_COUNTRIES))
         # A career never opens in a HAMLET (2026-08-21): a hundred souls
         # with no smith and no board are not a place to begin.
         self.assertTrue(tiers <= set(places.TIERS), tiers)
@@ -529,11 +552,22 @@ class TheNineCountries(unittest.TestCase):
     cultures (2026-08-21, the medieval world arc's session 2): the model,
     not the contraction that produced it and not the arc that widened it.
     A country owns identity -- tiles, a capital, a tongue, name pools; a
-    culture owns the reusable content."""
+    culture owns the reusable content.
+
+    Since 2026-09-12 (the gates arc's session 4) there are ELEVEN lands:
+    the nine the overlay paints, and the two ONE-TILE city states the gate
+    roll cuts out of them. The two are countries in every way the machinery
+    cares about -- a land record, a culture of their own, a tongue, a
+    capital, name pools, a crown's title, a defender, a card packet -- and
+    in exactly two ways they are not: nobody is BORN in one, and no
+    campaign OPENS in one."""
 
     HOMELANDS = {"phyrascia", "seraptania", "teutonia", "vellisclavia",
                  "thule", "byzantium", "andalusia", "umaia", "tergal"}
+    CITY_STATES = {"concordia", "saturna"}
+    LANDS = HOMELANDS | CITY_STATES
     CULTURES = {"western", "southern", "steppe", "norse"}
+    GATE_CULTURES = {"heaven", "hell"}
     REMOVED = re.compile(
         r"\b(?:elf|elves|elven|dwarf|dwarves|dwarven|goblin|goblins|"
         r"orc|orcs|orcish|ensimaa|dvarvengrond|gibili|middenland)\b",
@@ -551,39 +585,74 @@ class TheNineCountries(unittest.TestCase):
         elif isinstance(value, str):
             yield value
 
-    def test_the_homeland_set_is_closed_at_nine(self) -> None:
-        self.assertEqual(set(places.LAND_SPECS), self.HOMELANDS)
-        self.assertEqual(set(quests.HOMELANDS), self.HOMELANDS)
-        self.assertEqual(set(people.NAMES), self.HOMELANDS)
-        self.assertEqual(set(places.COUNTRIES), self.HOMELANDS)
-        self.assertEqual(set(places.SETTLEMENT_NAMES), self.HOMELANDS)
-        self.assertEqual(set(quests.RULER_TITLES), self.HOMELANDS)
-        self.assertEqual(set(conquest.DEFENDER_ROLES), self.HOMELANDS)
+    def test_the_land_set_is_the_nine_and_the_two_city_states(self) -> None:
+        self.assertEqual(set(places.LAND_SPECS), self.LANDS)
+        self.assertEqual(set(quests.HOMELANDS), self.LANDS)
+        self.assertEqual(set(people.NAMES), self.LANDS)
+        self.assertEqual(set(places.COUNTRIES), self.LANDS)
+        self.assertEqual(set(places.SETTLEMENT_NAMES), self.LANDS)
+        self.assertEqual(set(quests.RULER_TITLES), self.LANDS)
+        self.assertEqual(set(conquest.DEFENDER_ROLES), self.LANDS)
+        self.assertEqual(set(places.HUMAN_COUNTRIES), self.HOMELANDS)
+        self.assertEqual(set(places.CITY_STATES), self.CITY_STATES)
+
+    def test_nobody_is_born_in_a_city_state(self) -> None:
+        """The birth roll is the NINE (2026-09-12): Concordia and Saturna
+        are 27 years old and their people came through a gate."""
+        self.assertEqual(set(people.HUMAN_HOMELANDS), self.HOMELANDS)
+        rng = random.Random(4)
+        born = {people.make_character(rng, 1).homeland for _ in range(200)}
+        self.assertEqual(born, self.HOMELANDS)
+
+    def test_a_city_state_is_painted_nowhere_and_rolled_every_time(self):
+        """The one structural difference: no letter on the overlay, one
+        tile, and both of them somewhere else in the next world."""
+        seen = {key: set() for key in self.CITY_STATES}
+        for seed in range(6):
+            world = places.create_geography(seed)
+            for key in self.CITY_STATES:
+                land = world["lands"][key]
+                self.assertEqual(len(land["tiles"]), 1, key)
+                self.assertEqual(land["capital_tile"], land["tiles"][0])
+                self.assertNotIn(key, places.COUNTRY_LETTERS.values())
+                self.assertTrue(places.LAND_SPECS[key]["rolled"])
+                seen[key].add(land["tiles"][0])
+        for key, tiles in seen.items():
+            self.assertGreater(len(tiles), 1, key)
 
     def test_four_cultures_carry_the_shared_content(self) -> None:
         """The other half of the split: nine countries wear four packets,
-        every country names a real culture, and no culture is unworn."""
-        self.assertEqual(set(places.CULTURE_SPECS), self.CULTURES)
-        self.assertEqual(set(places.CULTURES), self.CULTURES)
-        self.assertEqual(set(quests.TEMPLATES), self.CULTURES)
-        self.assertEqual(set(worldsim.CULTURES), self.CULTURES)
-        for country in self.HOMELANDS:
+        every country names a real culture, and no culture is unworn.
+        The two gate cultures (2026-09-12) are the limiting case of the
+        same rule -- a culture worn by exactly one land."""
+        every = self.CULTURES | self.GATE_CULTURES
+        self.assertEqual(set(places.CULTURE_SPECS), every)
+        self.assertEqual(set(places.CULTURES), every)
+        self.assertEqual(set(quests.TEMPLATES), every)
+        self.assertEqual(set(worldsim.CULTURES), every)
+        for culture in self.GATE_CULTURES:
+            self.assertEqual(len(places.CULTURE_LANDS[culture]), 1, culture)
+        for country in self.LANDS:
             culture = places.CULTURE_OF[country]
-            self.assertIn(culture, self.CULTURES, country)
+            self.assertIn(culture, every, country)
             self.assertIn(country, places.CULTURE_LANDS[culture])
-        for culture in self.CULTURES:
+        for culture in every:
             self.assertTrue(places.CULTURE_LANDS[culture], culture)
 
     def test_every_country_keeps_its_own_names_and_tongue(self) -> None:
         """A name is the most country-shaped thing in the game: the pools
         are per COUNTRY even where the card deck is shared."""
-        for country in self.HOMELANDS:
+        for country in self.LANDS:
             spec = places.LAND_SPECS[country]
             self.assertTrue(spec["tongue"], country)
             self.assertTrue(spec["description"], country)
             pools = places.SETTLEMENT_NAMES[country]
-            self.assertEqual(set(pools),
-                             {"city", "town", "village", "hamlet"}, country)
+            # Every tier the country can SEAT: a one-tile city state seats
+            # its own city and nothing else (2026-09-12).
+            self.assertEqual(
+                set(pools),
+                {"city"} if country in self.CITY_STATES
+                else {"city", "town", "village", "hamlet"}, country)
             for tier, names in pools.items():
                 self.assertTrue(names, (country, tier))
                 self.assertEqual(len(names), len(set(names)),
@@ -602,15 +671,14 @@ class TheNineCountries(unittest.TestCase):
                 self.assertNotEqual(value, "race")
             for store in (world["lands"], world["areas"]):
                 for record in store.values():
-                    self.assertIn(record["homeland"], self.HOMELANDS)
+                    self.assertIn(record["homeland"], self.LANDS)
             for settlement in quests.settlements(world):
                 for service in settlement["services"]:
                     provider = next(npc for npc in world["npcs"]
                                     if npc["id"] == service["provider"])
-                    self.assertIn(provider["homeland"],
-                                  self.HOMELANDS)
+                    self.assertIn(provider["homeland"], self.LANDS)
             for quest in world["quests"].values():
-                self.assertIn(quest["giver"]["homeland"], self.HOMELANDS)
+                self.assertIn(quest["giver"]["homeland"], self.LANDS)
 
     def test_active_catalogs_name_no_removed_people_or_realms(self) -> None:
         active = (
@@ -668,7 +736,7 @@ class TheNineCountries(unittest.TestCase):
         """A deck on every track, standing lore, a relation that reaches
         it, and a capital Tile to read a sky off. An isolated country is a
         country whose neighbours' troubles never reach it."""
-        for polity in self.HOMELANDS:
+        for polity in self.LANDS:
             for track in worldsim.TRACKS:
                 self.assertTrue([c for c in worldsim.CARDS
                                  if c["track"] == track
@@ -677,7 +745,9 @@ class TheNineCountries(unittest.TestCase):
             self.assertTrue(worldsim.FACTS_BY_LAND[polity], polity)
             self.assertTrue([e for e in worldsim.RELATIONS
                              if polity in (e["from"], e["to"])], polity)
-            self.assertIn(polity, places.CAPITAL_TILES, polity)
+            # ...and a capital Tile, which is a PER-WORLD fact since
+            # 2026-09-12 and is checked on a built world by
+            # `test_every_country_seats_its_capital_on_its_own_ground`.
             self.assertTrue(worldsim.CONSTITUTIONS[polity], polity)
             self.assertTrue(worldsim.TENSIONS[polity], polity)
             # ...and since 2026-08-22, one standing fact that is ITS OWN
@@ -703,7 +773,7 @@ class TheNineCountries(unittest.TestCase):
         for edge in worldsim.RELATIONS:
             self.assertNotEqual(edge["from"], edge["to"])
             for side in ("from", "to"):
-                self.assertIn(edge[side], self.HOMELANDS)
+                self.assertIn(edge[side], self.LANDS)
                 self.assertNotIn(edge[side], places.CULTURE_LANDS)
 
     def test_every_country_seats_its_capital_on_its_own_ground(self) -> None:
@@ -716,7 +786,12 @@ class TheNineCountries(unittest.TestCase):
                 seats[country] = name
                 self.assertEqual(places.country_at(row, column), country)
         self.assertEqual(set(seats), self.HOMELANDS)
-        for country, tid in places.CAPITAL_TILES.items():
+        self.assertEqual(set(places.HISTORICAL_CAPITAL_TILES), self.HOMELANDS)
+        # Every land -- the two city states included -- seats a capital
+        # standing on its own ground, and the answer is the WORLD's
+        # (2026-09-12: `land["capital_tile"]`, not a module constant).
+        for country in places.COUNTRIES:
+            tid = places.capital_tile(world, country)
             self.assertEqual(world["tiles"][tid]["country"], country)
 
     def test_the_overlay_paints_the_land_and_derives_the_sea(self) -> None:
