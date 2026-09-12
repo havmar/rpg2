@@ -174,8 +174,9 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the sole active roadmap**, and since 2026-08-22 it carries
-  NO build contract at all. Three whole arcs have shipped out of it: the
+- `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
+  one build contract, THE GATES ARC (five sessions, design in `gates.md`).
+  Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
   Local Quest Geography, Europe MVP Closure); THE TILE ECONOMY ARC across
@@ -229,6 +230,17 @@ a pointer: what the file is, how it's run, where its docs are.
   authored-vs-generated boundary, the Room-content schema and the
   seed/reveal/mutation rules, which all still hold; read `rules.md` and
   this file for what the world actually is.
+- `gates.md` — **THE GATES ARC's design reference** (2026-09-12): the
+  Heaven & Hell setting (the timeline, the two powers and their inner
+  axes, the pagan coding, Tom, the tongue and the two name rows), the
+  four rolled sites and their placement rule, the ruins as dungeons,
+  the foe skin tables and pools, the two sentinels, the Nephilim, the
+  two one-tile city states, the two world-layer packets and the human
+  side, and the five session contracts plan.md points at. A spec
+  companion in worldsim.md's shape: a section is CUT when its session
+  lands and its result goes to the permanent docs. Section 0 records the
+  standing directives (the pact is a gimmick the arc ignores; the
+  low-band-only principle is set aside; conquest later).
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
