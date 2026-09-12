@@ -7299,3 +7299,143 @@ new contract (78 tests, from 59); the measurement harness shipped as
 `bench_wounds.py`, the meter for the two new knobs; rules.md, dm.md,
 writing.md and develop.md carry the rules, the table manner, the naming bar
 and the code pointers.
+
+## 2026-09-12 — THE GATES ARC: Heaven & Hell (design)
+
+The designer opened a new worldbuilding thread and named the difficulty
+on purpose: a vibe to aim for, loads of possibilities, and a part of the
+game far more open than the historically anchored world so far. The
+brief: two cities of Heaven and Hell once stood around gates to other
+worlds; 1027 years ago the gates were closed and the cities largely
+destroyed; 27 years ago two new gates opened elsewhere and both powers
+re-established themselves. Heaven and Hell are aesthetically traditional
+but not the Christian versions: foreign worlds, two opposing factions
+that fight for this world and want to colonize it. Heaven is order,
+purity and conventional beauty; Hell is freedom, wildness and hedonism
+(Chapman's sutrayana against tantrayana; devas against asuras with the
+asuras a functional civilization). Neither is good or evil; each holds
+both. The ask was the MINIMUM content that makes this part of the game
+exist, built so it can be added to modularly, then the full design.
+
+**The road the discussion took.** The first pass read the codebase for
+what already constrained the setting — Hell already an actor through
+the pact, the bestiary rule that demons are authored one-offs never
+catalog rows, the encounter table that reskins rather than reforges, the
+era line that says higher technology is heaven, hell and magic, the Sun
+communion one church in two rites, everybody human — and proposed six
+pieces, five of them content over machinery the game already has, with
+one real decision: treat the two returned powers as COUNTRIES, because
+everything in the engine is country-shaped. The designer's answers
+settled the frame in one round: **one-tile city states** that may
+conquer later; **the Hell pact, its assignments and its enforcement are
+a gimmick built to carry the crime content — the worldbuilding ignores
+it, does not have to fit it, and does not remove it**; sulfur is one
+idea, not a pillar; **Hell is north and pagan-coded, to be discovered in
+the worldbuilding**; **the low-band-only principle is set aside** for
+this arc, since the start level is rolled and a world with higher levels
+in it feels different even at level 1; the four sites are semi-random
+with Hell's two in the northern countries (Phyrascia, Teutonia, Thule,
+Vellisclavia, Tergal) and Heaven's two in the southern (Byzantium,
+Seraptania, Umaia, Andalusia), never closer than three or four tiles;
+**one language family for both, Proto-Italic, Latin and Hebrew**, with
+no Norse or Tergal sound near Hell and the difference carried by meaning
+and mood. A brief confirming round followed; the four things put to the
+designer (both of Hell's sites north and both of Heaven's south; one
+tongue in two registers; the pagan coding taken all the way, both human
+religions descending from the gate era; the city states in the relations
+table but not the war roll) were answered "yes, or you decide", and all
+other calls were delegated.
+
+**What was produced.** `gates.md`, a spec companion in worldsim.md's
+shape, and plan.md's THE GATES ARC, five session contracts pointing at
+it. develop.md registers the file. Nothing in the code moved.
+
+**Calls made in this session**, recorded so they stay made:
+
+- **The tongue.** One language, two registers. Heaven speaks Latin
+  (the Church's Latin descends from it, so a Latin speaker understands
+  an angel and no party is soft-locked out of Concordia); Hell speaks
+  the Old Tongue (older Italic shapes; a Latin speaker follows it with
+  difficulty, a dm.md rule, no engine check). Person names Hebrew-shaped
+  on both sides: Heaven's BOUND, every one ending -el/-iel; Hell's
+  UNBOUND, no suffix, a hard ending and an earned epithet at the table.
+  Heaven's places are Latin abstractions (Concordia, Candor), Hell's
+  older Italic (Saturna, Libera).
+- **The names.** The live cities are Concordia and Saturna; the ruins
+  are Candor and Libera. Heaven's ruler is the Prefect, Hell's the Lord
+  of Misrule elected at the feast for a year and a day (the Saturnalia
+  is the pagan coding's anchor: old Italic paganism, not Norse). The
+  inner axes are THE GARDENERS against THE PRUNERS and THE FEAST against
+  THE HUNGER. Binding is the sharpest difference: Heaven binds with law
+  that applies to everyone, Hell with the personal oath and the personal
+  debt, paid in years.
+- **The pagan coding, strong version.** The Sun communion is what the
+  memory of Candor became; the old gods of the north are what the
+  memory of Libera became; neither church knows it and both powers do.
+  The Church counts its years from the Closing (year 1027). What the
+  Church makes of the Return is rolled by placement: the rite hosting
+  Heaven's city welcomes it, the other calls it an invasion, and that
+  is one card in the joint synod deck.
+- **Tom** stays Tom. The game asserts only that a person called Tom
+  barred both gates in one season; every culture keeps its own version
+  (a table in gates.md). One hook kept: only a half-blood could have
+  touched both gates. Tom exists where he changes something: a shrine
+  site, the two bars as the armory's two most famous weapons, one fact
+  line a culture. What one does to a LIVE gate is left open on purpose
+  as the arc's endgame.
+- **Placement.** Ruins and cities all rolled at worldgen off a derived
+  seed, in the order Candor, Libera, Concordia, Saturna; eligible tiles
+  are land in the right set, not a historical-city tile, not a capital
+  or beside one, not a mine; Chebyshev distance >= 4 between any two;
+  terrain preferences as weights, never filters (Candor high ground,
+  Libera marsh or wildwood, Concordia a farmed plain, Saturna the wood's
+  edge). An empty draw raises. A live city takes its tile out of a human
+  country and becomes an eleventh land with one `city` slot; a ruin is
+  an Area on a human tile that keeps its country and census. Rings of
+  radius one carry `gate-ruin` / `gate-city` tile states forever.
+- **The ruins as dungeons.** Six authored Sites each, materialized at
+  worldgen and listed with their levels (2/5/8/11/14/17: the whole
+  ladder in six steps), rosters built off the side's pool per seed; a
+  `delve` command enters a Site without a giver by forging a forced
+  quest on the spot; cleared Sites refill in 30 days; the deepest does
+  not once its boss is dead and the ring goes quiet. Neighbouring
+  boards post the eight ruin templates into them through the ordinary
+  three-day placement, which is how "increased activity around" reaches
+  the board.
+- **The foes.** Heaven's things are MADE (the undead and giant-kin rows
+  reskinned as marble servants, wardens, colossi — which closes the
+  parked robot-servants item), Hell's are BRED (wolves, beasts,
+  giant-kin and drakes as hounds, boars, horned brutes, ash wyverns);
+  both reskin the ladder and casters as their people and the bandit rows
+  as their human followers. Disposition rides the mercy class with no
+  new mechanic: Heaven relentless, Hell takes spoils and lets you crawl
+  out. The ring changes WHO through a new tile-level encounter table and
+  makes fights more FREQUENT through a chance multiplier; the level roll
+  is untouched.
+- **The two sentinels** build rules.md's unimplemented "authored one-off
+  on the Heroes table" doctrine as `sites.BOSSES`: Legend bodies, pain
+  3, ward 2, drilled +3, Power 12; targets 17 and 16 at the duo baseline;
+  each wields its bar, entered in the armory with the boss as owner.
+- **The Nephilim** are an Entity field, not a sketch trait: `blood` in
+  none/old/sky/fire. The PC rolls a d6 (half of all PCs are Nephilim;
+  that is what "important" means), companions 1 in 12 / 1 in 24 / 1 in
+  24. Old blood raises the mind floor (the gift is BORN: the world's
+  wild talents are old blood without the word); sky-born a DEX floor and
+  ward 1; fire-born a STR floor, +2 Power and the Old Tongue. The
+  world's reaction is table protocol plus the packets' named-child and
+  named-debtor hooks, since cards cannot read the party.
+- **The packets** are scoped like Thule's minus the bulk: four
+  constitutions, three tensions, six edges, six facts, two options,
+  eight crisis cards and a weather and a season card each, four
+  HOST-resolved relations rows (the host is rolled, so `open_world`
+  resolves a placeholder), the synod card, four culture facts, four host
+  facts, and a crusade tension where Hell lands in a Sun-communion land.
+  No war is rolled over a city state until conquest exists.
+- **Session order** is forced by what boots: the ruins first (playable
+  after one session), the bosses and jobs second, the Nephilim third,
+  the city states fourth (the session that touches the validators and
+  must leave eleven lands booting on stub packets), the packets last.
+
+**Parked**: the live-gate endgame; conquest by the city states; the pact
+rewritten onto the setting or cut; the north's draugr and grave ghosts
+still owed by the monsters & fauna dump.

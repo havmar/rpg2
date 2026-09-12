@@ -53,11 +53,13 @@ the checked-out copy already contains the latest UI or rules changes.
   start and a fight turn in the play voice (see dm.md and writing.md).
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
-- `plan.md` — the sole active roadmap. Shipped work is removed from it:
-  since 2026-08-22 it carries only the roadmap BEYOND the fixed-Europe,
-  tile-economy and medieval-world arcs (the spring snapshot and trouble,
-  politics and war, fantasy and magic, settlements revisited, the deferred
-  leftovers). Each item is a future design conversation; none is scheduled.
+- `plan.md` — the sole active roadmap. Shipped work is removed from it.
+  Since 2026-09-12 it carries ONE build contract, THE GATES ARC (Heaven &
+  Hell, five sessions, design in `gates.md`), above the roadmap BEYOND
+  the fixed-Europe, tile-economy and medieval-world arcs (the spring
+  snapshot and trouble, politics and war, fantasy and magic, settlements
+  revisited, the deferred leftovers), each of which is a future design
+  conversation, none scheduled.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every

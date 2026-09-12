@@ -36,6 +36,76 @@ speaks are words), and **author the physical, derive the human**.
 
 ---
 
+## THE GATES ARC (2026-09-12) — the active build contract
+
+Heaven and Hell come into the world: two foreign powers beyond two doors,
+opposed for longer than either remembers, each of which wants this world.
+The design is **`gates.md`** — the spec companion, in worldsim.md's
+shape: the setting (the timeline, the two powers and their inner axes,
+the pagan coding, Tom, the names and the tongue), the four rolled sites
+and their placement rule, the ruins as dungeons, the foe tables, the two
+sentinels, the Nephilim, the two city states, the two world-layer packets
+and the human side. Its calls are made; a build session reads its
+section and does not reopen them. Its section 0 records the directives
+this arc stands on, three of which every session must keep in view:
+**the Hell pact and its enforcement are a gimmick this arc ignores and
+does not remove**; **the low-band-only principle is set aside** (the
+start level is rolled, the content spans the ladder); **four one-tile
+city states, semi-random, conquest later**.
+
+Five sessions, in the order that boots. Each ends with the standard
+paperwork (develop.md, "Where a finished feature is written up") and CUTS
+its sections from gates.md.
+
+1. **The four sites on the map** (gates.md sections 1–3, 5, 6 ruin half,
+   7, 8). `places.roll_gates` between the natural-Area loop and the
+   census: Candor and Libera as `ruin`-kind Areas with six authored,
+   worldgen-materialized Sites each at levels 2/5/8/11/14/17; the
+   `gate-ruin` and `gate-city` rings as tile states; `sites.GATE_SKINS`
+   and the four pools; `worldsim.TILE_STATE_ENCOUNTERS` and
+   `STATE_DANGER` read in `wild_event` and `_road_roll`; the `delve`
+   command with the 30-day refill; the map marks `R` and `G`, the GATES
+   legend group, the `tile`/`look` lines; bench_worldgen's gates section
+   (placement over 200 seeds). Docs: rules.md's Heaven & Hell add-on
+   (setting and ruins), dm.md's section, writing.md's two name rows and
+   the tongue. The city half of the roll (the tile takeover) is session
+   4's; session 1 rolls all four TILES and stamps all four rings but
+   builds only the ruins on them. After this session a new world has two
+   ruins to walk into at any level.
+2. **The two sentinels and the ruin jobs** (sections 4 relics, 9, 14
+   ruin templates). `sites.BOSSES` read by `make_foe`; Zohariel the
+   Sentinel (target 17) and Saar the Old Host (target 16) on Legend
+   bodies; the Candor and Libera bars as fixed armory entries owned by
+   them; bench_bestiary `--bosses`; the eight ruin templates on every
+   culture's table with `QUEST_PLACE_REQUIREMENTS` rows on `gate-ruin`;
+   Tom's stone as a natural site.
+3. **The Nephilim** (section 12). `Entity.blood`, the PC's d6 and
+   `new --blood`, the companion odds, the three floors and two fields,
+   the sheet line and `TRAIT_NOTES`, dm.md's Nephilim paragraph,
+   test_start coverage.
+4. **The two city states** (sections 6 city half, 10, the minimum of
+   11). Catalog v4 with `concordia`/`saturna` and the `heaven`/`hell`
+   cultures; the tile takeover; `capital_tile` as a per-world land fact;
+   the three validators taught the gates; name pools, `RULER_TITLES`,
+   `DEFENDER_ROLES`, `HUMAN_HOMELANDS`; the `gate_city` templates and
+   menus; the two culture quest tables (section 14); a STUB packet each
+   so `worldsim.validate_content` passes with eleven lands. The world
+   must boot green with eleven lands at the end of it.
+5. **The packets and the human side** (section 11 in full). The two
+   full packets (constitutions, tensions, edges, facts, options, eight
+   crisis cards, a weather and a season card each), the state words,
+   menus and encounter rows, the HOST-resolved relations rows, the synod
+   question card, the four culture facts, the host facts, the crusade
+   tension and card, the one-line pact pointer in rules.md, the lore
+   pages.
+
+**Parked by this arc**, each a later sitting: what one does to a LIVE
+gate (the endgame the bars point at); conquest by the city states; the
+pact rewritten onto this setting or cut; the monsters & fauna dump still
+owes the north its draugr and grave ghosts — the gate skins are not it.
+
+---
+
 ## The spring snapshot & trouble arc
 
 - **The last-harvest roll SHIPPED with session 2 and is READ since
@@ -113,9 +183,11 @@ parked here:
   carries the three pre-ordered creatures). With the tile ground built,
   the assignment gains geography: creatures OF the marsh, the deep
   forest, the high passes, the empty steppe.
-- **Heaven and hell as the technology source** — the parked
-  sulfur-to-Hell and robot-servants items wait here as before, and the
-  magical-vs-mundane boundary call is still this layer's to make.
+- **Heaven and hell as the technology source** — designed 2026-09-12
+  as THE GATES ARC above (`gates.md`): the robot servants are Heaven's
+  marble servants (constructs, made not born) and sulfur is at most one
+  import line in Hell's packet. The magical-vs-mundane boundary call for
+  everything ELSE (the guns, the goblin gadgets) is still this layer's.
 - `worldsim.md` remains the reference for what the old world-layer
   packets left undesigned.
 
