@@ -6,8 +6,9 @@ permanent docs (`rules.md`, `dm.md`, `develop.md`, `benchlog.md`) and the
 build record to `designlog.md`. See develop.md's "Where a finished feature
 is written up".
 
-Three whole arcs have shipped out of this file, and as of 2026-08-22 it
-carries **no build contract at all**. The fixed Europe map was **BUILT**
+Three whole arcs have shipped out of this file. It carried **no build
+contract at all** from 2026-08-22 until THE GATES ARC was designed on
+2026-09-12. The fixed Europe map was **BUILT**
 across five sessions ending 2026-08-15 (designlog 2026-08-15 and develop.md
 hold the pointers). **THE TILE ECONOMY ARC** was designed in five rounds
 (2026-08-20 through 2026-08-21 (E)) and **BUILT WHOLE on 2026-08-21** across
@@ -42,12 +43,12 @@ Heaven and Hell come into the world: two foreign powers beyond two doors,
 opposed for longer than either remembers, each of which wants this world.
 The design is **`gates.md`** — the spec companion, in worldsim.md's
 shape, and a section is CUT when the session that builds it lands. What
-is left in it after session 2 is the city half of the gate layer, the
-Nephilim, the two city states, the two world-layer packets, the human
-side and the two city quest tables. The SETTING, the ruins, the two
-sentinels, the bars and the ruin jobs are no longer there: they are
-rules.md's Heaven & Hell add-on parts 1 and 2, dm.md's "The gates" and
-writing.md's two name rows.
+is left in it after session 3 is the city half of the gate layer, the
+two city states, the two world-layer packets, the human side and the two
+city quest tables. The SETTING, the ruins, the two sentinels, the bars,
+the ruin jobs and the Nephilim are no longer there: they are rules.md's
+Heaven & Hell add-on parts 1, 2 and 3, dm.md's "The gates" and "The
+player character", and writing.md's two name rows.
 Its calls are made; a build session reads its
 section and does not reopen them. Its section 0 records the directives
 this arc stands on, three of which every session must keep in view:
@@ -58,17 +59,15 @@ city states, semi-random, conquest later**.
 
 Five sessions, in the order that boots; **session 1, the four sites on
 the map, shipped 2026-09-12** (designlog 2026-09-12 (A); a new world now
-has two ruins to walk into at any level, at `R` on the map) and
+has two ruins to walk into at any level, at `R` on the map),
 **session 2, the two sentinels and the ruin jobs, shipped 2026-09-12**
 (designlog 2026-09-12 (B); something stands at the bottom of each ruin,
-holding the bar Tom set across that gate). Each ends with the standard
-paperwork (develop.md, "Where a finished feature is written up") and
-CUTS its sections from gates.md.
+holding the bar Tom set across that gate), and **session 3, the Nephilim,
+shipped 2026-09-12** (designlog 2026-09-12 (C); half of all player
+characters are now half-bloods, and the setting walks in with the party).
+Each ends with the standard paperwork (develop.md, "Where a finished
+feature is written up") and CUTS its sections from gates.md.
 
-3. **The Nephilim** (section 12). `Entity.blood`, the PC's d6 and
-   `new --blood`, the companion odds, the three floors and two fields,
-   the sheet line and `TRAIT_NOTES`, dm.md's Nephilim paragraph,
-   test_start coverage.
 4. **The two city states** (sections 6 city half, 10, the minimum of
    11). Catalog v4 with `concordia`/`saturna` and the `heaven`/`hell`
    cultures; the tile takeover; `capital_tile` as a per-world land fact;

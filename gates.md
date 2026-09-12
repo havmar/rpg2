@@ -77,7 +77,16 @@ Written down so they stay settled:
 > [build settles] call) **designlog.md's 2026-09-12 (B)**. What remains of
 > section 4 is the ONE LINE session 5 still owes: a fact line per culture
 > on the lore page, in the culture's own words -- the table of versions
-> itself is now rules.md's. What remains below is sessions 3-5.
+> itself is now rules.md's. What remains below is sessions 4-5.
+
+> **Section 12, the Nephilim, is CUT** (2026-09-12, session 3 shipped).
+> Where it went: the three lines, what the blood does, the two rolls and
+> the sheet's BLOOD row are **rules.md's `Heaven & Hell - Add-on, part
+> 3`**; the table manner is **dm.md's "The gates" and "The player
+> character"**; the code pointers are **develop.md's Files and dev map**,
+> the two measured distributions **benchlog.md's 2026-09-12 (C) entry**,
+> and the build record (with every [build settles] call)
+> **designlog.md's 2026-09-12 (C)**.
 
 
 ## 4. Tom -- what is left of it (session 5)
@@ -378,45 +387,6 @@ runs on the resolved table.] Every derived word reaches a price.
   head pointing at the Heaven & Hell add-on as the setting authority and
   noting the pact is kept as-is; no other line of it changes.
 
-## 12. The Nephilim
-
-A per-character fact, not a sketch trait: `Entity.blood: str = ""`,
-values `""`, `old`, `sky`, `fire`. It rides the save for free (the Entity
-dataclass round-trips), prints on the sheet, and is read by
-`rpg.make_human` through floors and ceilings.
-
-**Who has it [decided]:**
-
-- **The PC** rolls it in `cmd_new` on a d6: 1–3 none, 4 `old`, 5 `sky`,
-  6 `fire`. `new --blood none|old|sky|fire` fixes it, beside `--level`.
-  Half of all PCs are Nephilim; that is what "an important part of the
-  setting" means at the table.
-- **Companions and recruits**: `old` 1 in 12, `sky` and `fire` 1 in 24
-  each, rolled in `make_character`.
-- **NPC dicts** carry none. The named Nephilim of the world (the child,
-  the debtor) are the packets' authority hooks.
-
-**What it does [decided], one line each, all through `make_human`'s
-floors and ceilings and two Entity fields:**
-
-| blood | body | the other thing | the marker (sheet line) |
-|---|---|---|---|
-| old | `mind` floor +1 (the gift is BORN — the wild talents of the world are old blood without the word) | — | "eyes that catch the light" / "taller than the door" |
-| sky | `dex` floor +1 | `spell_ward` 1 (the Law in the blood: +2 to any possession DC) | "gold in the eyes; the hair does not grey" |
-| fire | `str` floor +1 | max `power` +2; `Old Tongue` added to `tongues` | "small horns under the hair; warm to the touch" |
-
-Sheet line: `BLOOD: fire-born (small horns under the hair)`; nothing when
-none. `people.person_line` and `character_sheet` print it; `TRAIT_NOTES`
-gets the three mechanics notes.
-
-**How the world reacts** is table protocol plus the packets, not an
-engine gate (cards and prices cannot read the party): dm.md's Nephilim
-paragraph says that a warden asks a sky-born for the register, a demon
-greets a fire-born as kin and charges double, a bishop looks twice at
-either, and the Pruners' and the Hunger's cards are ABOUT people like the
-PC. The named-child and named-debtor hooks are the same three-employers
-shape as the wild talent.
-
 ## 13. Sessions
 
 Five build sessions, in an order forced by what boots. Each is one
@@ -425,22 +395,22 @@ contract in plan.md pointing here; each ends with the standard paperwork
 deleted, the section here CUT).
 
 **Session 1, the four sites on the map, SHIPPED 2026-09-12** (designlog
-2026-09-12 (A)) and **session 2, the two sentinels and the ruin jobs,
-SHIPPED 2026-09-12** (designlog 2026-09-12 (B)); their sections are cut
-from this file. Three remain.
+2026-09-12 (A)), **session 2, the two sentinels and the ruin jobs,
+SHIPPED 2026-09-12** (designlog 2026-09-12 (B)) and **session 3, the
+Nephilim, SHIPPED 2026-09-12** (designlog 2026-09-12 (C)); their sections
+are cut from this file. Two remain.
 
 | # | session | ships | this file's sections |
 |---|---|---|---|
-| 3 | **The Nephilim** | `Entity.blood`, the rolls, `--blood`, the floors and the two fields, the sheet line, `TRAIT_NOTES`, dm.md's Nephilim paragraph, `test_start` coverage | 12 |
 | 4 | **The two city states** | catalog v4, the city half of `roll_gates` (tile takeover, census, capital_tile as a land fact, the validators), name pools, `RULER_TITLES`/`DEFENDER_ROLES`, `HUMAN_HOMELANDS`, the `gate_city` templates and their menus, the two culture quest tables (section 14), a STUB packet each (the validator's minimum: four constitutions, two tensions, one card a track, one fact, one relation) | 6 (the city half), 10, the minimum of 11 |
 | 5 | **The packets and the human side** | the full two packets, the state words, menus and encounters, the HOST-resolved relations, the synod card, the four culture facts, the host facts, the crusade tension and card, the pact pointer line, the lore pages | 11 in full |
 
 Session 1 was the biggest and is what made the arc PLAYABLE: a new world
-now has two ruins to walk into at any level, and session 2 put something
-at the bottom of each. Session 3 is additive and small. Session 4 is the
-one that touches validators and the country machinery and must leave the
-world booting with eleven lands; its packet stubs exist only so the
-validator passes, and session 5 replaces them.
+now has two ruins to walk into at any level, session 2 put something at
+the bottom of each, and session 3 put the setting in the party itself.
+Session 4 is the one that touches validators and the country machinery
+and must leave the world booting with eleven lands; its packet stubs
+exist only so the validator passes, and session 5 replaces them.
 
 ## 14. The quest templates
 

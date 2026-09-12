@@ -807,6 +807,34 @@ Hell add-on is the setting; this is how it plays at the table.
   blessing at it like at any shrine. Whose Tom it is depends on who is
   standing there -- Saint Tom to the Church, Tom the Smith to a
   northerner passing through -- and the stone does not say.
+- **The Nephilim are the setting standing in your party** (2026-09-12,
+  session 3). Half of all player characters are half-blood, so assume the
+  PC is one until his sheet says otherwise -- the BLOOD row names the line
+  and the mark anyone in the room can see. Old-blood is the thousand-year
+  thinning of the stranded; sky-born and fire-born are twenty-seven years
+  old at most, the first generation of the Return. **The engine checks
+  nothing**: every reaction below is yours.
+  - **Play the reaction, not the label.** A Heaven warden asks a sky-born
+    for his register and is unfailingly polite about it. A demon greets a
+    fire-born as kin, is delighted, and charges him double. A bishop looks
+    twice at either and says nothing. A village that would take the party
+    in takes them in faster or not at all. Nobody explains what they are
+    doing.
+  - **The mark is what people see** -- the horns under the hair, the gold
+    in the eyes, the hand that is too warm -- so it is what a scene turns
+    on, never the word "Nephilim", which is the game's word and not the
+    world's. In the west it is a Church term; a northern farmer says the
+    grove touched him.
+  - **The Pruners' and the Hunger's cards are ABOUT people like the PC.**
+    When Heaven takes a strange child off the register or Hell buys a
+    year off a debtor, the party is watching something that could have
+    been done to one of them. Let that land once and do not press it.
+  - **An old-blood PC is Tom's people as far as both powers are
+    concerned**, whether or not it is true. That is the hook and it stays
+    unanswered.
+  - **A fire-born follows the Old Tongue.** He is the party's ear at a
+    Hell table -- let him catch the terms the others miss, and let the
+    demons notice him doing it.
 - **Do not promise the endgame.** What one would DO to a live gate is not
   designed. The party can reach the bottom, take the bar, and the ruin
   goes quiet. Say nothing about what comes next.
@@ -941,6 +969,13 @@ direct mechanical effects.
   proficiency and moves are all on his menu (a non-wizard can never go the
   other way; to him a spellbook is just diagrams). Let the player build in
   either direction and narrate the magic as his, not as a class.
+- **He is probably a half-blood** (2026-09-12, the Nephilim). `new` rolls
+  a d6 and half of all PCs come out old-blood, sky-born or fire-born; his
+  sheet's BLOOD row says which, and what the world does about it is "The
+  gates" above. Narrate the MARK, never the mechanics: he is taller than
+  the door, or his eyes catch the light, or there are small horns under
+  the hair and his hand is warm. Do not make it his personality -- the
+  player owns who the PC is -- and do not let a scene forget it either.
 - **If the PC dies, the game is over unless defeat mercy fires** -- even if
   a companion still stands. Relentless foes, or a second defeat at the same
   character level, give no mercy (`session.py` prints the GAME OVER line).

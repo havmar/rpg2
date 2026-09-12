@@ -333,11 +333,16 @@ class TheTongues(unittest.TestCase):
         rng = random.Random(21)
         for _ in range(30):
             hero = people.make_character(rng, 1)
-            self.assertEqual(len(hero.tongues), 2)
+            # Latin plus the homeland's -- and, for a fire-born, the Old
+            # Tongue behind them (2026-09-12, the Nephilim).
+            self.assertEqual(len(hero.tongues),
+                             3 if hero.blood == "fire" else 2)
             self.assertEqual(hero.tongues[0], people.LATIN)
             if hero.homeland != "byzantium":
                 self.assertEqual(hero.tongues[1],
                                  people.LANGUAGES[hero.homeland])
+            if hero.blood == "fire":
+                self.assertEqual(hero.tongues[2], rpg.OLD_TONGUE)
 
     def test_the_pc_and_a_pair_carry_it_too(self):
         rng = random.Random(4)
@@ -421,7 +426,8 @@ class TheSpeaksLine(unittest.TestCase):
             state = session.load()
             board = session.party_sheet_lines(state)
         for hero in state["party"]:
-            self.assertEqual(len(hero.tongues), 2)
+            self.assertEqual(len(hero.tongues),
+                             3 if hero.blood == "fire" else 2)
         spoken = [ln for ln in board if ln.strip().startswith("speaks:")]
         self.assertEqual(len(spoken), len(state["party"]))
         for line in spoken:

@@ -175,8 +175,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (design in `gates.md`) -- three
-  sessions now, sessions 1 and 2 having shipped the same day.
+  one build contract, THE GATES ARC (design in `gates.md`) -- two
+  sessions now, sessions 1, 2 and 3 having shipped the same day.
   Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
@@ -247,8 +247,10 @@ a pointer: what the file is, how it's run, where its docs are.
   writing.md's two name rows. **Section 9, section 4's relics and stone,
   and section 14's "Into the ruins" table are CUT** (2026-09-12, session
   2): they are rules.md's add-on part 2 and dm.md's "The gates" again.
-  What remains is sessions 3-5, and the one line of section 4 that
-  session 5 still owes (a Tom fact per culture on the lore page).
+  **Section 12, the Nephilim, is CUT** (2026-09-12, session 3): it is
+  rules.md's add-on part 3, dm.md's "The gates" and "The player
+  character". What remains is sessions 4-5, and the one line of section 4
+  that session 5 still owes (a Tom fact per culture on the lore page).
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -1421,7 +1423,10 @@ a pointer: what the file is, how it's run, where its docs are.
   `Entity.mercy_level` / `ferocity` / `withdrew` / `fate_paid`,
   `party_defeated`,
   `apply_defeat_mercy`, reverse retreat through `attempt_foe_retreat`, and
-  Fate's paid-victory restoration), and the batch-sim
+  Fate's paid-victory restoration), THE NEPHILIM (2026-09-12, the gates
+  arc's session 3: `Entity.blood`, the `BLOOD_*` tables and
+  `add_blood_tongue`, and `make_human(blood=...)` folding their floors and
+  ceilings in — rules.md's Heaven & Hell add-on part 3), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -1688,6 +1693,25 @@ a pointer: what the file is, how it's run, where its docs are.
   casting path (givers, recipients, notables, service faces, posse
   leaders, residents, smiths). It drives `cmd_new` end to end against a
   temp save — never the playthrough's.
+  **THE NEPHILIM added four parts** (2026-09-12, the gates arc's session
+  3). *The PC's blood*: the d6 read off its own table, the roll riding and
+  moving with the run seed, the measured half over three thousand draws,
+  `--blood` fixing each word with `none` as the plain human, an unknown
+  word refused by the parser, and the word surviving both the capacity and
+  the wizard rerolls. *What the blood does*: each floor against a
+  same-seed plain twin, the ward equalling +2 on a possession's DC where
+  possession reads it, the fire-born's Power range moved +2 at both ends,
+  the Old Tongue last on his SPEAKS row and on nobody else's, an unknown
+  word raising out of `make_human`, and a plain human being byte-for-byte
+  the character the game always rolled. *The sheet*: the BLOOD row's
+  shape, the marker stable for a body and across the save, both markers of
+  each line reached, a plain human saying nothing anywhere, the person
+  line and the sheet both carrying it, the `notes:` row pricing it like a
+  trait, the party board printing it inside the 40-column wrap, and the
+  companion sketch still printing beside it. *The companion odds*: the
+  measured 1-in-12 and two 1-in-24 over 24000 draws, a generated companion
+  and a recruit pair rolling them, the long-time companion usually human,
+  a dict NPC and a sim body carrying none, and the blood riding the save.
   `python -m unittest -v test_start.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
@@ -1734,7 +1758,17 @@ a pointer: what the file is, how it's run, where its docs are.
   which rides `dataclasses.asdict` into the save like every other field;
   an empty list means never rolled (foes, `rpg.make_party` sim bodies),
   and dict NPCs carry no key at all. Nothing in the engine gates on a
-  tongue. Plus the trait
+  tongue. **THE NEPHILIM** (2026-09-12, the gates arc's session 3 —
+  rules.md's Heaven & Hell add-on part 3): `BLOOD_CHANCE_DENOM` /
+  `BLOOD_ROLL` / `roll_blood` (the companion odds — old 1 in 12, sky and
+  fire 1 in 24 each, off one draw), `BLOOD_WORDS` / `BLOOD_MARKS` /
+  `blood_mark` / `blood_line` (the sheet's BLOOD row), the three
+  `TRAIT_NOTES` entries keyed by the blood word, and `make_character`'s
+  `blood=` switch. `rpg.Entity.blood` and what it does to a body are
+  rpg.py's; the mark is derived from the name, never stored. `TRAIT_ORDER`
+  / `trait_bits` (the sketch as ordered bits) came out of `person_line` in
+  the same pass — `session.hero_block_lines` calls it instead of parsing a
+  person line apart. Plus the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
   2026-07-13) — **COMPANIONS only since 2026-08-05**: `with_traits=False`
@@ -2778,6 +2812,53 @@ mechanic *does* and *why* is rules.md's job.
   one can DO to a live gate (the arc's open endgame question — the bars
   point at it and nothing hangs on them), and the lore page's one Tom line
   per culture (session 5's, with the packets).
+- **The gates: the Nephilim** (2026-09-12, THE GATES ARC's session 3 —
+  rules.md's Heaven & Hell add-on part 3, dm.md's "The gates" and "The
+  player character", `gates.md` for what is left) — the arc's small
+  additive session, split three ways and touching no other layer.
+  `rpg.py` OWNS WHAT IT DOES: `Entity.blood` (`""` / `old` / `sky` /
+  `fire`, riding `dataclasses.asdict` into the save like `tongues`), the
+  constants block under `HERO_STAT_BUDGET` (`BLOOD_KINDS`, `BLOOD_FLOORS`,
+  `BLOOD_CEILINGS`, `BLOOD_WARD`, `OLD_TONGUE`) and `add_blood_tongue`,
+  all read by `make_human`'s new `blood=` argument — which folds the
+  blood's floors and ceilings in ON TOP of the caller's (the trait hook's
+  own mechanism) and sets `blood` / `spell_ward` on the built Entity. An
+  unknown word RAISES. Two things to know before touching the numbers: a
+  **floor** is worth about a flat +1 because the fixed surplus budget is
+  dealt on top of it (and lands elsewhere when the stat is already at its
+  ceiling), and `BLOOD_CEILINGS["fire"]["power"] = -2` is the game's only
+  ceiling RAISE (`_adjusted_range` reads a ceiling as a subtraction), so a
+  fire-born's Power range is 5-8 — legal because the natural cap 6 is the
+  DEX/STR FRAME's and Power is a pool levels already buy.
+  `people.py` OWNS WHAT IT IS CALLED: `BLOOD_CHANCE_DENOM` / `BLOOD_ROLL`
+  and `roll_blood` (ONE `randrange(24)` for all three bands),
+  `BLOOD_WORDS` / `BLOOD_MARKS` / `blood_mark` / `blood_line`, the three
+  new `TRAIT_NOTES` entries keyed by the blood WORD, `make_character`'s
+  `blood=` (None ROLLS the companion odds; a word — `""` included — is
+  taken as given, which is how the PC's d6 reaches the generator), the
+  `add_blood_tongue` call that puts the Old Tongue back after
+  `roll_tongues` overwrites the list, and the readouts: `person_line`
+  carries the BLOOD bit and `character_sheet` prices it in the `notes:`
+  row the way it prices a dress trait. `blood_mark` is a pure function of
+  `name|blood` through blake2b — deterministic per body, stable across the
+  save, and NOTHING about it is stored, which is why the session added one
+  Entity field and not two. `TRAIT_ORDER` / `trait_bits` were factored out
+  in the same pass so `session.hero_block_lines` asks people.py for the
+  sketch instead of parsing `person_line` back apart (the blood bit would
+  otherwise have landed in the trait tail).
+  `session.py` ROLLS THE PC'S: `PC_BLOOD_ROLL` / `BLOOD_OPTIONS` /
+  `pc_blood` beside `start_level`, `new --blood none|old|sky|fire`, the
+  roll placed in `cmd_new` AFTER the world is built and BEFORE the
+  capacity reroll loop (so a seed's level and world are exactly what they
+  were, and a reroll re-rolls the stats and never the person), and the
+  BLOOD row in `hero_block_lines`.
+  **Nothing gates on blood** — no price, card, quest or conversation reads
+  it, by design: the world's reaction is dm.md's table protocol and the
+  two packets' authority hooks (session 5). `test_start.py` is the
+  contract and benchlog's 2026-09-12 (C) entry the measurement. The sims
+  never import people.py and `blood=""` is byte-identical behaviour, which
+  `sites.py --seed 3` and `bench_training.py` were diffed against the
+  previous commit to confirm.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,

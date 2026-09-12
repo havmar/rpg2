@@ -3186,3 +3186,59 @@ off their own string-seeded rng; `bench_worldgen.py --seeds 50 --only
 gates` reproduces the 2026-09-12 (A) placement picture unchanged, because
 the gate layer's own stream did not move. Test suite: **1147 OK** (1114
 before, +33 in `test_gates.py`).
+
+---
+
+## 2026-09-12 (C) — the Nephilim (the gates arc's session 3)
+
+An additive session with no combat surface at all, so the only things to
+measure were the two dice and the proof that nothing else moved.
+
+**The PC's d6** (`session.pc_blood`), sampled at the stream position a real
+`new --seed N` reaches it — the level roll and the world seed drawn first
+— over 6000 consecutive seeds:
+
+```
+human  49.3%    old  17.1%    sky  16.4%    fire  17.1%
+                              nephilim 50.7%   (design 50.0 / 16.67 each)
+```
+
+With `--level N` given the level roll is not drawn and the d6 sits one
+position earlier in the stream; the picture is the same (49.2% human,
+16.8 / 16.9 / 17.1). **Half of all player characters are Nephilim**, which
+is what this session was for.
+
+**The companion odds** (`people.roll_blood`, one `randrange(24)` behind all
+three bands), 240 000 draws:
+
+```
+human  83.29%   old  8.37%   sky  4.20%   fire  4.14%
+                             nephilim 16.71%
+design 83.33%        8.33%        4.17%        4.17%    16.67%
+```
+
+One hireable face in six is something other than human, and the old blood
+is twice as common as either young line — the thousand years of quiet
+descent against twenty-seven years of the Return.
+
+**Nothing else was re-measured, because nothing else could have moved.**
+The sims never import `people.py`, and `rpg.make_human`'s new `blood=`
+defaults to `""`, which is byte-identical behaviour: `python sites.py
+--seed 3` and `python bench_training.py` were both diffed against the
+previous commit's tree and came back IDENTICAL. The world layer, the
+gates' placement and the bestiary annotations are untouched by
+construction — no worldgen stream moved and no foe row changed.
+
+**One stream DID move, deliberately and visibly:** a played game's PC and
+companion now draw one extra number each at creation (the d6 and the
+companion roll), so `new --seed N` builds the same world and starts at the
+same level as before and rolls a different PAIR of heroes. That is a save
+break, not a balance change, and this project does not carry saves.
+
+Test suite: **1178 OK** (1147 before, +31 in `test_start.py`). Two
+pre-existing assertions were tightened rather than relaxed on the way: the
+tongue count is now "Latin plus the homeland's, plus the Old Tongue iff
+fire-born" instead of a flat 2 (`test_towns`), and the wealthy companion's
+joining gift now pins the wealthy+luxurious SUM instead of assuming a body
+can carry only one silver trait (`test_start`) — the second was a latent
+bug in the assertion that the new rng stream simply walked into.

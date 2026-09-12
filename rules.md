@@ -3752,6 +3752,12 @@ guarantees replace the pick's safety valves:
   *Traits — the companion layer* below), which retired the old
   no-relatives rule with it: there is no quirk to roll away. His sheet is
   his person line, his stats, his kit and his banked points.
+- **A d6 for his blood (2026-09-12)**: 1–3 nothing, 4 old, 5 sky, 6 fire,
+  so **half of all player characters are Nephilim** — and `new --blood
+  none|old|sky|fire` fixes it. It is the one thing on his sheet that is
+  neither a stat nor a possession, and it is the setting arriving in the
+  party rather than out in the world. The **Heaven & Hell add-on, part 3**
+  is the rule.
 
 **The long-time companion (2026-07-13 reframe of the starter ally).** One
 random companion at the PC's own level is generated WITH the PC and
@@ -3841,6 +3847,13 @@ doorstep, not a railroad.
   they are. There is **no engine gate**: nothing checks a tongue before a
   conversation. What a missing tongue costs is a table rule and lives in
   dm.md ("The tongues at the table").
+- **Blood (2026-09-12)**: a person is a plain human or one of the three
+  half-blood lines — old, sky, fire. Companions and recruits roll it at
+  long odds (old 1 in 12, sky and fire 1 in 24 each); the PC rolls a d6
+  and is a Nephilim half the time; dict NPCs never carry it. What it does
+  to a body — three stat floors, the fire-born's Power ceiling, the
+  sky-born's ward, the Old Tongue — and what it means are the **Heaven &
+  Hell add-on, part 3**.
 - **Sex**: random m/f (names come from homeland pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.
@@ -6095,3 +6108,95 @@ Three rules shape where they appear:
   Sites belong to `delve`; a board job builds its own place inside the
   ruin under the name the job gives it, and may reuse what an earlier one
   left. The two systems never write to the same room.
+
+---
+
+# Heaven & Hell — Add-on, part 3 (2026-09-12, the gates arc's session 3)
+
+Part 1 put the two powers and their dead cities on the map; part 2 put a
+sentinel at the bottom of each. This part is about the people they left
+behind in the human line: **the Nephilim**, the half-bloods. It is the
+smallest of the three and the one the player meets first, because he is
+usually one of them.
+
+## Who they are
+
+Three lines, and they are not the same age.
+
+- **The old blood** descends from **the stranded** — the angels and demons
+  caught on this side at the Closing, who do not age and so are some of
+  them still alive, a thousand years native. A thousand years of quiet
+  descent is a lot of thinning: what is left is a knack, a look, and a
+  family story nobody tells straight. Both powers believe the old-blood
+  lines are **Tom's people** (only a half-blood could have touched both
+  gates) and act on that belief, which is the whole reason an old-blood
+  farmer's daughter is worth anything to anyone.
+- **The sky-born** and **the fire-born** are twenty-seven years old at
+  most: the first generation of the Return, the children of angels and
+  demons who came through the new gates and built. A sky-born of the
+  oldest cohort is **exactly the age of a level 1 character**.
+
+There is no fourth line and there is no ladder: a half-blood is a
+half-blood, and nothing in the game makes one more so.
+
+## What it does
+
+Blood is a per-character **fact**, not a trait: it is born, it is never
+rolled away, and the player character carries it while he carries no trait
+sketch at all. Mechanically it is three floors, one ceiling, and two
+fields — everything else about being a Nephilim happens at the table.
+
+| blood | the body | the other thing | the marker |
+|---|---|---|---|
+| **old-blood** | +1 MIND floor | — | eyes that catch the light / taller than the door |
+| **sky-born** | +1 DEX floor | warded: +2 to any possession's DC, and an assassin's opening lands as an ordinary exchange | gold in the eyes / the hair does not grey |
+| **fire-born** | +1 STR floor | +2 max Power; speaks the **Old Tongue** | small horns under the hair / warm to the touch |
+
+A **floor** is the same mechanism the "big" trait uses: the character
+starts one point further up and the fixed surplus budget is dealt on top,
+so a floor is worth about a flat +1 — and it can land somewhere else
+entirely when the stat is already at its ceiling, which is exactly how the
+budget has always behaved.
+
+**The old blood's floor is MIND because the gift is BORN.** The wild
+talents of this world — the child who lights the hearth without a flint,
+the Church's own chain of `talent-loose` news — are old blood without the
+word for it, and nobody on either side of the human religions knows that.
+
+**Fire's Power is the one ceiling raise in the game.** The natural human
+cap of 6 belongs to the DEX/STR frame; Power is a pool a career already
+buys, so the fire-born's range simply moves +2 at both ends (3–6 becomes
+5–8). Nothing in the 1–20 doctrine bends for it.
+
+**Nothing about blood is a gate.** No engine reader checks it before a
+price, a card, a quest or a conversation, and no world reaction is coded.
+How a warden, a demon or a bishop treats the party is dm.md's Nephilim
+paragraph, and the world layer's own answer to the half-bloods is the two
+packets' authority hooks.
+
+## Who has it
+
+- **The player character rolls a d6 at creation**: 1–3 nothing, 4 old, 5
+  sky, 6 fire. **Half of all player characters are Nephilim** — measured
+  50.7% over six thousand seeds — which is what "an important part of the
+  setting" has to mean at a table that plays one character. `new --blood
+  none|old|sky|fire` fixes it, beside `--level`.
+- **Companions and recruits** roll the world's real odds, and they are
+  long: old **1 in 12**, sky and fire **1 in 24** each, so one hireable
+  face in six is something other than human.
+- **Dict NPCs carry none.** The named Nephilim of a world — the child on
+  the register, the debtor whose year is written down — are the packets'
+  authority hooks, not the dice's.
+
+## What shows
+
+The sheet carries a **BLOOD** row: `BLOOD: fire-born (small horns under
+the hair)`, and nothing at all for the plain humans, who are most people.
+The marker is one of that line's two, fixed per character, so two
+fire-born on the same recruiting board do not read alike. A candidate's
+sheet prices the blood exactly the way it prices a dress trait — the
+hiring page shows everything, the way it shows a quest's level.
+
+A fire-born's SPEAKS row carries the **Old Tongue** behind Latin and his
+homeland's tongue. He grew up hearing it; it is still true that nothing in
+the engine checks a tongue (dm.md, "The tongues at the table").

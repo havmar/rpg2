@@ -146,15 +146,16 @@ from rpg import (
     ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
     buy_ammo as _buy_ammo, grant_starter_ammo,
     WINDED_PENALTY, SPENT_PENALTY, fit_lines,
+    BLOOD_KINDS,
 )
 import karma
 import crime
 import conquest
 import worldsim                 # the world layer (2026-08-07, the frame)
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
-from people import (make_character, make_pair, character_sheet, person_line,
+from people import (make_character, make_pair, character_sheet,
                     npc_line, downtime_match, joining_silver, tongue_line,
-                    PAIR_CHANCE)
+                    blood_line, trait_bits, PAIR_CHANCE)
 from sites import (SITES, FOES, BOSSES, BANDIT_KINDS, WEAPON_INDEX, make_foe,
                    boss_bar,
                    roster_lines, GATE_SKINS, GATE_FEROCITY)
@@ -532,16 +533,17 @@ def hero_block_lines(party: list, h) -> list[str]:
                         if r and (h.weapon is None or n != h.weapon.name))
     if dormant:
         lines.append(f"  drilled, not in hand: {dormant}")
+    if h.blood:
+        lines.append("  " + blood_line(h))
     if h.tongues:
         lines.append("  " + tongue_line(h))
     if h.satisfaction is not None:
         lines.append(f"  satisfaction {h.satisfaction}/{SATISFACTION_MAX}")
-    if h.homeland:
-        # person_line's trait sketch, minus the name and homeland/age already
-        # in the header (one source for the category order: people.py).
-        traits = person_line(h).split(" -- ", 1)[1].partition("; ")[2]
-        if traits:
-            lines.append(f"  {traits}")
+    # The trait sketch, minus the name and homeland/age already in the header
+    # (one source for the category order: people.trait_bits).
+    traits = "; ".join(trait_bits(h))
+    if traits:
+        lines.append(f"  {traits}")
     for ctag in condition_tags(h):
         lines.append(f"  [{ctag}]")
     for wtag in wound_tags(h):
@@ -1367,6 +1369,24 @@ def start_level(args: argparse.Namespace, rng: random.Random) -> int:
     return rng.randint(1, START_LEVEL_ROLL_MAX)
 
 
+# THE PC'S BLOOD (2026-09-12, the gates arc's session 3). A d6: 1-3 nothing,
+# 4 the old blood, 5 Heaven's, 6 Hell's. HALF of all player characters are
+# Nephilim, which is what "an important part of the setting" has to mean at
+# a table that plays one character -- a companion's odds (people.roll_blood)
+# are the world's real ones, and they are long.
+PC_BLOOD_ROLL = {4: "old", 5: "sky", 6: "fire"}
+BLOOD_OPTIONS = ("none", *BLOOD_KINDS)
+
+
+def pc_blood(args: argparse.Namespace, rng: random.Random) -> str:
+    """What the player character is: `--blood WORD` when given (`none` is
+    the plain human), else the d6 off the run's own rng."""
+    asked = getattr(args, "blood", None)
+    if asked is not None:
+        return "" if asked == "none" else asked
+    return PC_BLOOD_ROLL.get(rng.randint(1, 6), "")
+
+
 def career_purse(level: int) -> int:
     """What a party STARTING at `level` carries: a share of what the jobs
     on the way up would have paid (rpg.quest_silver at the career pace), most
@@ -1520,9 +1540,13 @@ def cmd_new(args: argparse.Namespace) -> None:
     # as a warrior any day he likes (combat training, weapon proficiency and
     # the move repertoire are all on his menu), so starting him with the
     # gift takes nothing away and opens everything.
+    #
+    # His BLOOD is rolled once, before the capacity rerolls, so a reroll
+    # re-rolls the stats and never the person (2026-09-12, the Nephilim).
+    blood = pc_blood(args, rng)
     while True:
         pc = make_character(rng, level=level, sex="m",
-                            homeland=homeland,
+                            homeland=homeland, blood=blood,
                             with_traits=False, wizard=True)
         if party_capacity(pc.cha) >= 1:
             break
@@ -7570,7 +7594,10 @@ def build_parser() -> argparse.ArgumentParser:
              "ALWAYS A MAGIC USER, CHA always holds at least one "
              "companion -- in a uniformly selected settlement slot, with "
              "his homeland set from that country and his long-time "
-             "companion at his side. It prints a level-fit OPENING HOOK "
+             "companion at his side. His BLOOD is rolled on a d6 "
+             "(2026-09-12): half of all PCs are half-blood -- old, sky "
+             "or fire -- and `--blood WORD` fixes it. "
+             "It prints a level-fit OPENING HOOK "
              "there to frame the first scene on. No character "
              "pick, no tavern opening (2026-07-13). The party's LEVEL is "
              f"rolled 1-{START_LEVEL_ROLL_MAX} unless `--level N` fixes "
@@ -7586,6 +7613,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help=f"start the party at this level (1-{LEVEL_CAP}); "
                         f"omitted, the level is ROLLED 1-"
                         f"{START_LEVEL_ROLL_MAX}")
+    p.add_argument("--blood", choices=BLOOD_OPTIONS, default=None,
+                   help="fix the PC's half-blood (the Nephilim, "
+                        "2026-09-12); omitted, it is ROLLED on a d6 -- "
+                        "1-3 none, 4 old, 5 sky, 6 fire, so half of all "
+                        "player characters are half-blood")
     p.add_argument("--no-pact", action="store_true",
                    help="a neutral adventurer: no pact, no assignments "
                         "(the pre-2026-07-19 game)")

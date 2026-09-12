@@ -7818,3 +7818,166 @@ call, and the calls the spec did not know it was leaving open.
   two objects that point at that question are in the player's hands. The
   bars carry no quest and no hook by design. It is now the most
   conspicuous hole in the arc.
+
+## 2026-09-12 (C) — Session 3 of the Gates arc: the Nephilim
+
+The arc's third build session, off `plan.md` item 3 and `gates.md` section
+12 — the small additive one. Sessions 1 and 2 put the setting on the map
+and at the bottom of the two ruins; this one puts it in the party. Half of
+all player characters are now half-blood, and the sheet says which line.
+Everything section 12 decided is built as decided; what follows records
+where it went, every **[build settles]** call, and the calls the spec did
+not know it was leaving open.
+
+### What shipped, and where
+
+- **`rpg.Entity.blood`** — `""` / `old` / `sky` / `fire`, riding
+  `dataclasses.asdict` into the save the way `tongues` does, so nothing in
+  the serializers changed.
+- **`rpg.BLOOD_FLOORS` / `BLOOD_CEILINGS` / `BLOOD_WARD` / `OLD_TONGUE` /
+  `add_blood_tongue`**, in a block under `HERO_STAT_BUDGET`, and
+  `make_human(blood=...)` reading them: the blood's floors and ceilings are
+  folded in ON TOP of the caller's (the same dict the "big"/"short" traits
+  already use), and `blood` / `spell_ward` are set on the built Entity. An
+  unknown word raises — a half-blood the tables do not know is damage, not
+  a variant.
+- **`people.roll_blood`** (old 1 in 12, sky and fire 1 in 24 each, off one
+  `randrange(24)`), **`BLOOD_WORDS` / `BLOOD_MARKS` / `blood_mark` /
+  `blood_line`**, three new `TRAIT_NOTES` entries keyed by the blood word,
+  and `make_character(blood=...)` — `None` rolls, a word (including `""`)
+  is taken as given.
+- **`session.pc_blood` / `PC_BLOOD_ROLL` / `BLOOD_OPTIONS`** and **`new
+  --blood none|old|sky|fire`**, with the d6 rolled in `cmd_new` after the
+  world is built and before the capacity reroll loop.
+- **The readouts**: `person_line` carries the BLOOD bit, `character_sheet`
+  prices the blood in its `notes:` row like a dress trait, and
+  `hero_block_lines` prints the BLOOD row on the party board beside SPEAKS.
+- **`people.TRAIT_ORDER` / `trait_bits`**, factored out of `person_line` so
+  `hero_block_lines` asks for the sketch instead of parsing a person line
+  back apart.
+- **31 new tests** in `test_start.py` (four classes), and the two measured
+  distributions in benchlog's 2026-09-12 (C).
+- Paperwork: rules.md's **Heaven & Hell add-on part 3** plus two
+  cross-references in the Party add-on (character generation, the player
+  character); dm.md's "The gates" grown by one multi-part bullet and "The
+  player character" by one; develop.md's Files (`rpg.py`, `people.py`,
+  `test_start.py`) and a dev map entry; benchlog; this entry. `gates.md`
+  loses section 12 and its row in the sessions table; `plan.md` loses item
+  3.
+
+### The [build settles] calls
+
+1. **"max `power` +2" is a range shift, not a post-roll bonus.** The spec
+   put every effect "through `make_human`'s floors and ceilings", and a
+   ceiling raise alone would have bought the fire-born almost nothing (the
+   budget is fixed at 11 points; a wider ceiling only lets more of them
+   land on Power). A flat `+= 2` after the budget would have been outside
+   the mechanism the spec named. So `BLOOD_FLOORS["fire"]["power"] = 2`
+   and `BLOOD_CEILINGS["fire"]["power"] = -2`: the Power range moves +2 at
+   BOTH ends, 3–6 becoming 5–8, which is deterministically +2 max Power
+   and is still a floors-and-ceilings change. It is the game's **only
+   ceiling raise**, and it is legal because rules.md's "never the ceiling
+   up" is about the natural human cap of 6 on the DEX/STR FRAME; Power is
+   a pool a career already buys ten of.
+2. **The marker is derived from the name, not drawn from the rng.** The
+   spec said "pick per character, deterministic off the character's rng",
+   but a live draw has to be STORED to survive the save, and the contract
+   was one new Entity field. `blood_mark` is therefore a pure function of
+   `f"{name}|{blood}"` through blake2b: the same mark every time the sheet
+   is printed, across the save and across processes, with nothing stored
+   and no second field. Same guarantee, cheaper.
+3. **Each line has TWO markers and one is picked.** Section 12's table
+   quotes old's as two alternatives (`"eyes that catch the light" /
+   "taller than the door"`) and sky's and fire's as one semicoloned string
+   each. The one literal sheet line the spec gives — `BLOOD: fire-born
+   (small horns under the hair)` — shows a single short marker, so the
+   build read all three rows as PAIRS and split sky's and fire's on the
+   semicolon. Every phrase the spec wrote is still in the game, the sheet
+   line is exactly the one the spec printed, and two fire-born on the same
+   recruiting board do not read alike. A test pins that both markers of
+   each line are reachable.
+4. **The words are `old-blood`, `sky-born`, `fire-born`.** The spec named
+   only `fire-born`. `old-born` would have been wrong twice: the old lines
+   descend from the stranded of the Closing, so they are not born of
+   anything that came back, and the setting's own phrase throughout
+   rules.md is "the old-blood lines".
+5. **The d6 sits after worldgen, not before it.** `cmd_new` draws the
+   start level and the world seed off the run's rng before anything else,
+   so rolling the blood first would have moved every seed's level and
+   world. It is rolled immediately before the PC's capacity reroll loop
+   instead — one draw, outside the loop, so a reroll re-rolls the stats
+   and never the person. A seed's LEVEL and WORLD are therefore exactly
+   what they were before this session; only the heroes moved.
+6. **`--blood` validates through argparse `choices`.** `--level` hand-rolls
+   its refusal because it is a range; a word has a closed set, so the
+   parser refuses `--blood angelic` and `cmd_new` never sees it. `none` is
+   the spelling for `""` because an empty string is not a usable CLI word.
+7. **`spell_ward` 1 already meant +2 DC and needed no wiring.**
+   `_cast_opener`'s possession reads `dc_extra=target.training + 2 *
+   target.spell_ward`, so the Law in the blood arrives for free. It also
+   turns an ambush strike into an ordinary exchange (`_attack`'s
+   `ambush and defender.spell_ward > 0`) — an unasked-for second effect
+   that is exactly on theme (the sky-born is warded against the assassin
+   arts, which is what the two sentinels' ward 2 says too), so it is kept
+   and documented in `TRAIT_NOTES` rather than fenced off. Ward 2's stun
+   immunity is out of reach at 1.
+8. **The blood is on the sheet as a `notes:` entry as well as a BLOOD
+   row.** The spec said `TRAIT_NOTES` gets the three mechanics notes but
+   not where they print; `trait_note` is only ever read for values in
+   `e.traits`, and blood is not a trait. `character_sheet` now leads its
+   `notes:` row with the blood's note. The reason is the hiring doctrine:
+   a candidate sheet shows everything, the way the board shows straight
+   levels, and a recruit's blood is now a thing to choose against.
+9. **Two pre-existing assertions were tightened, not relaxed.** The new
+   rng draws move the companion stream, and that walked into a latent bug
+   in `test_start`: `test_traits_stay_mechanical_where_they_are_read`
+   assumed a wealthy companion could not ALSO be luxurious (they sit in
+   different trait categories, so he can) and asserted a flat 25s. It now
+   pins the sum of whichever silver traits the body holds. `test_towns`'s
+   two tongue-count assertions became "Latin plus the homeland's, plus the
+   Old Tongue iff fire-born".
+
+### What this session deliberately did NOT do
+
+- **No engine reader gates on blood.** No price, card, quest, encounter or
+  conversation checks it, and none should before session 5: the world's
+  reaction is dm.md's table protocol, and the packets' authority hooks —
+  the named child on the register, the named debtor — are where the world
+  layer answers the half-bloods. `worldsim` cards cannot read the party at
+  all, which is the structural reason this stays table protocol.
+- **No NPC blood.** Dict NPCs carry no key, so a named Nephilim in the
+  world is authored, not rolled.
+- **Nothing about the stranded themselves.** They are rules.md's setting
+  (part 1) and remain unbuilt as bodies.
+
+### What is worth saying out loud
+
+- **This is the first mechanic that makes the PC structurally different
+  from a recruit, and it is a big difference.** A PC is Nephilim half the
+  time; a recruit one time in six. At the table that reads right — the
+  player character is the one the setting is about — but it does mean
+  every played party will have a half-blood PC in half of all campaigns
+  and a fully human one in the other half, and the DM material for the
+  human half is thinner: dm.md tells you what a warden does to a sky-born
+  and nothing about what anybody does to a party with no blood in it. Worth
+  a paragraph the next time dm.md is opened.
+- **The old blood's MIND floor is quietly the strongest of the three for a
+  PC**, because the PC is rerolled until MIND is strictly highest. An
+  old-blood PC's gate is easier to pass and a sky- or fire-born's is
+  harder (the roll just throws more budgets away; `WIZARD_ROLL_TRIES` is
+  200 and nowhere near reached). Nothing about the resulting wizard is
+  nudged, so the shape is honest — but a fire-born PC is, on average, a
+  slightly more marginal wizard than an old-blood one.
+- **A floor lands somewhere else when the stat is already capped.** Seed 7
+  is the worked example: an old-blood PC with MIND already 6 put his extra
+  point into STA. That is the budget behaving exactly as it always has, and
+  it means "the old blood is smarter" is true on average and not per
+  character. The tests assert the FLOOR (`mind >= 4`), never a delta.
+- **The bar for "what a half-blood is worth" is set low on purpose and may
+  be set too low.** One stat floor plus a small second thing is roughly one
+  good trait. Against the weight the fiction puts on it — both powers act
+  on the old-blood lines, the Pruners keep a register — a player may expect
+  more from his own blood than +1 MIND. The design says the world's
+  REACTION is the payload, which is table protocol; if that reaction never
+  materializes in play, the mechanical half will read thin. The city
+  packets (session 5) are where it either lands or does not.
