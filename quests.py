@@ -50,7 +50,7 @@ from typing import Iterable
 
 from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
                  quest_silver, conspicuousness, NOTICE_BASE, CAST_RANGE)
-from sites import FOES, Site
+from sites import FOES, GATE_FEROCITY, GATE_SKINS, Site, foe_spec
 from places import (
     CULTURE_OF, LAND_SPECS, SITE_TEMPLATES, create_geography,
     generic_room_contents, materialize_settlement, stable_seed,
@@ -502,6 +502,116 @@ TEMPLATES["norse"] = [
                           "hang in it and nobody goes to the trees."),
 ]
 
+# INTO THE RUINS (2026-09-12, the gates arc's session 2): eight jobs that
+# send people into the two dead gate cities, on EVERY culture's table --
+# what comes out of Candor and Libera is everybody's problem, and the work
+# is posted by whoever lives near it. The three-day target radius is what
+# keeps the table local: `strict` on the place requirement means the
+# template is not even offered at a board with no reachable ruin, so only
+# the handful of settlements around Candor and Libera ever post these.
+# The SIDE is carried by the requirement's own tag (`heaven-ruin` /
+# `hell-ruin`, stamped on the ruin Area at worldgen): a Heaven-skinned job
+# cannot land in Libera because Libera's Area does not wear the word.
+RUIN_TEMPLATES: list[dict] = [
+    dict(title="Looters in the White Ruin",
+         desc="Looters are stripping the white stone off Candor's terraces "
+              "and selling it. Clear them out.",
+         pool=LADDER_POOL[:5], skins={},
+         sites=("the outer terraces",),
+         giver="the sheriff",
+         epilogue="The terraces are quiet. The stone stays where Tom left "
+                  "it.",
+         failure_epilogue="Two more courses of white stone are gone. A "
+                          "merchant three days off is selling it by the "
+                          "cartload."),
+    dict(title="The Servant That Walks",
+         desc="A marble servant has walked out of Candor and is standing in "
+              "the churchyard. It does not answer. Break it or lead it "
+              "home.",
+         pool=HEAVEN_RUIN_POOL[:3], skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]),
+         sites=("the choir hall",),
+         giver="the village priest",
+         epilogue="The servant is broken. The priest keeps a hand of it on "
+                  "the altar.",
+         failure_epilogue="The servant is still in the churchyard and now "
+                          "there are two. Nobody buries anyone this week."),
+    dict(title="The Lamp in the Glass Garden",
+         desc="A lamp still burns in Candor's glass garden. The merchant "
+              "pays for it. The wardens of the garden are still there too.",
+         pool=HEAVEN_RUIN_POOL, skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), proof="the lamp",
+         sites=("the glass garden",),
+         giver="a lamp merchant",
+         epilogue="The lamp burns on the merchant's counter. He is not "
+                  "selling.",
+         failure_epilogue="The merchant has stopped asking. He says the "
+                          "garden is not a garden and the lamp is not a "
+                          "lamp."),
+    dict(title="The Register of Candor",
+         desc="Concordia wants the old register out of Candor's measuring "
+              "house. The porters in there have kept it for a thousand "
+              "years.",
+         pool=HEAVEN_RUIN_POOL + ("champion",),
+         skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), align="good",
+         sites=("the measuring house",),
+         giver="an archivist from Concordia",
+         epilogue="The register goes to Concordia. Somebody there is "
+                  "reading the names.",
+         failure_epilogue="The archivist went in after it himself. The "
+                          "measuring house has him on a shelf now."),
+    dict(title="Hounds off the Wild Ruin",
+         desc="Hell hounds are coming out of Libera's feast-hall and taking "
+              "sheep. Kill the pack and bring back the collars.",
+         pool=WOLF_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), proof="the collars",
+         sites=("the fallen feast-hall",),
+         giver="the head shepherd",
+         epilogue="The collars hang on the shepherd's door. The sheep are "
+                  "back on the hill.",
+         failure_epilogue="The pack has the hill. The shepherd has moved "
+                          "what is left of the flock inside the walls."),
+    dict(title="The Vine Pits",
+         desc="The old vine pits at Libera are still bearing. The vintner "
+              "wants the vintage. The boars want it too.",
+         pool=BEAST_POOL + ("dire wolf",), skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the vine pits",),
+         giver="the vintner",
+         epilogue="Twelve barrels of a thousand-year vintage. The vintner "
+                  "will not say what it tastes like.",
+         failure_epilogue="The vintage stays in the pits. The vintner is "
+                          "asking a lower price and finding no takers."),
+    dict(title="The Kennel Master's House",
+         desc="Saturna wants the old kennel book out of Libera. The black "
+              "hounds and the ember troll in the kennels are not selling.",
+         pool=HELL_RUIN_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), align="dark",
+         sites=("the kennels",),
+         giver="the Master of Hounds of Saturna",
+         epilogue="The kennel book goes to Saturna. The hounds there are "
+                  "bred from it now.",
+         failure_epilogue="Saturna sent its own people for the book. Two "
+                          "villages on the way were eaten out in a night."),
+    dict(title="The Debt of a Thousand Years",
+         desc="A man from Saturna says his year is written in Libera's old "
+              "counting house and can be burned there. The horned brutes "
+              "keep the house.",
+         pool=HELL_RUIN_POOL + ("champion",),
+         skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the wild market",),
+         giver="a debtor from Saturna",
+         epilogue="The book is burned. The man walks out a year younger, "
+                  "or says he does.",
+         failure_epilogue="The man went back to Saturna and paid. He is "
+                          "older than he was and will not say by how much."),
+]
+
+for _culture in TEMPLATES:
+    TEMPLATES[_culture].extend(dict(_template) for _template in RUIN_TEMPLATES)
+
 # Country-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
 EPIC_TEMPLATES: list[dict] = [
@@ -535,6 +645,14 @@ EPIC_TEMPLATES: list[dict] = [
                           "The king's wizard has stopped answering questions "
                           "about it."),
 ]
+
+
+def _ruin_place(side: str) -> dict:
+    """The placement every ruin job shares: the gate-ruin family, narrowed
+    to ONE side by the tag its Area wears, and strict."""
+    return dict(area_any=(f"{side}-ruin",), site_template="ruin",
+                domain="natural", reuse="prefer", strict=True)
+
 
 # Geographic routing for the existing quest families.  The encounter tables
 # stay exactly as calibrated; this layer selects persistent geography and a
@@ -594,9 +712,21 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "Blood in the Grove": dict(
         area_any=("forest", "hills", "pasture"),
         site_template="grove", domain="natural", reuse="never"),
+    # INTO THE RUINS: one Area in the world can honor each of these, so the
+    # requirement is STRICT -- no fallback to the origin's countryside, and
+    # a board with no reachable ruin never draws the template at all.
+    "Looters in the White Ruin": _ruin_place("heaven"),
+    "The Servant That Walks": _ruin_place("heaven"),
+    "The Lamp in the Glass Garden": _ruin_place("heaven"),
+    "The Register of Candor": _ruin_place("heaven"),
+    "Hounds off the Wild Ruin": _ruin_place("hell"),
+    "The Vine Pits": _ruin_place("hell"),
+    "The Kennel Master's House": _ruin_place("hell"),
+    "The Debt of a Thousand Years": _ruin_place("hell"),
 }
 
-for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
+for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES,
+                                             RUIN_TEMPLATES]:
     for _template in _templates:
         _template["place"] = dict(QUEST_PLACE_REQUIREMENTS[_template["title"]])
 
@@ -999,11 +1129,21 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
                   and (radius is None
                        or path_days(origin["tile"], a["tile"]) <= radius)]
     if not candidates:
+        if requirement.get("strict"):
+            # A STRICT family names ground only one place in the world has
+            # (the gate ruins, 2026-09-12): there is no honest fallback, and
+            # `_post_quest` is supposed to have filtered the template out
+            # before it ever got here.
+            raise ValueError(f"{sorted(wanted)}: no such ground within "
+                             f"{radius} days of {origin_key}")
         tile = world["tiles"][origin["tile"]]
         candidates = [world["areas"][tile["natural_area"]]]
     domain = requirement.get("domain")
     if domain == "natural":
-        natural = [a for a in candidates if a["kind"] == "natural"]
+        # A RUIN counts as natural ground (2026-09-12): a dead city is not
+        # somebody's settlement, and the jobs that go into one ask for the
+        # same domain as the jobs that go into a wood.
+        natural = [a for a in candidates if a["kind"] in ("natural", "ruin")]
         if natural:
             candidates = natural
     elif domain == "built":
@@ -1012,6 +1152,21 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
             candidates = built
     candidates.sort(key=lambda area: (area["tile"], area["id"]))
     return rng.choice(candidates)
+
+
+def place_reachable(world: dict, origin_key: str, requirement: dict,
+                    radius: int | None = ORDINARY_TARGET_DAYS) -> bool:
+    """Is there ground this requirement can honor inside the radius?
+
+    Only the STRICT families ask (the ruin jobs): everything else has the
+    origin Tile's own countryside as a legal fallback and is therefore
+    postable anywhere."""
+    origin = world["areas"][origin_key]
+    wanted = set(requirement.get("area_any", ()))
+    return any(wanted.intersection(a.get("tags", ()))
+               and (radius is None
+                    or path_days(origin["tile"], a["tile"]) <= radius)
+               for a in all_areas(world))
 
 
 def _reusable_site(world: dict, area: dict, requirement: dict,
@@ -1027,6 +1182,14 @@ def _reusable_site(world: dict, area: dict, requirement: dict,
         "crypt": {"crypt", "shrine"},
     }.get(template, {template})
     for site in area_sites(world, area):
+        if site.get("ruin"):
+            # A ruin's six authored Sites belong to `delve` (2026-09-12):
+            # they carry their own level, their own rooms and the ruin's own
+            # refill clock, and a posted job re-rostering one would quietly
+            # take the dungeon apart. A ruin job builds its own site in the
+            # ruin Area under its authored stem instead -- and may reuse the
+            # leftovers of an earlier one.
+            continue
         active_quests = [
             qid for qid in site.get("quest_ids", ())
             if qid not in world["quests"]
@@ -1140,6 +1303,10 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         "state_target": target_area["id"],
         "level": level,
         "skins": dict(tpl["skins"]),
+        # The side's DISPOSITION rides beside its names (sites.GATE_FEROCITY):
+        # a Marble Warden met on a board job is as relentless as one met in
+        # the ruin, and a reveler robs you either way.
+        "ferocity": dict(tpl.get("ferocity") or {}),
         "sites": site_ids,
         "site_count": len(site_ids),
         "encounters": encounters,
@@ -1472,9 +1639,13 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     if settlement.get("capital"):
         tables += EPIC_TEMPLATES
     fitting = [t for t in tables
-               if template_band(t)[0] <= level <= template_band(t)[1]]
+               if template_band(t)[0] <= level <= template_band(t)[1]
+               and (not quest_place_requirement(t).get("strict")
+                    or place_reachable(world, settlement["key"],
+                                       quest_place_requirement(t)))]
     if not fitting:     # a roll above every local pool: snap to the ladder
-        fitting = [t for t in tables if "warlord" in t["pool"]] or tables
+        fitting = [t for t in tables if "warlord" in t["pool"]] or [
+            t for t in tables if not quest_place_requirement(t).get("strict")]
         lo_t, hi_t = template_band(fitting[0])
         level = max(lo_t, min(hi_t, level))
     # Prefer a template not already on this settlement's board (the ladder
@@ -1958,7 +2129,7 @@ def notice_contest(party: list, kinds: list[str],
     block above): returns (party_sees, foes_see). Each side rolls 2d6 + its
     notice stat vs NOTICE_BASE + the other side's conspicuousness."""
     watchers = [h for h in party if not h.dead]
-    specs = [FOES[k] for k in kinds]
+    specs = [foe_spec(k) for k in kinds]
     party_notice = max((h.mind for h in watchers), default=0)
     foe_notice = max(max(s.mind, s.dex) for s in specs)
     party_sees = (rng.randint(1, 6) + rng.randint(1, 6) + party_notice
@@ -1974,7 +2145,7 @@ def foes_preferred_field(kinds: list[str]) -> int:
     (melee ambushers are simply ON you, exactly the old met-blade-first)."""
     best = 0
     for k in kinds:
-        spec = FOES[k]
+        spec = foe_spec(k)
         if spec.weapon is not None and spec.weapon.range:
             best = max(best, spec.weapon.range)
         if spec.school:
@@ -2106,7 +2277,7 @@ def board_lines(world: dict,
 def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
     """A compact 'what you'd face' readout for a quest's detail view."""
     from collections import Counter
-    counts = Counter(skins.get(k, FOES[k].display) for k in kinds)
+    counts = Counter(skins.get(k, foe_spec(k).display) for k in kinds)
     return ", ".join(f"{n}x {d}" if n > 1 else d for d, n in counts.items())
 
 

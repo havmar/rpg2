@@ -155,7 +155,8 @@ import weapons as weaponlib     # the weapon generation system (2026-07-28)
 from people import (make_character, make_pair, character_sheet, person_line,
                     npc_line, downtime_match, joining_silver, tongue_line,
                     PAIR_CHANCE)
-from sites import (SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe,
+from sites import (SITES, FOES, BOSSES, BANDIT_KINDS, WEAPON_INDEX, make_foe,
+                   boss_bar,
                    roster_lines, GATE_SKINS, GATE_FEROCITY)
 from quests import (generate_world, forge_quest, board_lines,
                     quest_silver_posted,
@@ -1041,6 +1042,10 @@ def save(state: dict) -> None:
         # bookkeeping.
         "loose_ends": state.get("loose_ends", []),
         "pending_reward": state.get("pending_reward"),
+        # One-off steel on the ground (2026-09-12): every off-catalog
+        # weapon the party has seen fall, by name, so `give` can put a
+        # famous blade or a gate's bar in a hand.
+        "drops": state.get("drops", {}),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -1107,6 +1112,7 @@ def load() -> dict:
         # The loose-ends record (2026-08-08): rout escapees, newest first.
         "loose_ends": doc.get("loose_ends") or [],
         "pending_reward": doc.get("pending_reward"),
+        "drops": doc.get("drops", {}),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -4245,6 +4251,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
             log.append(weapons_left)
+        record_drops(state, foes)
+        mark_boss_dead(state, site, foes)
         # A field cleared by rout leaves its record (2026-08-08): the loose
         # end, and a `routed` mark on the site so its banner says driven
         # off, not slain. A won PURSUIT settles its record instead --
@@ -4877,7 +4885,9 @@ def cmd_room(args: argparse.Namespace) -> None:
         for i, kind in enumerate(kinds):
             state["foe_count"] += 1
             foe = make_foe(kind, state["foe_count"], rng,
-                           display=quest["skins"].get(kind))
+                           display=quest["skins"].get(kind),
+                           ferocity=quest.get("ferocity", {}).get(kind),
+                           weapon=ruin_boss_bar(state["world"], site, kind))
             if i == boss_at:
                 foe.name = boss["display"]
             foes.append(foe)
@@ -4957,6 +4967,55 @@ def cmd_forge(args: argparse.Namespace) -> None:
 # turn-in -- there is nobody down there to turn it in to. A cleared Site
 # refills after RUIN_REFILL_DAYS; the deepest one never does once its boss
 # is dead, and the ruin's ring goes quiet with it.
+
+def record_drops(state: dict, foes: list) -> None:
+    """Keep the ONE-OFF steel the fallen left where a hand can reach it.
+
+    `give` takes a weapon by name out of the catalog, which is every weapon
+    the game had until generated steel existed. A dropped bar (or any famous
+    blade a fight is won over) is not in the catalog, so the offer would be a
+    line the player cannot act on. Off-catalog drops are kept on the save
+    under their own names and `give` looks here first. The map ACCUMULATES
+    and nothing removes from it: these are one-off famous pieces, there are
+    a handful of them in a whole campaign, and a party that hands the bar to
+    somebody else two weeks later should still be able to."""
+    drops = state.setdefault("drops", {})
+    for f in foes:
+        w = f.weapon
+        if (f.alive or f.withdrew or w is None or f.weapon_broken
+                or w.value <= 0 or w.name in WEAPON_INDEX):
+            continue
+        drops[w.name] = dataclasses.asdict(w)
+
+
+def mark_boss_dead(state: dict, site_key: str | None, foes: list) -> None:
+    """A gate ruin seals on a BODY, not on a cleared room (2026-09-12, the
+    gates arc's session 2). The Old Host takes spoils and can break and run
+    out of its own hollow, so `close_ruin_site` asks whether the thing that
+    held the gate is dead, and this is what answers."""
+    world = state.get("world")
+    if world is None or site_key is None:
+        return
+    site = world["sites"].get(site_key)
+    record = site.get("ruin") if site else None
+    if not record or not record["boss"]:
+        return
+    display = BOSSES[record["boss"]].display
+    if any(f.dead and f.name.startswith(display) for f in foes):
+        record["boss_dead"] = True
+
+
+def ruin_boss_bar(world: dict, site: dict, kind: str):
+    """The steel a roster slot brings with it: the BAR, where the slot is
+    the deepest Site's own boss, and None everywhere else. The bars are
+    generated off the world seed (weapons.gate_bar), so a boss cannot carry
+    its own weapon on its catalog row the way the Marble Warden carries the
+    warden blade -- this is that hook, one level up."""
+    record = site.get("ruin")
+    if not record or record["boss"] != kind:
+        return None
+    return boss_bar(kind, world["seed"])
+
 
 def ruin_site_lines(world: dict, area: dict, day: int) -> list[str]:
     """The ruin's six places as the player reads them: the name, the level,
@@ -6788,9 +6847,18 @@ def cmd_give(args: argparse.Namespace) -> None:
     if hero is None:
         return
     name = " ".join(args.weapon).lower()
+    dropped = {k.lower(): v for k, v in state.get("drops", {}).items()}
     weapon = WEAPONS.get(name)
+    if weapon is None and name in dropped:
+        # One-off steel off the ground (2026-09-12): a generated blade the
+        # party won a fight over is not in the catalog and is handed over by
+        # name like anything else.
+        weapon = _weapon_from(dropped[name])
     if weapon is None:
-        print(f"Unknown weapon: {name!r}. Weapons: {', '.join(sorted(WEAPONS))}.")
+        print(f"Unknown weapon: {name!r}. Weapons: "
+              f"{', '.join(sorted(WEAPONS))}"
+              + (f"; on the ground: {', '.join(sorted(dropped))}"
+                 if dropped else "") + ".")
         return
     if args.as_name:
         # The DM's custom-weapon hook (2026-07-13): a display name over an

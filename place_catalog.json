@@ -111,6 +111,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "fields": [
@@ -193,6 +219,32 @@
          "wind shaft",
          "spare sailcloth",
          "ladder"
+        ]
+       }
+      ],
+      "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
         ]
        }
       ],
@@ -292,6 +344,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "river_east": [
@@ -378,6 +456,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "hill_country": [
@@ -455,6 +559,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "fen": [
@@ -528,6 +658,32 @@
          "dry stair",
          "cracked bell",
          "the whole fen in view"
+        ]
+       }
+      ],
+      "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
         ]
        }
       ],
@@ -2252,6 +2408,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "rocky_coast": [
@@ -2329,6 +2511,32 @@
        }
       ],
       "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "pine_valley": [
@@ -2391,6 +2599,32 @@
        "clay lamps",
        "water jar"
       ]
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
+        ]
+       }
+      ],
+      "anchors": []
      }
     ],
     "river_plain": [
@@ -2464,6 +2698,32 @@
          "open water",
          "fishing basket",
          "tied skiff"
+        ]
+       }
+      ],
+      "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
         ]
        }
       ],
@@ -2559,6 +2819,32 @@
          "flat-bottomed boat",
          "oars",
          "fish baskets"
+        ]
+       }
+      ],
+      "anchors": []
+     },
+     {
+      "id": "toms-stone",
+      "name": "TOM'S STONE",
+      "template": "shrine",
+      "rooms": [
+       {
+        "id": "pilgrim-path",
+        "name": "PILGRIM PATH",
+        "anchors": [
+         "worn track",
+         "hawthorn hedge",
+         "a beggar's bowl"
+        ]
+       },
+       {
+        "id": "the-stone",
+        "name": "THE STONE",
+        "anchors": [
+         "an upright bar of grey stone",
+         "wax stubs",
+         "coins pressed into the turf"
         ]
        }
       ],

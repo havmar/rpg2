@@ -39,6 +39,8 @@ import unittest
 import unittest.mock
 from contextlib import redirect_stdout
 
+import dataclasses
+
 import crime
 import karma
 import people
@@ -47,6 +49,7 @@ import quests
 import rpg
 import session
 import sites
+import weapons
 import worldsim
 
 SWEEP = 40              # worlds the placement clauses sweep (60ms each);
@@ -397,9 +400,12 @@ class TheRuins(unittest.TestCase):
             self.assertTrue(deepest["ruin"]["deepest"])
 
     def test_the_rosters_come_off_the_sides_own_pool(self):
+        """...plus the two authored bodies the pool never rolls: the
+        stranded angel of the Prefecture and the deepest Site's boss."""
         pools = {"candor": set(quests.HEAVEN_RUIN_POOL) | {"champion"},
                  "libera": set(quests.HELL_RUIN_POOL)}
         for key, allowed in pools.items():
+            allowed = allowed | {places.RUIN_SITES[key][-1]["boss"]}
             for site in places.ruin_sites(self.built, self._ruin(key)):
                 for rid in site["rooms"]:
                     for kind in self.built["rooms"][rid]["kinds"]:
@@ -415,14 +421,21 @@ class TheRuins(unittest.TestCase):
         self.assertEqual(cells["name"], "the cells")
         self.assertIn("champion", cells["kinds"])
 
-    def test_the_deepest_sites_boss_slot_is_empty_and_nameable(self):
-        """Session 2 names a `sites.BOSSES` key here and the roster takes
-        it; today there is nothing alive of the kind, which is what makes a
-        cleared depth stay cleared."""
-        for key in ("candor", "libera"):
-            self.assertIsNone(places.RUIN_SITES[key][-1]["boss"])
+    def test_the_deepest_site_names_its_boss_and_stands_it_in_the_bar(self):
+        """The `boss` slot session 1 left empty carries a `sites.BOSSES`
+        key since session 2, and `ruin_site_rosters` puts it in the LAST
+        room -- "the bar", where Tom's bar is."""
+        for key, kind in (("candor", "sentinel of candor"),
+                          ("libera", "old host of libera")):
+            self.assertEqual(places.RUIN_SITES[key][-1]["boss"], kind)
             deepest = places.ruin_sites(self.built, self._ruin(key))[-1]
-            self.assertIsNone(deepest["ruin"]["boss"])
+            self.assertEqual(deepest["ruin"]["boss"], kind)
+            self.assertFalse(deepest["ruin"]["boss_dead"])
+            rooms = [self.built["rooms"][r] for r in deepest["rooms"]]
+            self.assertEqual(rooms[-1]["name"], "the bar")
+            self.assertEqual(rooms[-1]["kinds"].count(kind), 1)
+            for room in rooms[:-1]:
+                self.assertNotIn(kind, room["kinds"])
 
     def test_the_rosters_are_deterministic_per_seed(self):
         again = places.create_geography(1)
@@ -801,9 +814,10 @@ class TheDelve(unittest.TestCase):
                 self.assertIn(kind, quests.HEAVEN_RUIN_POOL)
 
     def test_the_deepest_site_seals_and_clears_the_ring(self):
-        """A cleared depth with no boss alive: no refill, and the ruin's
+        """A cleared depth with its boss DEAD: no refill, and the ruin's
         ring goes quiet the same day."""
         deepest = places.ruin_sites(self.built, self.area)[-1]
+        deepest["ruin"]["boss_dead"] = True
         tile = self.built["tiles"][self.area["tile"]]
         ring = places.gate_ring(self.built, tile)
         self.assertTrue(all(any(s["id"] == "gate-ruin" and s["active"]
@@ -830,6 +844,504 @@ class TheDelve(unittest.TestCase):
         for words in ((), ("OUTER TERRACES",), ("nowhere",)):
             for line in self._delve(*words).split("\n"):
                 self.assertTrue(line.isascii(), line)
+
+
+# =========================================================================== #
+# THE BOSSES AND THE BARS (2026-09-12, session 2)
+# =========================================================================== #
+
+class TheBosses(unittest.TestCase):
+    """gates.md section 9: the tier above the dragon, as a table of two."""
+
+    def test_a_boss_is_not_in_the_catalog_and_no_pool_can_draw_one(self):
+        for kind in sites.BOSSES:
+            self.assertNotIn(kind, sites.FOES)
+        pools = [tpl["pool"] for table in quests.TEMPLATES.values()
+                 for tpl in table]
+        pools += [tpl["pool"] for tpl in quests.EPIC_TEMPLATES]
+        pools += [quests.HEAVEN_RUIN_POOL, quests.HELL_RUIN_POOL,
+                  quests.HEAVEN_CITY_POOL, quests.HELL_CITY_POOL,
+                  quests.LADDER_POOL, quests.wild_pool("seraptania")]
+        for pool in pools:
+            for kind in sites.BOSSES:
+                self.assertNotIn(kind, pool)
+
+    def test_the_bench_row_loop_never_sees_one(self):
+        """bench_bestiary walks FOES; --bosses is a separate pass."""
+        import bench_bestiary
+        rows = sorted(sites.FOES, key=lambda k: (sites.FOES[k].level, k))
+        for kind in sites.BOSSES:
+            self.assertNotIn(kind, rows)
+        self.assertEqual(
+            sorted(sites.BOSSES,
+                   key=lambda k: (sites.BOSSES[k].level, k)),
+            ["old host of libera", "sentinel of candor"])
+        self.assertEqual(bench_bestiary.BENCH_WORLD_SEED, 1)
+
+    def test_both_bodies_are_the_legend_row_with_no_mortal_tradeoffs(self):
+        for kind in sites.BOSSES:
+            spec = sites.BOSSES[kind]
+            self.assertEqual((spec.dex, spec.str_, spec.sta), (8, 8, 8))
+            self.assertEqual(spec.pain, 3)
+            self.assertEqual(spec.spell_ward, 2)
+            self.assertEqual(spec.crowd_cap, 3)
+            self.assertEqual(spec.power, 12)
+            self.assertEqual(spec.ref_pack, 1)
+            self.assertTrue(spec.tireless)
+            self.assertGreaterEqual(spec.training, 2)
+            self.assertIsNone(spec.weapon)
+
+    def test_the_sentinel_and_the_old_host_are_the_designs_two(self):
+        zoh = sites.BOSSES["sentinel of candor"]
+        self.assertEqual(zoh.display, "Zohariel the Sentinel")
+        self.assertEqual((zoh.school, zoh.school_rank), ("ice", 2))
+        self.assertEqual(zoh.sweep, 1)
+        self.assertEqual(zoh.level, 17)
+        self.assertEqual(zoh.ferocity, rpg.FEROCITY_RELENTLESS)
+        self.assertEqual((zoh.hp, zoh.training), (20, 3))
+
+        saar = sites.BOSSES["old host of libera"]
+        self.assertEqual(saar.display, "Saar the Old Host")
+        self.assertEqual((saar.school, saar.school_rank), ("fire", 2))
+        self.assertEqual(saar.inflicts, "burn")
+        self.assertEqual((saar.sweep, saar.sweep_cost_power), (2, 3))
+        self.assertEqual(saar.level, 16)
+        self.assertEqual(saar.ferocity, rpg.FEROCITY_TAKES_SPOILS)
+
+    def test_foe_spec_reads_the_catalog_and_then_the_bosses(self):
+        self.assertIs(sites.foe_spec("wolf"), sites.FOES["wolf"])
+        self.assertIs(sites.foe_spec("sentinel of candor"),
+                      sites.BOSSES["sentinel of candor"])
+        with self.assertRaises(KeyError):
+            sites.foe_spec("no such thing")
+
+    def test_make_foe_builds_a_boss_only_with_its_own_steel(self):
+        rng = random.Random(3)
+        with self.assertRaises(ValueError):
+            sites.make_foe("sentinel of candor", 1, rng)
+        bar = sites.boss_bar("sentinel of candor", 1)
+        foe = sites.make_foe("sentinel of candor", 1, rng, weapon=bar)
+        self.assertIs(foe.weapon, bar)
+        self.assertEqual(foe.name, "Zohariel the Sentinel 1")
+        self.assertEqual(foe.spells, {"ice": 2})
+        self.assertTrue(foe.tireless)
+        self.assertEqual(foe.crowd_cap, 3)
+        self.assertEqual(foe.ferocity, rpg.FEROCITY_RELENTLESS)
+
+    def test_the_roster_block_announces_what_it_is(self):
+        bar = sites.boss_bar("old host of libera", 1)
+        foe = sites.make_foe("old host of libera", 1, random.Random(4),
+                             weapon=bar)
+        text = "\n".join(sites.roster_lines([foe]))
+        for word in ("Saar the Old Host", "the Libera bar", "drilled +2",
+                     "barely feels pain", "tireless", "spell-warded 2",
+                     "caster: fire 2"):
+            self.assertIn(word, text)
+        for line in text.split("\n"):
+            self.assertTrue(line.isascii(), line)
+
+
+class TheTwoBars(unittest.TestCase):
+    """gates.md section 4: the relics, as steel and as armory rows."""
+
+    def setUp(self):
+        self.built = played(1)
+
+    def _entry(self, gate: str) -> dict:
+        return next(e for e in self.built["armory"]
+                    if e.get("gate") == gate)
+
+    def test_the_bar_is_a_clean_sp_nine_two_hander(self):
+        for gate in ("candor", "libera"):
+            bar = weapons.gate_bar(1, gate)
+            self.assertEqual(bar.base, "zweihander")
+            self.assertEqual(bar.tier, "legendary")
+            self.assertEqual(weapons.weapon_sp(bar), weapons.GATE_BAR_SP)
+            self.assertEqual(bar.str_bonus, 3)
+            self.assertFalse(bar.rider)
+            self.assertFalse(bar.lunge)
+            self.assertFalse(bar.silver_on_kill or bar.karma_on_kill)
+            self.assertTrue(bar.description.isascii())
+
+    def test_the_bar_is_the_same_piece_in_every_world(self):
+        """There is exactly one Candor bar: Tom set it, and no seed
+        re-forges it."""
+        first = weapons.gate_bar(1, "candor")
+        for seed in (2, 17, 99):
+            self.assertEqual(dataclasses.asdict(weapons.gate_bar(seed,
+                                                                 "candor")),
+                             dataclasses.asdict(first))
+        self.assertNotEqual(weapons.gate_bar(1, "libera").name, first.name)
+
+    def test_both_bars_are_fixed_entries_in_the_world_armory(self):
+        names = [e["name"] for e in self.built["armory"]]
+        self.assertIn("the Candor bar", names)
+        self.assertIn("the Libera bar", names)
+        self.assertEqual(len(self.built["armory"]),
+                         len(weapons.ARMORY_TIERS) + len(weapons.GATE_BARS))
+        for gate, owner in (("candor", "Zohariel the Sentinel"),
+                            ("libera", "Saar the Old Host")):
+            entry = self._entry(gate)
+            self.assertEqual(entry["status"], "known")
+            self.assertEqual(entry["owner"]["name"], owner)
+            deepest = places.ruin_sites(
+                self.built,
+                places.ruin_area(self.built,
+                                 self.built["gates"][gate]["tile"]))[-1]
+            self.assertEqual(entry["owner"]["seat"], deepest["id"])
+            self.assertIn(deepest["name"], entry["where"])
+            self.assertEqual(entry["boss"],
+                             places.RUIN_SITES[gate][-1]["boss"])
+
+    def test_the_armory_page_prints_them_inside_the_screen(self):
+        lines = weapons.armory_lines(self.built["armory"])
+        text = "\n".join(lines)
+        self.assertIn("the Candor bar", text)
+        self.assertIn("the Libera bar", text)
+        bars = [ln for ln in lines
+                if "bar" in ln or "Candor" in ln or "Libera" in ln
+                or "Zohariel" in ln or "Saar" in ln or "GATE" in ln]
+        self.assertTrue(bars)
+        for line in bars:
+            self.assertTrue(line.isascii(), line)
+        for line in lines:
+            self.assertLessEqual(len(line), 40, line)
+
+    def test_the_armory_rides_the_save(self):
+        for entry in self.built["armory"][-len(weapons.GATE_BARS):]:
+            self.assertEqual(json.loads(json.dumps(entry))["name"],
+                             entry["name"])
+            self.assertIn(entry["name"],
+                          ("the Candor bar", "the Libera bar"))
+
+    def test_only_the_deepest_sites_boss_is_handed_a_bar(self):
+        area = places.ruin_area(self.built,
+                                self.built["gates"]["candor"]["tile"])
+        sites_ = places.ruin_sites(self.built, area)
+        deepest = sites_[-1]
+        bar = session.ruin_boss_bar(self.built, deepest,
+                                    "sentinel of candor")
+        self.assertEqual(bar.name, "the Candor bar")
+        self.assertIsNone(session.ruin_boss_bar(self.built, deepest,
+                                                "skeleton"))
+        self.assertIsNone(session.ruin_boss_bar(self.built, sites_[0],
+                                                "sentinel of candor"))
+
+    def test_the_boss_stands_in_the_bar_room_holding_its_bar(self):
+        area = places.ruin_area(self.built,
+                                self.built["gates"]["candor"]["tile"])
+        deepest = places.ruin_sites(self.built, area)[-1]
+        state = _state(self.built, area, day=10, level=17)
+        _run(state, session.cmd_delve,
+             argparse.Namespace(site=["GATE PLAZA"]))
+        quest = self.built["quests"][state["active_quest"]]
+        quest["next"]["room"] = len(deepest["rooms"]) - 1
+        text = _run(state, session.cmd_room, argparse.Namespace())
+        self.assertIn("Zohariel the Sentinel", text)
+        self.assertIn("the Candor bar", text)
+        self.assertIn("room 4/4: the bar", text)
+        for line in text.split("\n"):
+            self.assertTrue(line.isascii(), line)
+
+    def test_the_bar_drops_when_the_boss_dies_and_a_hand_can_take_it(self):
+        bar = sites.boss_bar("old host of libera", 1)
+        foe = sites.make_foe("old host of libera", 1, random.Random(5),
+                             weapon=bar)
+        self.assertIsNone(rpg.fallen_weapons_line([foe]))   # still standing
+        foe.hp = 0
+        foe.dead = True
+        line = rpg.fallen_weapons_line([foe])
+        self.assertIn("the Libera bar", line)
+        self.assertNotIn("a the Libera bar", line)
+
+        area = places.ruin_area(self.built,
+                                self.built["gates"]["libera"]["tile"])
+        state = _state(self.built, area, day=10, level=17)
+        session.record_drops(state, [foe])
+        self.assertIn("the Libera bar", state["drops"])
+        hero = state["party"][0]
+        _run(state, session.cmd_give,
+             argparse.Namespace(hero=hero.name,
+                                weapon=["the", "Libera", "bar"],
+                                as_name=None))
+        self.assertEqual(hero.weapon.name, "the Libera bar")
+        self.assertEqual(hero.weapon.str_bonus, 3)
+
+    def test_catalog_steel_is_never_kept_as_a_drop(self):
+        foe = sites.make_foe("veteran", 1, random.Random(6))
+        foe.hp, foe.dead = 0, True
+        state = {"drops": {}}
+        session.record_drops(state, [foe])
+        self.assertEqual(state["drops"], {})
+
+
+class TheSealNeedsABody(unittest.TestCase):
+    """The ruin goes quiet on a corpse, not on an empty room."""
+
+    def setUp(self):
+        self.built = world(1)
+        self.area = places.ruin_area(self.built,
+                                     self.built["gates"]["libera"]["tile"])
+        self.deepest = places.ruin_sites(self.built, self.area)[-1]
+
+    def _ring_live(self) -> bool:
+        tile = self.built["tiles"][self.area["tile"]]
+        return any(any(s["id"] == "gate-ruin" and s["active"]
+                       for s in t["states"])
+                   for t in places.gate_ring(self.built, tile))
+
+    def test_a_depth_cleared_with_the_boss_alive_refills(self):
+        self.assertEqual(places.close_ruin_site(self.built, self.deepest,
+                                                10), [])
+        self.assertTrue(self._ring_live())
+        self.assertEqual(places.ruin_site_state(self.deepest, 10), "cleared")
+        self.assertEqual(places.ruin_site_state(self.deepest, 40), "open")
+        places.refill_ruin_site(self.built, self.deepest, 40)
+        rooms = [self.built["rooms"][r] for r in self.deepest["rooms"]]
+        self.assertIn("old host of libera", rooms[-1]["kinds"])
+
+    def test_a_dead_boss_seals_the_depth_and_clears_the_ring(self):
+        self.deepest["ruin"]["boss_dead"] = True
+        lines = places.close_ruin_site(self.built, self.deepest, 10)
+        self.assertTrue(lines)
+        self.assertFalse(self._ring_live())
+        for day in (10, 400):
+            self.assertEqual(places.ruin_site_state(self.deepest, day),
+                             "sealed")
+
+    def test_the_won_fight_is_what_marks_the_boss_dead(self):
+        state = {"world": self.built}
+        bar = sites.boss_bar("old host of libera", 1)
+        foe = sites.make_foe("old host of libera", 1, random.Random(7),
+                             weapon=bar)
+        session.mark_boss_dead(state, self.deepest["id"], [foe])
+        self.assertFalse(self.deepest["ruin"]["boss_dead"])
+        foe.withdrew = True         # it broke and ran: still not a body
+        session.mark_boss_dead(state, self.deepest["id"], [foe])
+        self.assertFalse(self.deepest["ruin"]["boss_dead"])
+        foe.withdrew, foe.hp, foe.dead = False, 0, True
+        session.mark_boss_dead(state, self.deepest["id"], [foe])
+        self.assertTrue(self.deepest["ruin"]["boss_dead"])
+
+    def test_a_shallow_sites_dead_roster_never_marks_a_boss(self):
+        shallow = places.ruin_sites(self.built, self.area)[0]
+        foe = sites.make_foe("wolf", 1, random.Random(8))
+        foe.hp, foe.dead = 0, True
+        session.mark_boss_dead({"world": self.built}, shallow["id"], [foe])
+        self.assertFalse(shallow["ruin"]["boss_dead"])
+
+
+# =========================================================================== #
+# THE RUIN JOBS
+# =========================================================================== #
+
+class TheRuinTemplates(unittest.TestCase):
+    """gates.md section 14, "Into the ruins": eight jobs on every table."""
+
+    def setUp(self):
+        self.built = played(1)
+
+    def test_the_eight_are_on_every_cultures_table(self):
+        self.assertEqual(len(quests.RUIN_TEMPLATES), 8)
+        titles = [tpl["title"] for tpl in quests.RUIN_TEMPLATES]
+        self.assertEqual(len(set(titles)), 8)
+        for culture, table in quests.TEMPLATES.items():
+            posted = [tpl["title"] for tpl in table]
+            for title in titles:
+                self.assertIn(title, posted, culture)
+        for title in titles:
+            self.assertNotIn(title,
+                             [t["title"] for t in quests.EPIC_TEMPLATES])
+
+    def test_every_row_is_authored_whole_and_in_the_register(self):
+        for tpl in quests.RUIN_TEMPLATES:
+            for key in ("desc", "giver", "epilogue", "failure_epilogue"):
+                self.assertTrue(tpl[key], (tpl["title"], key))
+            self.assertTrue(tpl["sites"])
+            self.assertTrue(tpl["pool"])
+            for kind in tpl["pool"]:
+                self.assertIn(kind, sites.FOES)
+            for text in (tpl["title"], tpl["desc"], tpl["giver"],
+                         tpl["epilogue"], tpl["failure_epilogue"]):
+                self.assertTrue(text.isascii(), text)
+
+    def test_each_row_is_placed_on_its_own_sides_ruin_and_strictly(self):
+        for tpl in quests.RUIN_TEMPLATES:
+            place = quests.QUEST_PLACE_REQUIREMENTS[tpl["title"]]
+            self.assertEqual(len(place["area_any"]), 1)
+            side = place["area_any"][0]
+            self.assertIn(side, ("heaven-ruin", "hell-ruin"))
+            self.assertEqual(place["domain"], "natural")
+            self.assertEqual(place["site_template"], "ruin")
+            self.assertTrue(place["strict"])
+            if tpl["skins"]:
+                want = "heaven" if side == "heaven-ruin" else "hell"
+                self.assertEqual(tpl["skins"], sites.GATE_SKINS[want])
+                self.assertEqual(tpl["ferocity"], sites.GATE_FEROCITY[want])
+
+    def test_only_the_two_ruin_areas_wear_the_side_words(self):
+        """The words are on the ruin Area alone: a settlement standing on a
+        gate's own tile is in the RING, not in the dead city."""
+        for side, gate in (("heaven-ruin", "candor"), ("hell-ruin", "libera")):
+            wearing = [a for a in self.built["areas"].values()
+                       if side in a.get("tags", ())]
+            self.assertEqual(len(wearing), 1, side)
+            self.assertEqual(wearing[0]["kind"], "ruin")
+            self.assertEqual(
+                wearing[0]["id"],
+                places.ruin_area(self.built,
+                                 self.built["gates"][gate]["tile"])["id"])
+        for gate in places.GATE_KEYS:
+            tile = self.built["tiles"][self.built["gates"][gate]["tile"]]
+            for aid in tile["areas"]:
+                area = self.built["areas"][aid]
+                if area["kind"] == "ruin":
+                    continue
+                for tag in places.GATE_TAGS:
+                    self.assertNotIn(tag, area["tags"], aid)
+
+    def test_a_heaven_job_lands_in_candor_and_a_hell_job_in_libera(self):
+        origin = self.built["start_area"]
+        for tpl in quests.RUIN_TEMPLATES:
+            place = quests.quest_place_requirement(tpl)
+            gate = ("candor" if place["area_any"][0] == "heaven-ruin"
+                    else "libera")
+            want = places.ruin_area(self.built,
+                                    self.built["gates"][gate]["tile"])
+            picked = quests._select_quest_area(
+                self.built, origin, place, random.Random(2), radius=None)
+            self.assertEqual(picked["id"], want["id"], tpl["title"])
+
+    def test_the_natural_domain_admits_a_ruin(self):
+        """The widening is what lets a `domain: natural` job stand in a
+        dead city; a settlement Area is still refused."""
+        place = quests.quest_place_requirement(quests.RUIN_TEMPLATES[0])
+        self.assertEqual(place["domain"], "natural")
+        picked = quests._select_quest_area(
+            self.built, self.built["start_area"], place,
+            random.Random(3), radius=None)
+        self.assertEqual(picked["kind"], "ruin")
+
+    def test_a_board_out_of_range_never_offers_one(self):
+        far = min(
+            (s for s in quests.settlements(self.built)),
+            key=lambda s: -places.path_days(
+                self.built["areas"][s["key"]]["tile"],
+                self.built["gates"]["candor"]["tile"]))
+        place = quests.quest_place_requirement(quests.RUIN_TEMPLATES[0])
+        self.assertFalse(quests.place_reachable(self.built, far["key"],
+                                                place))
+        with self.assertRaises(ValueError):
+            quests._select_quest_area(self.built, far["key"], place,
+                                      random.Random(4))
+        near_area = places.ruin_area(
+            self.built, self.built["gates"]["candor"]["tile"])
+        self.assertTrue(quests.place_reachable(self.built, near_area["key"],
+                                               place))
+
+    def test_a_posted_ruin_job_builds_its_own_site_in_the_ruin(self):
+        """The six authored Sites belong to `delve`: a board job never
+        re-rosters one."""
+        area = places.ruin_area(self.built,
+                                self.built["gates"]["libera"]["tile"])
+        before = {s["id"]: (s["level"],
+                            [list(self.built["rooms"][r]["kinds"])
+                             for r in s["rooms"]])
+                  for s in places.ruin_sites(self.built, area)}
+        tpl = next(t for t in quests.RUIN_TEMPLATES
+                   if t["title"] == "The Vine Pits")
+        quest = quests.build_quest(self.built, "qruin", tpl, area["key"], 5,
+                                   random.Random(9), radius=None)
+        self.assertEqual(self.built["areas"][quest["target_area"]]["id"],
+                         area["id"])
+        for sid in quest["sites"]:
+            self.assertNotIn(sid, before)
+            self.assertEqual(self.built["sites"][sid]["name"],
+                             "the vine pits")
+        after = {s["id"]: (s["level"],
+                           [list(self.built["rooms"][r]["kinds"])
+                            for r in s["rooms"]])
+                 for s in places.ruin_sites(self.built, area)}
+        self.assertEqual(before, after)
+        self.assertEqual(quest["ferocity"], sites.GATE_FEROCITY["hell"])
+
+    def test_a_board_near_a_ruin_can_post_one(self):
+        """The sweep: over forty worlds the eight reach a board, and only
+        boards inside the three-day radius carry them."""
+        titles = {tpl["title"] for tpl in quests.RUIN_TEMPLATES}
+        seen = set()
+        for seed in range(1, 25):
+            built = played(seed)
+            for settlement in quests.settlements(built):
+                origin = built["areas"][settlement["key"]]
+                for qid in settlement["quests"]:
+                    quest = built["quests"][qid]
+                    if quest["name"] not in titles:
+                        continue
+                    seen.add(quest["name"])
+                    target = built["areas"][quest["target_area"]]
+                    self.assertEqual(target["kind"], "ruin")
+                    self.assertLessEqual(
+                        places.path_days(origin["tile"], target["tile"]),
+                        quests.ORDINARY_TARGET_DAYS)
+        self.assertTrue(seen)
+
+
+class TomsStone(unittest.TestCase):
+    """gates.md section 4: the pilgrim's stop, on ordinary ground."""
+
+    def _inventories(self, culture: str) -> dict:
+        return places.LAND_SPECS_BY_CULTURE[culture]["natural_sites"] \
+            if hasattr(places, "LAND_SPECS_BY_CULTURE") else None
+
+    def test_it_stands_in_every_western_and_southern_inventory(self):
+        catalog = json.loads(
+            places.CATALOG_PATH.read_text(encoding="utf-8"))
+        for culture, wanted in (("western", True), ("southern", True),
+                                ("steppe", False), ("norse", False)):
+            for key, specs in \
+                    catalog["cultures"][culture]["natural_sites"].items():
+                ids = [spec["id"] for spec in specs]
+                self.assertEqual("toms-stone" in ids, wanted,
+                                 f"{culture}/{key}")
+
+    def test_it_is_authored_as_a_shrine(self):
+        catalog = json.loads(
+            places.CATALOG_PATH.read_text(encoding="utf-8"))
+        spec = next(s for s in
+                    catalog["cultures"]["western"]["natural_sites"]["fields"]
+                    if s["id"] == "toms-stone")
+        self.assertEqual(spec["name"], "TOM'S STONE")
+        self.assertEqual(spec["template"], "shrine")
+        self.assertEqual(len(spec["rooms"]), 2)
+        self.assertTrue(json.dumps(spec).isascii())
+
+    def test_it_materializes_as_a_natural_shrine_site(self):
+        built = world(5)
+        area = next(a for a in built["areas"].values()
+                    if a["kind"] == "natural"
+                    and "toms-stone" in a["natural_site_order"]
+                    and built["lands"][a["land"]]["culture"] == "western")
+        site = None
+        for _ in range(len(area["natural_site_order"])):
+            made = places.materialize_natural_site(built, area, day=0)
+            if made is not None and made["name"] == "TOM'S STONE":
+                site = made
+                break
+        self.assertIsNotNone(site)
+        self.assertEqual(site["template"], "shrine")
+        self.assertEqual(site["domain"], "natural")
+        self.assertTrue(site["known"])
+        names = [built["rooms"][r]["name"] for r in site["rooms"]]
+        self.assertEqual(names, ["PILGRIM PATH", "THE STONE"])
+
+    def test_no_steppe_or_norse_area_offers_it(self):
+        built = world(5)
+        for area in built["areas"].values():
+            if area["kind"] != "natural":
+                continue
+            if built["lands"][area["land"]]["culture"] in ("steppe", "norse"):
+                self.assertNotIn("toms-stone", area["natural_site_order"])
 
 
 if __name__ == "__main__":

@@ -771,10 +771,45 @@ Hell add-on is the setting; this is how it plays at the table.
   Dinael, Tohara. Hell's are UNBOUND: a bare root, no suffix, and an
   epithet EARNED rather than given -- Saar Nine-Debts, Lahav the Cup, Dror
   Who Opened the Kennels. If you invent one at the table, keep the rule.
-- **Do not promise the endgame.** The bar Tom set across each old gate is
-  at the bottom of each ruin, and what one would DO to a live gate is not
-  designed. The party can reach the bottom, take what is there, and the
-  ruin goes quiet. Say nothing about what comes next.
+- **Something is standing at the bottom of each ruin** (2026-09-12,
+  session 2). Candor's gate plaza is kept by **Zohariel the Sentinel**, a
+  stranded angel who never left its post; Libera's gate hollow by **Saar
+  the Old Host**, a stranded demon who kept the feast going alone. Both
+  are level 17 and 16 respectively, both are authored one-offs and not
+  monsters off a table, and neither has a hole in it. Introduce each ONCE,
+  in one or two lines, and then let the log do the fighting: the roster
+  block already prints what the party is up against.
+  - **Zohariel does not negotiate and does not spare.** It has been
+    counting the days and it will tell you the number if asked.
+  - **Saar robs you, laughs, and lets you crawl out** -- and if the fight
+    turns it will run out of its own hollow. A party that drove it off has
+    NOT finished: the hollow refills in thirty days with the Old Host
+    back in it. The ruin only goes quiet over a body.
+- **Each carries the bar Tom set across that gate.** `the Candor bar` and
+  `the Libera bar` are the two most famous weapons in the game, listed in
+  the armory from day one with their owner and their resting place, and
+  rumor about them is free. They are plain: heavy iron a man long, +3 STR,
+  no magic twist at all. When the sentinel falls the bar is lying there --
+  `give HERO the Candor bar` puts it in a hand. Let the moment be small:
+  the party is holding the thing that has held the gate shut.
+- **The ruin jobs are the board's half of this.** A settlement within
+  three days of a ruin can post work into it: looters on Candor's
+  terraces, a marble servant standing in a churchyard, the lamp in the
+  glass garden, Concordia's register -- hell hounds off the feast-hall,
+  the vine pits' vintage, Saturna's kennel book, a man's year written in
+  the old counting house. These are ORDINARY jobs with a giver and a
+  turn-in, unlike a `delve`, and they go to their own side's ruin. Play
+  the giver as a local with a local problem: nobody in these scenes is
+  thinking about the gate.
+- **Tom's stone** is a wayside shrine in the western and southern
+  countryside: an upright bar of grey stone, wax stubs, coins pressed
+  into the turf, a worn track and a beggar's bowl. Sell a burial or a
+  blessing at it like at any shrine. Whose Tom it is depends on who is
+  standing there -- Saint Tom to the Church, Tom the Smith to a
+  northerner passing through -- and the stone does not say.
+- **Do not promise the endgame.** What one would DO to a live gate is not
+  designed. The party can reach the bottom, take the bar, and the ruin
+  goes quiet. Say nothing about what comes next.
 
 ### The sky (2026-08-08, the weather)
 

@@ -3095,3 +3095,94 @@ places.py's harvest, census or trade halves, and the gate layer consumes
 its own derived child seed (`stable_seed(seed, "world", "gates", 0)`), so
 no other layer's stream moved. Test suite: **1114 OK** (1062 before, +52 in
 the new `test_gates.py`).
+
+---
+
+## 2026-09-12 (B) — THE TWO SENTINELS: annotating the bosses (the gates arc's session 2)
+
+`python bench_bestiary.py --bosses --trials 1500` — the new pass, the same
+three columns and the same reference duo every catalog row is measured
+against, run over `sites.BOSSES` instead of `sites.FOES`. The calibration
+target is the bestiary's own: the at-level duo wins 55-75% of a single
+reference encounter, the -2 column visibly worse and the +2 column visibly
+safer. Each boss carries its bar (`sites.boss_bar`, world seed 1 — the
+bars' profile is authored clean, so that world stands for all of them).
+
+**As specced (gates.md section 9, both bodies the Legend row: DEX/STR/STA
+8, HP 20, pain 3, spell_ward 2, crowd_cap 3, drilled +3, 12 Power,
+tireless), 400 trials a column:**
+
+```
+--- Saar the Old Host (annotated level 16) ---
+party L       win%   fled%   wipe%  down%
+14           25.2%    8.8%   66.0%  78.8%
+16           29.0%    9.2%   61.8%  73.8% <- annotated
+18           54.0%    6.2%   39.8%  48.2%
+
+--- Zohariel the Sentinel (annotated level 17) ---
+15           61.5%    3.8%   34.8%  49.5%
+17           62.0%    1.5%   36.5%  49.2% <- annotated
+19           86.8%    0.2%   13.0%  24.5%
+```
+
+**Zohariel landed on target with nothing touched.** Saar was a level-19
+body wearing a 16: 29% win and 62% wipe. The two differences from Zohariel
+are the whole of it — the FUELED SWEEP (2 targets, 3 Power, 12 Power in the
+pool, which is the dragon's own sweep budget) and `inflicts="burn"` — on
+top of the shared amplifier both carry, the bar's **+3 STR on a STR-8
+body**. Effective STR 11 with a zweihander is above anything else in the
+game; the dragon fights at STR 9.
+
+**The levers came off in the contracted order (`hp`, `training`, `pain`).**
+
+| Saar | at-level win% |
+|---|---|
+| hp 20 (as specced) | 29.0 |
+| hp 16 | 36.0 |
+| hp 13 | 40.0 |
+| hp 11 | 44.5 |
+| hp 20, drilled +2 | 52.5 |
+| hp 20, drilled +1 | 72.2 |
+| hp 20, drilled +0 | 88.5 |
+| **hp 16, drilled +2 (shipped)** | **58.8** |
+
+**HP alone cannot do it** and the table says why: at 11 HP — under a
+wight's — the duo still only wins 45%, because the duo was not failing to
+cut through, it was WIPING. HP is the lever for "how long the kill takes";
+the drill is the lever for "how hard it hits back", and the drill is what
+was out of band. `pain` was never reached.
+
+**Shipped (1500 trials a column):**
+
+```
+--- Saar the Old Host (annotated level 16; hp 16, drilled +2) ---
+party L       win%   fled%   wipe%  stall%   down%
+14           52.4%    4.5%   43.1%    0.0%   53.4%
+16           58.8%    5.5%   35.7%    0.0%   45.3% <- annotated
+18           79.9%    3.3%   16.7%    0.0%   23.4%
+
+--- Zohariel the Sentinel (annotated level 17; the Legend row untouched) ---
+15           63.3%    2.7%   34.0%    0.0%   46.9%
+17           63.6%    1.6%   34.8%    0.0%   45.5% <- annotated
+19           86.3%    0.9%   12.9%    0.0%   23.1%
+```
+
+Both sit in the band, both +2 columns open up hard (80% and 86%), and
+neither stalls. **Saar's `fled%` is the row that is doing fiction work**:
+it takes spoils, so it can break and run out of its own gate hollow about
+one fight in twenty, which is exactly why the seal was moved onto a BODY —
+a hollow the party cleared without killing it refills in thirty days with
+the Old Host back in it.
+
+**The one soft spot, recorded rather than fixed:** the -2 columns barely
+separate (Zohariel 63.3 against 63.6). Two levels of reference hero buy
+almost nothing against a body whose blows cap out at the severity ceiling,
+which is the same shape every top-band row has (the warlord at 19 has no
++2 column at all). Read the +2 column as the gradient here, not the -2.
+
+**Nothing else was re-measured and nothing else moved.** The two bodies are
+not in `FOES`, so the 28-row catalog sweep is byte-identical; the bars come
+off their own string-seeded rng; `bench_worldgen.py --seeds 50 --only
+gates` reproduces the 2026-09-12 (A) placement picture unchanged, because
+the gate layer's own stream did not move. Test suite: **1147 OK** (1114
+before, +33 in `test_gates.py`).

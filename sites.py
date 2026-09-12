@@ -452,18 +452,113 @@ GATE_FEROCITY = {
 }
 
 
+# --------------------------------------------------------------------------- #
+# THE BOSSES (2026-09-12, the gates arc's session 2)
+# --------------------------------------------------------------------------- #
+# rules.md's bestiary doctrine: the tier ABOVE the dragon is not a catalog
+# row. Demons, demigods and liches are AUTHORED ONE-OFFS built on the Heroes
+# table -- heroes on the wrong side, no mortal tradeoffs, Power fueling
+# authored abilities. This is that table, and it is deliberately small: a
+# second dict beside FOES, in the same FoeSpec shape, read by make_foe when
+# the kind is not in the catalog.
+#
+# WHAT KEEPS IT OUT OF THE GAME'S PLUMBING: a boss key is in BOSSES and NOT
+# in FOES, so no quest pool can draw it (every pool is a tuple of FOES keys),
+# no threat-math reader indexes it, and bench_bestiary's row loop walks FOES
+# and never sees it. One appears exactly where a Site's AUTHORED roster names
+# it -- today `places.RUIN_SITES[...][-1]["boss"]`, the fourth room of the
+# deepest Site of a gate ruin.
+#
+# THE LEGEND ROW WITH NO MORTAL TRADEOFFS (rules.md, "Heroes"): DEX 8 /
+# STR 8 / STA 8 / HP 20, and then every knob a mortal has to buy with
+# something else -- pain 3, spell_ward 2, crowd_cap 3, drilled +3, 12 Power,
+# tireless. A thousand years alone at a barred gate is the fiction; the row
+# is what "never tires, never flinches, never outnumbered" costs.
+#
+# MIND 14 on both is the build's own number (the spec gave the school and
+# the rank and not the aim stat): the magus's savant value, which is the
+# deepest caster the catalog has, and the one thing here that was set once
+# and left alone -- the annotations were fitted with `hp` and `training`.
+BOSSES = {
+    # Candor's stranded angel: the Voice of Measure at rank 2, one target at
+    # a time, and no mercy in it at all -- the Law does not spare.
+    "sentinel of candor": FoeSpec(
+        "Zohariel the Sentinel", level=17, dex=8, str_=8, sta=8, hp=20,
+        ref_pack=1, training=3, pain=3, tireless=True,
+        ferocity=FEROCITY_RELENTLESS,
+        power=12, mind=14, school="ice", school_rank=2,
+        spell_ward=2, crowd_cap=3),
+    # Libera's stranded demon: fire at rank 2, the drake's FUELED sweep over
+    # two, and Hell's own disposition -- even at the bottom of the dead city
+    # the Old Host robs you, laughs, and lets you crawl out.
+    # Benched down from the Legend row's own 20 HP and drilled +3: the bar
+    # is +3 STR on a STR-8 body and the FUELED sweep puts the specced Old
+    # Host at the dragon's output, which read 29% win / 62% wipe against a
+    # level-16 duo. HP came off first (it bottomed out near 45% even at 11,
+    # because the party was WIPING, not failing to cut through), then the
+    # drill. Zohariel, who sweeps nothing, keeps the row untouched.
+    "old host of libera": FoeSpec(
+        "Saar the Old Host", level=16, dex=8, str_=8, sta=8, hp=16,
+        ref_pack=1, training=2, pain=3, tireless=True,
+        ferocity=FEROCITY_TAKES_SPOILS,
+        power=12, mind=14, school="fire", school_rank=2, inflicts="burn",
+        spell_ward=2, crowd_cap=3,
+        sweep=2, sweep_cost_power=3,
+        sweep_label="a sweep of the bar, trailing fire"),
+}
+
+# Which gate's BAR each boss carries (weapons.GATE_BARS authors the steel).
+BOSS_GATES = {"sentinel of candor": "candor", "old host of libera": "libera"}
+
+
+def foe_spec(kind: str) -> FoeSpec:
+    """The stat row behind a kind -- the catalog first, then the bosses.
+
+    Every reader that may meet a roster built by an AUTHORED site (a display
+    line, a preview, a notice contest) goes through here instead of FOES,
+    because a boss key is a legal kind in a room and an illegal key in the
+    catalog."""
+    spec = FOES.get(kind)
+    return spec if spec is not None else BOSSES[kind]
+
+
+def boss_bar(kind: str, seed: int | str | None):
+    """The bar a boss fights with, generated off the WORLD seed.
+
+    The two bars are the arc's endgame loot and the world's two most famous
+    weapons: `weapons.gate_bar` builds them and `weapons.roll_armory` files
+    them with their owner and their resting place."""
+    from weapons import gate_bar      # runtime import (weapons imports rpg
+                                      # and is worldgen's, not the engine's)
+    return gate_bar(seed, BOSS_GATES[kind])
+
+
 def make_foe(kind: str, n: int, rng: random.Random,
              display: str | None = None,
-             ferocity: int | None = None) -> Entity:
+             ferocity: int | None = None,
+             weapon: Weapon | None = None) -> Entity:
     """Stat block -> fighting Entity, numbered for the log ("Cutthroat 2").
 
     `display` reskins the row for the log ("Scrap-Hound 2" over the wolf
     block): display name is FICTION, the stat row is MECHANICS -- the quest
     generator's one trick for making many cultures from one calibrated catalog
-    (quests.py THEMES). Balance never forks on a skin."""
-    spec = FOES[kind]
+    (quests.py THEMES). Balance never forks on a skin.
+
+    `weapon` hands the body its steel outright, over the row's own and over
+    SKIN_WEAPONS. A BOSSES row REQUIRES it: the bars are generated off the
+    world seed, so a boss built without one would be a boss holding whatever
+    the common table rolled, which is a bug and not a default."""
+    spec = FOES.get(kind)
+    if spec is None:
+        spec = BOSSES[kind]
+        if weapon is None:
+            raise ValueError(f"{kind} is a boss: it fights with its own "
+                             f"authored steel -- pass weapon= "
+                             f"(sites.boss_bar)")
     skinned = SKIN_WEAPONS.get(display)
-    if skinned is not None:
+    if weapon is not None:
+        pass                  # the caller's steel wins (a boss's own bar)
+    elif skinned is not None:
         weapon = skinned      # the name carries the steel (SKIN_WEAPONS)
     elif spec.weapon is not None:
         weapon = spec.weapon

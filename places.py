@@ -1565,7 +1565,9 @@ def materialize_site(world: dict, area: dict, spec: dict, *,
                      purpose: str, level: int | None = None) -> dict:
     sequence = area["sequences"].get(purpose, 0) + 1
     area["sequences"][purpose] = sequence
-    template = _site_template(spec["name"], domain)
+    # An authored spec may NAME its template (2026-09-12): Tom's stone is a
+    # shrine and nothing in its name says so. Otherwise the name decides.
+    template = spec.get("template") or _site_template(spec["name"], domain)
     sid = f"{area['id']}/site/{slug(spec['name'])}/{sequence}"
     seed = stable_seed(world["seed"], area["id"], purpose, sequence)
     site = {
@@ -2463,7 +2465,11 @@ def materialize_slot(world: dict, slot: dict | str, *,
     # generator a reader of the trade layer, which this session's one read
     # surface (the tile label) deliberately is not. The words are on the
     # TILE, where the hookup session's readers will find them.
-    ground = [tag for tag in tile["tags"] if tag not in TRADE_TAGS]
+    # ...and not the GATE words either (2026-09-12, session 2): the ruin
+    # jobs pick their ground by `heaven-ruin` / `hell-ruin`, and a village
+    # standing on the gate's own tile is in the RING, not in the ruin.
+    ground = [tag for tag in tile["tags"]
+              if tag not in TRADE_TAGS and tag not in GATE_TAGS]
     area["tags"] = list(dict.fromkeys(area["tags"] + ground))
     area["known"] = known
     area["settlement_slot"] = slot["id"]
@@ -2607,9 +2613,10 @@ GATE_BY_KEY = {spec["key"]: spec for spec in GATE_SPECS}
 #   `rooms`   the authored room walk (three rooms; the deepest site four)
 #   `add`     room index -> kinds the fiction puts there whatever the pool
 #             rolled (Candor's stranded angel keeps the cells)
-#   `boss`    the deepest Site's one-off, named by the arc's SECOND session
-#             (`sites.BOSSES`); None here means nothing of the kind is alive
-#             in it, which is what makes a cleared depth stay cleared.
+#   `boss`    the deepest Site's one-off (a `sites.BOSSES` key): the thing
+#             that has held this gate since Tom barred it. It stands in the
+#             last room -- "the bar" -- and the ruin seals only once it is
+#             DEAD (`boss_dead` on the site record), never merely cleared.
 RUIN_SITES = {
     "candor": (
         {"name": "THE OUTER TERRACES", "level": 2,
@@ -2628,7 +2635,7 @@ RUIN_SITES = {
          "add": {1: ("champion",)}},
         {"name": "THE GATE PLAZA", "level": 17,
          "rooms": ("the approach", "the ring", "the gate", "the bar"),
-         "boss": None},
+         "boss": "sentinel of candor"},
     ),
     "libera": (
         {"name": "THE FALLEN FEAST-HALL", "level": 2,
@@ -2643,7 +2650,7 @@ RUIN_SITES = {
          "rooms": ("the yard", "the trophy hall", "the roof")},
         {"name": "THE GATE HOLLOW", "level": 17,
          "rooms": ("the descent", "the ring", "the gate", "the bar"),
-         "boss": None},
+         "boss": "old host of libera"},
     ),
 }
 
@@ -2768,7 +2775,7 @@ def _build_ruin_sites(world: dict, spec: dict, area: dict) -> None:
         site["description"] = RUIN_SITE_LINES[key]
         site["ruin"] = {"gate": key, "side": spec["side"], "index": index,
                         "level": site_spec["level"], "pool": list(pool),
-                        "boss": site_spec.get("boss"),
+                        "boss": site_spec.get("boss"), "boss_dead": False,
                         "deepest": index == len(RUIN_SITES[key]),
                         "cleared_day": None, "refills": 0, "quest": None}
         for name, kinds in ruin_site_rosters(world, site):
@@ -2879,11 +2886,15 @@ def ruin_sites(world: dict, area: dict) -> list[dict]:
 
 def ruin_site_state(site: dict, day: int) -> str:
     """`open`, `cleared` (and refilling), or `sealed` -- the deepest Site
-    with its boss dead, which the ring no longer feeds."""
+    with its boss DEAD, which the ring no longer feeds.
+
+    Dead, not cleared: the Old Host takes spoils, so it can break and run
+    out of its own gate hollow, and a depth the party walked out of without
+    a body in it refills like any other Site (2026-09-12, session 2)."""
     record = site["ruin"]
     if record["cleared_day"] is None:
         return "open"
-    if record["deepest"] and not record["boss"]:
+    if record["deepest"] and record["boss_dead"]:
         return "sealed"
     return ("open" if day - record["cleared_day"] >= RUIN_REFILL_DAYS
             else "cleared")
@@ -2908,12 +2919,13 @@ def refill_ruin_site(world: dict, site: dict, day: int) -> None:
 
 def close_ruin_site(world: dict, site: dict, day: int) -> list[str]:
     """A delve cleared: the Site empties, and the DEEPEST one takes the
-    ring with it. Nothing refills a depth whose boss is dead -- the bar is
-    gone and the ruin goes quiet."""
+    ring with it. Nothing refills a depth whose boss is DEAD -- the bar is
+    off the gate and the ruin goes quiet. A depth cleared with the boss
+    merely driven off is an ordinary cleared Site and refills."""
     record = site["ruin"]
     record["cleared_day"] = day
     record["quest"] = None
-    if not (record["deepest"] and not record["boss"]):
+    if not (record["deepest"] and record["boss_dead"]):
         return []
     tile = world["tiles"][world["areas"][site["area"]]["tile"]]
     for other in gate_ring(world, tile):
@@ -2924,6 +2936,8 @@ def close_ruin_site(world: dict, site: dict, day: int) -> list[str]:
 
 def _validate_gates(world: dict) -> None:
     """The placement rule, checked on the world that was rolled from it."""
+    from sites import BOSSES         # runtime import: this file is the map,
+                                     # not the bestiary (the `quests` rule)
     gates = world["gates"]
     if tuple(gates) != GATE_KEYS:
         raise ValueError(f"the gates are {list(GATE_KEYS)}, got {list(gates)}")
@@ -2972,6 +2986,14 @@ def _validate_gates(world: dict) -> None:
             if len(site["rooms"]) != len(spec["rooms"]):
                 raise ValueError(f"{site['id']}: {len(site['rooms'])} rooms, "
                                  f"not {len(spec['rooms'])}")
+            if site["ruin"]["boss"] != spec.get("boss"):
+                raise ValueError(f"{site['id']}: boss "
+                                 f"{site['ruin']['boss']!r} is not the "
+                                 f"authored {spec.get('boss')!r}")
+        deepest = sites[-1]["ruin"]
+        if deepest["boss"] not in BOSSES:
+            raise ValueError(f"{key}: the deepest Site names no boss "
+                             f"({deepest['boss']!r})")
 
 
 def create_geography(seed: int | None) -> dict:

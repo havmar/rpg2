@@ -22,6 +22,7 @@ the new currency, so every pre-economy number stays comparable):
   - quality steel from level 4 (schweizersäbel -- the reliable all-rounder).
 
 Run:  python bench_bestiary.py [--trials N] [--kind wolf]
+      python bench_bestiary.py --bosses     # the authored one-offs
 """
 
 import argparse
@@ -29,7 +30,16 @@ import random
 from collections import Counter
 
 import rpg
-from sites import FOES, make_foe
+from sites import BOSSES, FOES, boss_bar, foe_spec, make_foe
+
+# The BOSSES pass (2026-09-12, the gates arc's session 2) annotates the
+# authored one-offs at the same duo baseline as a catalog row -- they are
+# not IN the catalog (no pool draws them, the row loop below never sees
+# them), but the level on a boss has to mean what the level on a wight
+# means. Each carries its own bar, which the generator builds off a world
+# seed; the bars' profile is authored clean, so the piece is the same in
+# every world and this one stands for all of them.
+BENCH_WORLD_SEED = 1
 
 
 def reference_hero(rng: random.Random, name: str, level: int) -> rpg.Entity:
@@ -90,10 +100,12 @@ def run_encounter(kind: str, level: int, rng: random.Random) -> tuple[str, bool]
     engagement (a shooter benched at the door never shoots); melee rows
     keep field 0, so every pre-ranged annotation is measured exactly as
     before."""
-    spec = FOES[kind]
+    spec = foe_spec(kind)
     names = rng.sample(rpg.NAMES, 2)
     party = [reference_hero(rng, n, level) for n in names]
-    foes = [make_foe(kind, i + 1, rng) for i in range(spec.ref_pack)]
+    bar = boss_bar(kind, BENCH_WORLD_SEED) if kind in BOSSES else None
+    foes = [make_foe(kind, i + 1, rng, weapon=bar)
+            for i in range(spec.ref_pack)]
     ranged = spec.weapon is not None and spec.weapon.range > 0
     log: list[str] = []
     result = rpg.sim_fight(party, foes, rng, log,
@@ -109,7 +121,7 @@ def run_encounter(kind: str, level: int, rng: random.Random) -> tuple[str, bool]
 
 
 def bench(kind: str, trials: int) -> None:
-    spec = FOES[kind]
+    spec = foe_spec(kind)
     pack = f"{spec.ref_pack}x " if spec.ref_pack > 1 else ""
     print(f"\n--- {pack}{spec.display} (annotated level {spec.level}, "
           f"{trials} trials per column) ---")
@@ -136,11 +148,19 @@ def bench(kind: str, trials: int) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--trials", type=int, default=2000)
-    ap.add_argument("--kind", choices=sorted(FOES), default=None,
+    ap.add_argument("--kind", choices=sorted(FOES) + sorted(BOSSES),
+                    default=None,
                     help="bench a single row (default: the whole catalog)")
+    ap.add_argument("--bosses", action="store_true",
+                    help="bench the authored one-offs (sites.BOSSES) "
+                         "instead of the catalog")
     args = ap.parse_args()
-    kinds = [args.kind] if args.kind else sorted(
-        FOES, key=lambda k: (FOES[k].level, k))
+    if args.kind:
+        kinds = [args.kind]
+    elif args.bosses:
+        kinds = sorted(BOSSES, key=lambda k: (BOSSES[k].level, k))
+    else:
+        kinds = sorted(FOES, key=lambda k: (FOES[k].level, k))
     for kind in kinds:
         bench(kind, args.trials)
 

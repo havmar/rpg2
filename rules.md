@@ -5970,3 +5970,128 @@ carries no multiplier: a patrol on the road is a different road, not a more
 dangerous one. Again the level roll is untouched. The ring makes fights
 more frequent, not harder, and when a ruin's depth is cleared for good the
 doubling goes with the ring.
+
+---
+
+# Heaven & Hell — Add-on, part 2 (2026-09-12, the gates arc's session 2)
+
+Part 1 put the two dead cities on the map and opened them with `delve`.
+This part puts something at the bottom of each, gives it the relic it has
+held for a thousand years, and posts the work that sends ordinary people
+in after it.
+
+## Tom, as the setting knows him
+
+The mythical figure who closed both gates, and the only thing the game
+asserts is the one line part 1 already states: 1027 years ago a person
+called Tom barred both gates in the same season, and both cities died.
+Everything past that is a VERSION, and each people keeps its own:
+
+| who | their Tom |
+|---|---|
+| the Sun communion | Saint Tom, who shut out the enemy and founded the Church's year |
+| Thule's grove | Tom the Smith, who forged the bar |
+| Tergal's shamans | Tom who sewed the sky shut |
+| Heaven's Gardeners | a mistake, best not repeated |
+| Heaven's Pruners | a criminal who cut the world off from the Law |
+| Hell's Feast | a hero: he freed both worlds of each other |
+| Hell's Hunger | a thief who stole a thousand years of feasting |
+
+Whether Tom was human, half-blood, angel or demon, and whether Tom is
+alive, stays open. The one hook the design keeps: **only a half-blood
+could have touched both gates**, so both powers believe the old-blood
+lines are Tom's people and act on it.
+
+**Tom's stone** is where that belief touches the ground the party walks
+on: a wayside shrine in the western and southern countryside — an upright
+bar of grey stone with wax stubs and coins in the turf, on a worn track
+with a beggar's bowl beside it. It is an ordinary natural Site of the
+shrine kind, known when it is found, and a burial or a blessing is sold
+at it exactly as at any shrine. It is the Church's lands only: the north
+remembers Libera instead and keeps no stone.
+
+## The two sentinels
+
+rules.md's bestiary doctrine says the tier above the dragon is not a
+catalog row: demons, demigods and liches are **authored one-offs built on
+the Heroes table** — heroes on the wrong side, no mortal tradeoffs, Power
+fueling authored abilities. The gates arc builds the factory, small. A
+BOSS is a stat row in its own table beside the bestiary; no pool can draw
+one, no generator rolls one, and the bench's catalog sweep never sees
+one. A boss stands exactly where a Site's authored roster names it — today
+the fourth room of the deepest Site of each ruin, the room called **the
+bar**.
+
+Both bodies are the Legend row (DEX 8, STR 8, STA 8) read with **no
+mortal tradeoffs**: they barely feel pain, they never tire, three can
+press them at once, they are warded against the assassin arts, they are
+drilled like a champion, and they carry a champion's Power. A thousand
+years alone at a barred gate is the fiction; that row is what it costs.
+
+- **Zohariel the Sentinel** keeps Candor's gate plaza: a stranded angel
+  who never left its post, the Voice of Measure at rank 2, one target at
+  a time, **relentless** — the Law does not spare. Annotated **level 17**.
+- **Saar the Old Host** keeps Libera's gate hollow: a stranded demon who
+  kept the feast going alone, fire at rank 2, its hits leave the body
+  burning, and it sweeps two at a time on burnt Power like a drake. It
+  **takes spoils**: even at the bottom of the dead city the Old Host robs
+  you, laughs, and lets you crawl out — and it can break and run out of
+  its own hollow, which is why the ruin seals on a BODY and not on an
+  empty room. Annotated **level 16**.
+
+## The two bars
+
+Tom's bars are still across both gates, and each sentinel has been
+holding one. They are heavy arms — a bar across a gate is what a
+two-hander is — the heaviest plain steel the ladder can make: legendary,
+**+3 STR** and nothing else, no rider, no quirk. There is exactly one of
+each, the same piece in every world, and both are entered in the world's
+famous armory from day one, owned by the thing that holds them and
+resting at the bottom of its own dead city. Rumor is free: the player can
+hear of both on day one and has to go down seventeen levels of ruin for
+either.
+
+The sentinel actually fights with its bar, and the bar drops where it
+falls. That is the whole of what the arc says about them: **no quest
+hangs on either, and nothing says what one does to a LIVE gate.** That is
+the arc's endgame question and it stays open on purpose.
+
+**One-off steel on the ground.** A famous piece is not in the weapon
+catalog, so what the fallen leave is remembered by name until the next
+fight and handed over the ordinary way (`give HERO the Libera bar`).
+
+## The seal, corrected
+
+Part 1 said a cleared depth never refills. The rule is sharper than that:
+**the depth seals when the thing that held it is DEAD**, not when the
+room is empty. A party that drives the Old Host off has cleared a Site
+like any other — it refills in thirty days with the Old Host back in it.
+A party that leaves a body behind takes the ring with it: the ruin's
+whole `gate-ruin` ring clears that day, the ground goes quiet, and
+nothing comes out of the ruin any more.
+
+## Into the ruins — the work near a dead city
+
+Eight jobs go on **every culture's board**: four into Candor and four
+into Libera. Looters stripping the white stone; a marble servant that has
+walked out of Candor and is standing in a churchyard; a lamp still
+burning in the glass garden that a merchant will pay for; Concordia's
+archivist wanting the old register out of the measuring house. Hell
+hounds off the feast-hall taking sheep; the thousand-year vintage still
+bearing in the vine pits; Saturna's Master of Hounds wanting the kennel
+book; a man from Saturna whose year is written in the old counting house
+and can be burned there.
+
+Three rules shape where they appear:
+
+- **Only boards near a ruin post them.** A job's trouble sits within
+  three days of the board that posts it, and there are exactly two ruins
+  in the world, so the handful of settlements around Candor and Libera
+  carry this work and nobody else does.
+- **A Heaven job can only land in Candor and a Hell job only in Libera.**
+  The ruin Area wears its own side's word, and each job asks for that
+  word by name.
+- **A posted job never takes the dungeon apart.** The ruin's six authored
+  Sites belong to `delve`; a board job builds its own place inside the
+  ruin under the name the job gives it, and may reuse what an earlier one
+  left. The two systems never write to the same room.

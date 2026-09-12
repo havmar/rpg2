@@ -216,14 +216,17 @@ class PlaceGenerationTests(unittest.TestCase):
         self.assertEqual(len(found), len(tile["settlement_slots"]))
         self.assertEqual(len(world["areas"]), before + len(found))
 
-    def test_natural_area_yields_three_distinct_persistent_sites(self) -> None:
+    def test_natural_area_yields_its_whole_inventory_and_no_more(self) -> None:
         world = places.create_geography(12)
         area = world["areas"]["tile/r05/c02/area/natural"]
         area["known"] = True
+        stock = len(places.NATURAL_SITE_SPECS[area["template"]])
+        self.assertGreaterEqual(stock, 3)
         sites = [places.materialize_natural_site(world, area, day=i)
-                 for i in range(1, 4)]
-        self.assertEqual(len({s["id"] for s in sites}), 3)
-        self.assertIsNone(places.materialize_natural_site(world, area, day=4))
+                 for i in range(1, stock + 1)]
+        self.assertEqual(len({s["id"] for s in sites}), stock)
+        self.assertIsNone(places.materialize_natural_site(world, area,
+                                                          day=stock + 1))
         snapshot = json.loads(json.dumps(world))
         self.assertEqual(snapshot, world)
         self.assertEqual(

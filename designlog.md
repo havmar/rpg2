@@ -7634,3 +7634,187 @@ rings too. Neither change removes a claim.
   the ring reads as punishing in play.
 - **Umaia gets Heaven's colony in half of all worlds** (benchlog's read).
   Nothing downstream cares yet; session 4 will.
+
+---
+
+## 2026-09-12 (B) — Session 2 of the Gates arc: the two sentinels and the ruin jobs
+
+The arc's second build session, off `plan.md` item 2 and `gates.md`
+sections 4 (the relics and Tom's stone), 9 (the two sentinels) and the
+"Into the ruins" half of 14. Session 1 put two dead cities on the map and
+opened them with `delve`; this one puts something at the bottom of each,
+gives it the relic it has been holding, and posts the work that sends
+ordinary people in after it. Everything the spec decided is built as
+decided; what follows records where it went, every **[build settles]**
+call, and the calls the spec did not know it was leaving open.
+
+### What shipped, and where
+
+- **`sites.BOSSES`** — a second dict beside `FOES` in the same `FoeSpec`
+  shape, which is rules.md's bestiary doctrine ("the tier above the dragon
+  is authored one-offs, never catalog rows") finally implemented. The
+  containment is structural rather than bookkept: the key is simply not in
+  `FOES`, so no pool can hold it, no threat reader can index it and
+  `bench_bestiary`'s row loop cannot reach it. `make_foe` falls through to
+  `BOSSES` when the kind is not in the catalog; `foe_spec(kind)` is the
+  shared reader for every display that can meet an authored roster.
+- **Zohariel the Sentinel** (`sentinel of candor`, L17) and **Saar the Old
+  Host** (`old host of libera`, L16) on the Legend row with no mortal
+  tradeoffs — pain 3, spell_ward 2, crowd_cap 3, 12 Power, tireless,
+  ref_pack 1 — Heaven's relentless and ice at rank 2, Hell's taking spoils
+  with fire at rank 2, burn on its hits and the drake's fueled sweep.
+- **The two bars** — `weapons.GATE_BARS` / `gate_bar` / `gate_bar_entries`:
+  `generate_weapon` at sp 9 on a zweihander off a world-seed-derived
+  stream, and two fixed entries appended to `roll_armory`'s ten with the
+  boss as owner and the deepest Site as `where`.
+- **The seal now reads a body.** `places.RUIN_SITES[...][-1]["boss"]`
+  carries a real key and the site record grew `boss_dead`;
+  `ruin_site_state` and `close_ruin_site` read `deepest and boss_dead`.
+- **Eight "Into the ruins" templates** on every culture's table, each
+  placed strictly on its own side's ruin, with `strict` /
+  `place_reachable` as the new machinery behind "only boards near a ruin
+  post them".
+- **Tom's stone** in all eleven western and southern natural inventories,
+  authored as a shrine.
+- **`bench_bestiary.py --bosses`**, and the numbers in benchlog's
+  2026-09-12 (B).
+- Paperwork: rules.md's **Heaven & Hell add-on part 2**, dm.md's "The
+  gates" grown by five bullets, develop.md's Files / dev map / Running,
+  benchlog, this entry; `gates.md` loses section 9, section 4's relic and
+  stone halves and section 14's ruin templates; `plan.md` loses item 2.
+
+### The [build settles] calls
+
+1. **The bars' exact spend: `+3 STR` and nothing else.** The spec said sp
+   9, a two-hander, `generate_weapon(rng, 9, chassis, name)` off the world
+   seed, and left the spend to the build. The generator's raw roll is
+   world-dependent (rider 60%, quirk 30%), and on the first try seed 1 gave
+   BOTH bars `its wounds poison` and the Libera bar `each kill is 2 sin` —
+   a karma tax on the arc's endgame loot, landing on Heaven's relic as
+   easily as Hell's in another world. So the spend is settled by REJECTION:
+   `gate_bar` re-rolls until the piece is plain (no rider, no quirk), which
+   under the profile rule puts all six points above quality on the
+   zweihander's own axis. The consequence is deliberate and worth stating:
+   **the bar is then the same piece in every world**, which is the right
+   answer for an object the setting says there is exactly one of. Tom set
+   this bar across this gate; no seed re-forges it. It also means the bench
+   annotates the weapon the player will actually meet.
+2. **How a boss gets its bar: a spawn hook, not a catalog row.** The
+   Marble Warden's warden blade rides `SKIN_WEAPONS` because it is a fixed
+   `Weapon` at import time. A bar is not — it is built off the world seed —
+   so `make_foe` grew `weapon=`, which a `BOSSES` row REQUIRES (no weapon
+   passed raises, rather than silently rolling the common table), and
+   `session.ruin_boss_bar` is the one place that answers "what does this
+   roster slot bring with it".
+3. **The seal's `boss_dead` flag.** Session 1's reader was
+   `deepest and not boss` — true only while no boss was NAMED, which stops
+   being a test of anything the moment a key is there. It is now
+   `deepest and boss_dead`, set by `session.mark_boss_dead` off the won
+   fight. This is not pedantry: Saar TAKES SPOILS, so it is one of the
+   rosters that can break and run, and it can run out of its own gate
+   hollow. A depth the party cleared without a body in it refills in thirty
+   days with the Old Host back in it, and the measured rate is about one
+   fight in twenty.
+4. **The side restriction is the Area's own word, not a filter.** The spec
+   asked for placement `area_any: ("gate-ruin",)` plus "make sure a
+   Heaven-skinned job can only land in Candor". Rather than a second
+   mechanism, each of the eight rows asks for **one** word —
+   `heaven-ruin` or `hell-ruin` — which session 1 already stamps on the
+   ruin Area. A Heaven job cannot land in Libera because Libera's Area does
+   not wear the word. Nothing new reads a side.
+5. **`strict` placement, and a raise instead of a fallback.**
+   `_select_quest_area` falls back to the origin Tile's own countryside
+   when nothing compatible is in reach — which for a ruin job would post
+   "Looters in the White Ruin" in a meadow four countries away. A
+   requirement may now be `strict`: `_post_quest` filters such a template
+   out of the draw unless `place_reachable` finds its ground inside the
+   three-day radius, and `_select_quest_area` RAISES if one reaches it
+   anyway. That is develop.md's "never soften a reader for a state the code
+   cannot produce", applied to a placement rather than a record.
+6. **The authored ruin Sites are never reused by a posted job.**
+   `reuse: "prefer"` is on the eight rows as the spec wrote it, but
+   `_reusable_site` now skips any Site carrying a `ruin` record. The
+   alternative was letting a board job re-roster one of the dungeon's six
+   Sites, which would rewrite its level, its rooms and its refill clock —
+   `delve` and the board would be writing to the same place. A ruin job
+   therefore builds its own Site inside the ruin Area under the template's
+   stem, and may reuse what an earlier ruin job left.
+7. **Saar's body came off the spec.** See benchlog 2026-09-12 (B) for the
+   table. As written it measured 29% win / 62% wipe at its own annotated
+   16 — a level-19 body wearing a 16, because the bar is +3 STR on a STR-8
+   frame and the fueled sweep gives it the dragon's output. HP first, as
+   contracted, and HP bottomed out near 45% even at 11 (the duo was wiping,
+   not failing to cut through); then the drill. Shipped at **hp 16, drilled
+   +2** for 58.8%. Zohariel, who sweeps nothing, keeps the Legend row
+   exactly as specced and lands at 63.6%.
+8. **MIND 14 on both bodies.** The spec gave each boss a school and a
+   rank and not an aim stat, and a caster row's bolt aim is
+   `ceil((MIND + DEX) / 2)`. Both take the magus's savant 14 — the deepest
+   caster in the catalog — and it was set once and left alone; the
+   annotations were fitted with `hp` and `training` as contracted.
+9. **Tom's stone goes in EVERY western and southern inventory** (eleven
+   lists), not a chosen few. The Church's lands are where the Tom story is
+   kept, and a pilgrim's stop stands on every kind of ground in them. The
+   authored spec carries a new optional `template` key, honored by
+   `places.materialize_site`, because "TOM'S STONE" contains no word the
+   name-based site-type sniffer recognizes as a shrine.
+
+### Two bugs session 1 left, fixed here
+
+- **The delve's disposition never reached the rosters.** `forge_quest`
+  stored `quest["ferocity"]` and `cmd_room` never read it, so the gate
+  skins in a delve fought with their catalog rows' mercy class instead of
+  their side's. `cmd_room` now passes it (and `build_quest` carries a
+  template's `ferocity` the same way, so a Marble Warden met on a board job
+  is as relentless as one met in the ruin).
+- **A settlement on a gate's own tile inherited the gate tags.**
+  `materialize_slot` merges the Tile's ground tags into an Area, and the
+  gate words were in that list — so a village on Candor's tile would have
+  advertised itself as `heaven-ruin` ground. `GATE_TAGS` now joins
+  `TRADE_TAGS` in the exclusion, for the same reason the trade words are
+  excluded: an Area's tag list is quest vocabulary.
+
+### Two small things the endgame loot forced
+
+- **One-off steel could not be picked up.** `give` reads the catalog, and
+  a generated weapon is not in it — so "Left among the dead: the Libera
+  bar" was an offer the player could not take, and the same had been true
+  of every famous armory piece since 2026-07-28. The last cleared fight's
+  off-catalog drops are now kept on the save (`state["drops"]`, written by
+  `record_drops`) and `give` looks there before the catalog.
+- **`rpg.the(name)`.** A piece that names itself read as "a the Libera
+  bar" in the loot line and "takes up the the Libera bar" on equip. One
+  helper, two call sites.
+
+### What felt wrong
+
+- **The bar is a very large amplifier and nothing else in the game is.**
+  +3 STR on a STR-8 body is effective STR 11; the dragon fights at 9. It
+  is the reason Saar had to come off the Legend row, and it will be the
+  reason the next authored one-off does too. If a third boss is ever
+  written, decide the weapon FIRST and the body after it — the body is not
+  the difficulty, the steel is.
+- **The -2 bench column has stopped meaning anything at this band.**
+  Zohariel reads 63.3 at 15 and 63.6 at 17. Two reference levels buy almost
+  nothing against blows that cap at the severity ceiling, which is the same
+  shape the warlord has. The annotation is still honest — the +2 column
+  opens up hard — but "two levels either side" is a low-band instrument
+  being used at the top of the ladder, and the bench will keep printing a
+  flat pair up here until somebody re-thinks it.
+- **A level-17 delve is a two-hero wipe more often than the annotation
+  suggests**, because the bar room is the boss PLUS the room's own roster
+  (a Marble Mender at the Sentinel's shoulder), not the bench's clean
+  one-on-two. The scratch playthrough bore that out: a real L17 duo lost
+  the room. That is a site, not an encounter, and sites are supposed to
+  run below encounter rates — but nobody has measured a whole ruin delve
+  end to end, and `bench_quests` does not know the ruins exist.
+- **The ruin jobs are rare on purpose and may be too rare.** Only a board
+  within three days of a ruin can post one, worldgen posts one job per
+  settlement, and in a sweep of thirty worlds eight opened with a ruin job
+  standing. They fill in as boards refill, but a player who never wanders
+  near either ruin will never see the eight, and that is the design (the
+  radius is the whole point) rather than a defect. Worth watching in play.
+- **Nothing says what one does to a LIVE gate**, and after this session the
+  two objects that point at that question are in the player's hands. The
+  bars carry no quest and no hook by design. It is now the most
+  conspicuous hole in the arc.

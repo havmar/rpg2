@@ -42,11 +42,12 @@ Heaven and Hell come into the world: two foreign powers beyond two doors,
 opposed for longer than either remembers, each of which wants this world.
 The design is **`gates.md`** — the spec companion, in worldsim.md's
 shape, and a section is CUT when the session that builds it lands. What
-is left in it after session 1 is Tom and the two bars, the city half of
-the gate layer, the two sentinels, the Nephilim, the two city states, the
-two world-layer packets, the human side and the quest templates. The
-SETTING and the ruins are no longer there: they are rules.md's Heaven &
-Hell add-on part 1, dm.md's "The gates" and writing.md's two name rows.
+is left in it after session 2 is the city half of the gate layer, the
+Nephilim, the two city states, the two world-layer packets, the human
+side and the two city quest tables. The SETTING, the ruins, the two
+sentinels, the bars and the ruin jobs are no longer there: they are
+rules.md's Heaven & Hell add-on parts 1 and 2, dm.md's "The gates" and
+writing.md's two name rows.
 Its calls are made; a build session reads its
 section and does not reopen them. Its section 0 records the directives
 this arc stands on, three of which every session must keep in view:
@@ -57,17 +58,13 @@ city states, semi-random, conquest later**.
 
 Five sessions, in the order that boots; **session 1, the four sites on
 the map, shipped 2026-09-12** (designlog 2026-09-12 (A); a new world now
-has two ruins to walk into at any level, at `R` on the map). Each ends
-with the standard paperwork (develop.md, "Where a finished feature is
-written up") and CUTS its sections from gates.md.
+has two ruins to walk into at any level, at `R` on the map) and
+**session 2, the two sentinels and the ruin jobs, shipped 2026-09-12**
+(designlog 2026-09-12 (B); something stands at the bottom of each ruin,
+holding the bar Tom set across that gate). Each ends with the standard
+paperwork (develop.md, "Where a finished feature is written up") and
+CUTS its sections from gates.md.
 
-2. **The two sentinels and the ruin jobs** (sections 4 relics, 9, 14
-   ruin templates). `sites.BOSSES` read by `make_foe`; Zohariel the
-   Sentinel (target 17) and Saar the Old Host (target 16) on Legend
-   bodies; the Candor and Libera bars as fixed armory entries owned by
-   them; bench_bestiary `--bosses`; the eight ruin templates on every
-   culture's table with `QUEST_PLACE_REQUIREMENTS` rows on `gate-ruin`;
-   Tom's stone as a natural site.
 3. **The Nephilim** (section 12). `Entity.blood`, the PC's d6 and
    `new --blood`, the companion odds, the three floors and two fields,
    the sheet line and `TRAIT_NOTES`, dm.md's Nephilim paragraph,

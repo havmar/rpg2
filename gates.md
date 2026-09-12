@@ -67,45 +67,26 @@ Written down so they stay settled:
 > is kept whole because session 2 builds the two bars and Tom's stone out
 > of it. What remains below is sessions 2-5.
 
+> **Section 9, section 4's relics and stone, and section 14's "Into the
+> ruins" table are CUT** (2026-09-12, session 2 shipped). Where they went:
+> the two sentinels, the two bars, the seal's correction, the ruin jobs
+> and Tom's stone are **rules.md's `Heaven & Hell - Add-on, part 2`**; the
+> table manner is **dm.md's "The gates"**; the code pointers are
+> **develop.md's Files and dev map**, the annotation numbers
+> **benchlog.md's 2026-09-12 (B) entry**, and the build record (with every
+> [build settles] call) **designlog.md's 2026-09-12 (B)**. What remains of
+> section 4 is the ONE LINE session 5 still owes: a fact line per culture
+> on the lore page, in the culture's own words -- the table of versions
+> itself is now rules.md's. What remains below is sessions 3-5.
 
-## 4. Tom
 
-The mythical figure who closed both gates. The name stays **Tom**: one
-plain syllable, and the writing guide's whole argument.
+## 4. Tom -- what is left of it (session 5)
 
-What is known, which is the only thing the game asserts: 1027 years ago a
-person called Tom barred both gates in the same season, and both cities
-died. Everything past that is a version:
-
-| who | their Tom |
-|---|---|
-| the Sun communion | Saint Tom, who shut out the enemy and founded the Church's year |
-| Thule's grove | Tom the Smith, who forged the bar |
-| Tergal's shamans | Tom who sewed the sky shut |
-| Heaven (the Pruners) | a criminal who cut the world off from the Law |
-| Heaven (the Gardeners) | a mistake, best not repeated |
-| Hell (the Feast) | a hero: he freed both worlds of each other |
-| Hell (the Hunger) | a thief who stole a thousand years of feasting |
-
-**Deliberately open**: whether Tom was human, half-blood, angel or demon;
-whether Tom is alive. The design keeps one hook only: **only a
-half-blood could have touched both gates**, so both powers believe the
-old-blood lines are Tom's people, and act on it.
-
-Where Tom exists in the game (keep lore local and actionable):
-
-- **Tom's stone**: a shrine site type in the western and southern
-  natural inventories (the pilgrim's stop, a burial and blessing sold at
-  it like at any shrine).
-- **The two bars**: one relic per ruin, at the bottom of each — the
-  bar Tom set across that gate, still there, still holding the OLD gate
-  shut. The relic is a heavy-arms weapon with an authored name (`the
-  Candor bar`, `the Libera bar`), the two most notable pieces of loot in
-  the game, and nothing else: no quest hangs on them yet, and the design
-  does NOT say what one would do to a live gate. That is the arc's
-  endgame question and stays open on purpose.
-- **One fact line per culture** on the lore page (the table above, in
-  the culture's own words).
+The figure, the versions and the two relics are rules.md's Heaven & Hell
+add-on part 2 (2026-09-12, session 2). One thing in this section is not
+built: **one fact line per culture on the lore page**, the table of Toms
+in the culture's own words, which belongs with session 5's packets and
+lore pages (section 11's human side).
 
 ## 6. The gate layer: the CITY half (session 4)
 
@@ -168,41 +149,6 @@ clause relaxes to "every tier the country can seat", and each city state
 authors one `city` name and nothing else. [decided: relax the clause,
 don't author districts nobody will see.]
 
-
-## 9. The two sentinels (the bosses)
-
-rules.md's doctrine says the tier above the dragon is authored one-offs
-on the Heroes table, never catalog rows. Nothing implements it. This arc
-builds the factory, small:
-
-- `sites.BOSSES` — a second table beside `FOES`, same `FoeSpec` shape,
-  read by `make_foe` when the kind is not in `FOES`. Never in any pool,
-  never in the bench's row loop; spawned only where a Site's authored
-  roster names the key.
-- Both bodies are the Legend row (DEX 8, STR 8, STA 8, HP 20) with the
-  "no mortal tradeoffs" reading: `pain=3`, `spell_ward=2`, `crowd_cap=3`,
-  `training=3` (`drilled +3`), `power=12`, `tireless=True`, `ref_pack=1`.
-  Heaven's is `FEROCITY_RELENTLESS`; Hell's is `FEROCITY_TAKES_SPOILS`
-  (even at the bottom of Libera, the Old Host lets you crawl out).
-- **The Sentinel of Candor** (`sentinel of candor`, display "Zohariel the
-  Sentinel"): a stranded angel who never left its post. School `ice`,
-  rank 2 (the Voice of Measure), sweep 1. Level annotation target **17**.
-- **The Old Host of Libera** (`old host of libera`, display "Saar the Old
-  Host"): a stranded demon who kept the feast going alone. School
-  `fire`, rank 2, `inflicts="burn"`, sweep 2 with `sweep_cost_power=3`
-  (the fueled sweep, as the drake). Level annotation target **16**.
-- **Each wields its bar.** `the Candor bar` and `the Libera bar` are
-  legendary heavy-arms weapons (chassis a two-hander; sp 9 [build
-  settles the exact spend with `generate_weapon(rng, 9, chassis, name)`
-  off the world seed]), and both are entered in the world's armory
-  (`weapons.roll_armory`) as fixed entries with the boss as owner and
-  the deepest site as `where`. The armory is the game's existing "famous
-  weapons with owners and resting places" record; the bars are its two
-  most famous pieces and the arc's endgame loot.
-- **Bench.** `bench_bestiary.py` gains a `--bosses` pass that annotates
-  the two at the duo baseline like any row; the targets are 17 and 16,
-  and the bodies are tuned to land there (`hp`, `training`, `pain` in
-  that order). Numbers to benchlog.
 
 ## 10. The two city states (the catalog)
 
@@ -479,75 +425,32 @@ contract in plan.md pointing here; each ends with the standard paperwork
 deleted, the section here CUT).
 
 **Session 1, the four sites on the map, SHIPPED 2026-09-12** (designlog
-2026-09-12 (A)); its sections are cut from this file. Four remain.
+2026-09-12 (A)) and **session 2, the two sentinels and the ruin jobs,
+SHIPPED 2026-09-12** (designlog 2026-09-12 (B)); their sections are cut
+from this file. Three remain.
 
 | # | session | ships | this file's sections |
 |---|---|---|---|
-| 2 | **The two sentinels and the ruin jobs** | `sites.BOSSES`, `make_foe` reading it, the two bosses, the two bars in the armory, bench_bestiary's `--bosses` pass, the ruin quest templates on every culture's table (section 9's templates, `QUEST_PLACE_REQUIREMENTS` rows on `gate-ruin`), Tom's stone site | 4 (the relics), 9, the templates of section 14 |
 | 3 | **The Nephilim** | `Entity.blood`, the rolls, `--blood`, the floors and the two fields, the sheet line, `TRAIT_NOTES`, dm.md's Nephilim paragraph, `test_start` coverage | 12 |
 | 4 | **The two city states** | catalog v4, the city half of `roll_gates` (tile takeover, census, capital_tile as a land fact, the validators), name pools, `RULER_TITLES`/`DEFENDER_ROLES`, `HUMAN_HOMELANDS`, the `gate_city` templates and their menus, the two culture quest tables (section 14), a STUB packet each (the validator's minimum: four constitutions, two tensions, one card a track, one fact, one relation) | 6 (the city half), 10, the minimum of 11 |
 | 5 | **The packets and the human side** | the full two packets, the state words, menus and encounters, the HOST-resolved relations, the synod card, the four culture facts, the host facts, the crusade tension and card, the pact pointer line, the lore pages | 11 in full |
 
 Session 1 was the biggest and is what made the arc PLAYABLE: a new world
-now has two ruins to walk into at any level. Sessions
-2 and 3 are additive and small. Session 4 is the one that touches
-validators and the country machinery and must leave the world booting
-with eleven lands; its packet stubs exist only so the validator passes,
-and session 5 replaces them.
+now has two ruins to walk into at any level, and session 2 put something
+at the bottom of each. Session 3 is additive and small. Session 4 is the
+one that touches validators and the country machinery and must leave the
+world booting with eleven lands; its packet stubs exist only so the
+validator passes, and session 5 replaces them.
 
 ## 14. The quest templates
 
 Authored in writing.md's register (a problem already happening, who
 wants it changed, a visible objective, at most one complication). `pool`
-sets the band; `sites` name the ruin Sites by stem so `reuse: "prefer"`
-lands the job in the authored place.
+sets the band; `sites` are the stems the job's places are named by.
 
-**Into the ruins (every culture's table; placement `area_any:
-("gate-ruin",)`, `domain: "natural"` widened to admit kind `ruin`):**
-
-- **Looters in the White Ruin** — pool LADDER_POOL[:5], skins {}, sites
-  ("the outer terraces",), giver "the sheriff", desc "Looters are
-  stripping the white stone off Candor's terraces and selling it. Clear
-  them out.", epilogue "The terraces are quiet. The stone stays where
-  Tom left it."
-- **The Servant That Walks** — pool HEAVEN_RUIN_POOL[:3] (the small
-  constructs), skins heaven, sites ("the choir hall",), giver "the
-  village priest", desc "A marble servant has walked out of Candor and is
-  standing in the churchyard. It does not answer. Break it or lead it
-  home.", epilogue "The servant is broken. The priest keeps a hand of it
-  on the altar."
-- **The Lamp in the Glass Garden** — pool HEAVEN_RUIN_POOL, skins heaven,
-  sites ("the glass garden",), giver "a lamp merchant", proof "the lamp",
-  desc "A lamp still burns in Candor's glass garden. The merchant pays
-  for it. The wardens of the garden are still there too.", epilogue "The
-  lamp burns on the merchant's counter. He is not selling."
-- **The Register of Candor** — pool HEAVEN_RUIN_POOL + ("champion",),
-  skins heaven, sites ("the measuring house",), giver "an archivist from
-  Concordia", align good, desc "Concordia wants the old register out of
-  Candor's measuring house. The porters in there have kept it for a
-  thousand years.", epilogue "The register goes to Concordia. Somebody
-  there is reading the names."
-- **Hounds off the Wild Ruin** — pool WOLF_POOL, skins hell, sites ("the
-  fallen feast-hall",), giver "the head shepherd", proof "the collars",
-  desc "Hell hounds are coming out of Libera's feast-hall and taking
-  sheep. Kill the pack and bring back the collars.", epilogue "The
-  collars hang on the shepherd's door. The sheep are back on the hill."
-- **The Vine Pits** — pool BEAST_POOL + ("dire wolf",), skins hell, sites
-  ("the vine pits",), giver "the vintner", desc "The old vine pits at
-  Libera are still bearing. The vintner wants the vintage. The boars
-  want it too.", epilogue "Twelve barrels of a thousand-year vintage. The
-  vintner will not say what it tastes like."
-- **The Kennel Master's House** — pool HELL_RUIN_POOL, skins hell, sites
-  ("the kennels",), giver "the Master of Hounds of Saturna", align dark,
-  desc "Saturna wants the old kennel book out of Libera. The black hounds
-  and the ember troll in the kennels are not selling.", epilogue "The
-  kennel book goes to Saturna. The hounds there are bred from it now."
-- **The Debt of a Thousand Years** — pool HELL_RUIN_POOL + ("champion",),
-  skins hell, sites ("the wild market",), giver "a debtor from Saturna",
-  desc "A man from Saturna says his year is written in Libera's old
-  counting house and can be burned there. The horned brutes keep the
-  house.", epilogue "The book is burned. The man walks out a year
-  younger, or says he does."
+The eight "Into the ruins" rows are CUT (2026-09-12, session 2 shipped
+them as `quests.RUIN_TEMPLATES`). The two CITY tables below are session
+4's, and land with the two `gate_city` cultures.
 
 **Concordia's table (culture `heaven`):**
 

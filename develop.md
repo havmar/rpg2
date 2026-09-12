@@ -175,8 +175,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (design in `gates.md`) -- four
-  sessions now, session 1 having shipped the same day.
+  one build contract, THE GATES ARC (design in `gates.md`) -- three
+  sessions now, sessions 1 and 2 having shipped the same day.
   Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
@@ -244,7 +244,11 @@ a pointer: what the file is, how it's run, where its docs are.
   low-band-only principle is set aside; conquest later). **Sections 1-3, 5,
   6's ruin half, 7 and 8 are CUT** (2026-09-12, session 1): they are
   rules.md's Heaven & Hell add-on part 1, dm.md's "The gates" and
-  writing.md's two name rows. What remains is sessions 2-5.
+  writing.md's two name rows. **Section 9, section 4's relics and stone,
+  and section 14's "Into the ruins" table are CUT** (2026-09-12, session
+  2): they are rules.md's add-on part 2 and dm.md's "The gates" again.
+  What remains is sessions 3-5, and the one line of section 4 that
+  session 5 still owes (a Tom fact per culture on the lore page).
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -565,6 +569,30 @@ a pointer: what the file is, how it's run, where its docs are.
   *The delve*: forging over authored rooms, no board slot and no radius,
   the field tranche with no turn-in, the thirty-day refill, and the
   deepest Site sealing itself and clearing the ring.
+  **Session 2 added four more parts** (2026-09-12). *The bosses*: a boss
+  key absent from the catalog and from every pool and from the bench's row
+  loop, both bodies against the Legend row, the two designs field by field,
+  `foe_spec` reading both tables, `make_foe` refusing to build one without
+  its bar, and the roster block announcing what it is. *The two bars*: the
+  clean sp-9 profile priced back at 9, the same piece across four seeds,
+  the two fixed armory entries with their owner and their deepest Site,
+  the 40-column page, only the deepest Site's boss being handed one, the
+  boss standing in "the bar" holding it in a real `room`, and the drop --
+  named without a double article, kept on the save and taken up by `give`.
+  *The seal needs a body*: a depth cleared with the boss alive refilling
+  WITH the boss in it, a dead boss sealing the depth and clearing the ring,
+  and `mark_boss_dead` saying no to a standing foe, no to one that
+  withdrew and yes to a corpse. *The ruin jobs and Tom's stone*: the eight
+  on every culture's table and on none of the epics, every row authored
+  whole and ASCII, each placed strictly on its own side's word, only the
+  two ruin Areas wearing those words (and no settlement on a gate tile
+  wearing any gate tag), a Heaven job landing in Candor and a Hell job in
+  Libera, the natural domain admitting a ruin, a board out of range
+  refusing to offer one and `_select_quest_area` raising for it, a posted
+  job leaving all six authored Sites untouched, a 24-seed sweep finding
+  them posted only inside the radius, and Tom's stone in every western and
+  southern inventory and no steppe or norse one, authored as a shrine and
+  materializing as one.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -1418,6 +1446,21 @@ a pointer: what the file is, how it's run, where its docs are.
   disposition the skin carries), `WARDEN_BLADE` in `WEAPON_INDEX`, and
   `SKIN_WEAPONS`, the one lookup in `make_foe` that lets a display name
   bring its own steel.
+  **THE BOSSES** (2026-09-12, the arc's session 2; rules.md's Heaven &
+  Hell add-on part 2): `BOSSES` -- a SECOND dict beside `FOES` in the same
+  `FoeSpec` shape, holding the tier above the dragon that rules.md's
+  bestiary doctrine says is never a catalog row. Zohariel the Sentinel
+  (L17) and Saar the Old Host (L16), both on the Legend row with no mortal
+  tradeoffs. Keeping a boss OUT of the machinery is structural, not
+  bookkept: the key is not in `FOES`, so no pool can draw it, no threat
+  reader indexes it and `bench_bestiary`'s row loop never sees it. Beside
+  them: `BOSS_GATES`, `foe_spec(kind)` -- the catalog-then-bosses reader
+  every display that may meet an authored roster goes through -- and
+  `boss_bar(kind, seed)`, which runtime-imports `weapons.gate_bar`.
+  `make_foe` grew `weapon=`, which OVERRIDES the row's own steel and
+  `SKIN_WEAPONS`, and which a BOSSES row REQUIRES (the bars are built off
+  the world seed, so a boss with no weapon passed is a bug, not a default,
+  and it raises).
 - `quests.py` — **the quest & encounter generator over persistent places**
   (rules.md, the Quest System and World & Navigation add-ons): tree
   accessors, the threat math (all constants at the top, calibrated by
@@ -1485,6 +1528,24 @@ a pointer: what the file is, how it's run, where its docs are.
   `forge_quest` grew `site_keys=` / `skins=` / `ferocity=` / `desc=` -- with
   `site_keys` it forges over Sites THE WORLD ALREADY OWNS and builds
   nothing, which is what `delve` needs.
+  **INTO THE RUINS** (2026-09-12, the arc's session 2): `RUIN_TEMPLATES`,
+  eight authored jobs appended to EVERY culture's table, and `_ruin_place`
+  behind their eight `QUEST_PLACE_REQUIREMENTS` rows -- `area_any` is the
+  ONE side word (`heaven-ruin` / `hell-ruin`), which is the whole of the
+  "a Heaven job cannot land in Libera" rule, plus a new requirement flag
+  **`strict`**. Strict means there is no honest fallback: `_post_quest`
+  filters a strict template out of `fitting` (and out of the
+  snap-to-the-ladder branch) unless `place_reachable` finds its ground
+  inside the target radius, and `_select_quest_area` RAISES rather than
+  dropping the job in the origin's countryside. The `domain: "natural"`
+  filter was widened to admit kind `ruin` (a dead city is not somebody's
+  settlement), `_reusable_site` now SKIPS any Site carrying a `ruin`
+  record (the six authored Sites belong to `delve`; a posted job builds
+  its own place in the ruin Area under the template's stem), `build_quest`
+  carries a template's `ferocity` onto the quest beside its `skins`, and
+  three readers that can meet an authored roster (`notice_contest`,
+  `foes_preferred_field`, `roster_kinds_line`) go through
+  `sites.foe_spec` instead of `FOES`.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
@@ -1634,7 +1695,19 @@ a pointer: what the file is, how it's run, where its docs are.
   riders, quirks, the +DEX legendary gate), the quest reward ladder
   (`reward_weapon_for_level`), the famous armory (`roll_armory`), the
   legendary smiths (`roll_smiths` / `commission_weapon` — the pride
-  floor), and the 40-column readouts. The sims never import it; worldgen
+  floor), and the 40-column readouts.
+  **THE TWO BARS** (2026-09-12, the gates arc's session 2): `GATE_BAR_SP`
+  (9) / `GATE_BAR_CHASSIS` (the zweihander) / `GATE_BARS` (the two
+  authored rows -- gate, boss, name, owner, role and the one authored
+  description line) / `GATE_BAR_BY_GATE` / `GATE_BAR_BY_BOSS`, and behind
+  them `gate_bar(seed, gate)` -- `generate_weapon` at sp 9 off a stream
+  derived from the world seed, REJECTION-SAMPLED to `_plain_bar` (no
+  rider, no quirk), which is what settles the spend: the whole budget
+  above quality lands on the zweihander's own axis, so a bar is `+3 STR`
+  and the same piece in every world. `gate_bar_entries(world)` builds the
+  two fixed armory rows (owner, `where` at the deepest Site; it
+  runtime-imports `places`) and `roll_armory` appends them, so the armory
+  is `ARMORY_TIERS` + `GATE_BARS` long. The sims never import it; worldgen
   calls it on DERIVED rngs so no bench stream moves. `python weapons.py
   [--seed N]` prints one world's armory, smiths, and sample commissions
   (the eyeball check).
@@ -1904,7 +1977,15 @@ a pointer: what the file is, how it's run, where its docs are.
   reference party is built on progression doctrine v2 (2026-07-17: the
   old default build priced in the point economy — pools to the old curve,
   training at 2n, proficiency, monotone).
-  `python bench_bestiary.py [--trials N] [--kind wolf]`.
+  **`--bosses`** (2026-09-12, the gates arc's session 2) runs the same
+  columns over `sites.BOSSES` instead of the catalog -- the authored
+  one-offs are not IN the bestiary, but the level on a boss has to mean
+  what the level on a wight means. Each is handed its own bar
+  (`sites.boss_bar`, off `BENCH_WORLD_SEED` = 1; the bars' profile is
+  authored clean, so that one world stands for all of them). This is the
+  first bench that reaches `weapons.py`, through that one call, and it
+  moves no stream: the bar comes off its own string-seeded rng.
+  `python bench_bestiary.py [--trials N] [--kind wolf] [--bosses]`.
 - `bench_abilities.py` — the equal-cost matrix (2026-07-17, levelling
   session A; grown in B): frames at L4/L8/L14, each column one
   whole-budget way to spend the same points (reference doctrine /
@@ -1995,6 +2076,7 @@ python bench_training.py # wipe/clear rates per combat-training rank
 python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
 python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
+python bench_bestiary.py --bosses  # the two authored one-offs at the baseline
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_wounds.py   # wound records and load per hero, one room and a whole job
 python bench_quests.py   # generated rooms/sites honesty + the career sim
@@ -2011,7 +2093,7 @@ python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_rolled_world.py # the harvest and the census
 python -m unittest -v test_trade.py   # mines, goods and the trade network
 python -m unittest -v test_hookup.py  # the read surface + the League
-python -m unittest -v test_gates.py   # the gates: placement, ruins, delve
+python -m unittest -v test_gates.py   # the gates: ruins, delve, bosses, bars
 python session.py delve               # the gate ruin's six places
 python econmap.py character           # what each Tile is CALLED
 python econmap.py routes 7            # one built world's trade network
@@ -2656,14 +2738,46 @@ mechanic *does* and *why* is rules.md's job.
   and the stored sighting, the gate line and the ruin's dungeon list in
   `cmd_look`, and `MAP_GATE_LEGEND` on the map page. `test_gates.py` is
   the suite and `bench_worldgen.py`'s `gates` sweep the measurement.
-  **What session 1 deliberately did NOT build**, and where the hooks are:
+  **What session 1 deliberately did NOT build**, and where the hook is:
   the city tiles' TAKEOVER (they are rolled, ringed, tagged and drawn and
-  are otherwise ordinary tiles of their countries — session 4), the
-  deepest Sites' BOSSES (`RUIN_SITES[...][-1]["boss"]`, read by
-  `ruin_site_rosters` into the last room and by `ruin_site_state` into the
-  seal — session 2), and the ruin QUEST TEMPLATES (`gate-ruin` is already
-  a tag on both the tile and the ruin Area, so `QUEST_PLACE_REQUIREMENTS`
-  rows land with no further plumbing — session 2).
+  are otherwise ordinary tiles of their countries — session 4). Its other
+  two hooks — the deepest Sites' BOSSES and the ruin QUEST TEMPLATES —
+  are the entry below.
+- **The gates: the two sentinels, the bars and the ruin jobs**
+  (2026-09-12, THE GATES ARC's session 2 — rules.md's Heaven & Hell
+  add-on part 2, dm.md's "The gates", `gates.md` for what is left) —
+  split five ways. `sites.py` OWNS THE BODIES: `BOSSES` beside `FOES`,
+  `BOSS_GATES`, `foe_spec`, `boss_bar`, and `make_foe`'s new `weapon=`
+  (see Files). `weapons.py` OWNS THE STEEL: `GATE_BARS` / `gate_bar` /
+  `_plain_bar` / `gate_bar_entries`, appended to `roll_armory`'s ten.
+  `places.py` NAMES THEM AND SEALS ON A BODY:
+  `RUIN_SITES[...][-1]["boss"]` carries a real key, the site record grew
+  **`boss_dead`**, and both `ruin_site_state` and `close_ruin_site` now
+  read `deepest and boss_dead` where they read `deepest and not boss` —
+  the Old Host takes spoils and can break and run out of its own hollow,
+  so a cleared depth with no body in it refills like any other.
+  `_validate_gates` checks the authored key against `sites.BOSSES`,
+  `materialize_site` honors an authored `spec["template"]` (Tom's stone is
+  a shrine and its name does not say so), and the Area tag merge now drops
+  `GATE_TAGS` as well as `TRADE_TAGS`, so only the ruin Area wears
+  `heaven-ruin` / `hell-ruin`. `quests.py` POSTS THE WORK:
+  `RUIN_TEMPLATES`, `_ruin_place`, the `strict` flag, `place_reachable`,
+  the widened natural domain and the ruin-Site reuse ban (see Files).
+  `session.py` PLAYS IT: `ruin_boss_bar` (the spawn hook — a bar cannot
+  ride a catalog row the way the warden blade does, because it is built
+  off the world seed), `cmd_room` passing both it and the quest's own
+  `ferocity` into `make_foe` (session 1 stored that dict and nobody read
+  it), `record_drops` / `mark_boss_dead` in `resolve_encounter`'s won
+  branch, the `drops` map on the save, and `cmd_give` looking there before
+  the catalog. `rpg.py` gained `the(name)` — the article helper behind
+  `fallen_weapons_line` and `equip_weapon`, so a piece that names itself
+  never reads "the the Candor bar". `place_catalog.json` gained TOM'S
+  STONE in all eleven western and southern natural inventories.
+  `test_gates.py` is the suite and `bench_bestiary.py --bosses` the
+  measurement. **What this session deliberately did NOT build**: anything
+  one can DO to a live gate (the arc's open endgame question — the bars
+  point at it and nothing hangs on them), and the lore page's one Tom line
+  per culture (session 5's, with the packets).
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -3056,6 +3170,23 @@ up 0-7 points for the same reason. `bench_wounds.py` is the new meter for
 the records-per-hero and load-per-hero pair. Nothing
 was tuned beyond the accrual table, the cap and the salve; the give is
 flagged for the felt game to judge.
+
+**The two sentinels (2026-09-12, the gates arc's session 2; benchlog
+2026-09-12 (B) has the tables).** The bestiary gained a second table and
+no catalog row moved. `bench_bestiary.py --bosses` annotates the authored
+one-offs at the same duo baseline: **Zohariel the Sentinel 63.6% win at
+its annotated 17** on the Legend row exactly as specced, and **Saar the
+Old Host 58.8% at 16** after two levers came off. The lesson for the next
+authored one-off is the lever order, not the numbers: Saar as specced read
+29% win / 62% wipe, and **HP could not fix it** (11 HP — under a wight's —
+still only reached 45%, because the duo was WIPING rather than failing to
+cut through). The offense levers are what were out of band: the bar's
+**+3 STR on a STR-8 body** (effective STR 11; the dragon fights at 9) plus
+the drake's fueled sweep. Shipped at `hp` 16 and `training` 2; `pain`
+stayed 3 and was never reached. **Decide an authored one-off's WEAPON
+first and its body after it.** The catalog sweep, `tune.py` and every
+other bench are untouched: a boss key is not in `FOES` and the bars come
+off their own string-seeded rng.
 
 **The towns & the tongues moved NOTHING (2026-08-22, the medieval world
 arc's session 3; benchlog 2026-08-22).** `bench_worldgen.py --seeds 500`

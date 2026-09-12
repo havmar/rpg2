@@ -6785,6 +6785,13 @@ def progress_line(e: Entity) -> str:
     return " | ".join(parts)
 
 
+def the(name: str) -> str:
+    """`the NAME`, unless the name already carries its own article -- a
+    famous piece names itself ("the Candor bar") and "the the Candor bar"
+    is how a display gives away that it was written for catalog steel."""
+    return name if name.lower().startswith("the ") else f"the {name}"
+
+
 def fallen_weapons_line(foes: list[Entity]) -> str | None:
     """The loot gesture after a cleared fight: what steel the fallen leave
     behind, with just enough stats to decide on (the DM offers, the player
@@ -6802,8 +6809,13 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
         return None
     bits = []
     for name, (w, count) in drops.items():
-        n = f"{count}x " if count > 1 else "a "
-        bits.append(f"{n}{name} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
+        if count > 1:
+            head = f"{count}x {name}"
+        elif name.lower().startswith("the "):
+            head = name          # a famous piece names itself
+        else:
+            head = f"a {name}"
+        bits.append(f"{head} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
                     f"{w.value}s)")
     parts = ["Left among the dead:"]
     parts += [b + "," for b in bits[:-1]] + [bits[-1] + "."]
@@ -7795,11 +7807,11 @@ def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
     h.weapon = weapon
     h.weapon_broken = False
     h.switched = False
-    was = (f" (setting aside the {old.name})"
+    was = (f" (setting aside {the(old.name)})"
            if old is not None and old.name != weapon.name else "")
     rank = h.proficiency.get(prof_name(weapon), 0)
     drilled = f" -- already drilled with it (prof {rank})" if rank else ""
-    log.append(f"    {h.name} takes up the {weapon.name}{was}{drilled}.")
+    log.append(f"    {h.name} takes up {the(weapon.name)}{was}{drilled}.")
     if weapon.ammo in AMMO_CAPS and h.items.get(weapon.ammo, 0) <= 0:
         log.append(f"    (it shoots {weapon.ammo} -- `buy` some, or there "
                    f"is nothing to loose)")
