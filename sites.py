@@ -154,6 +154,16 @@ BARROW_BLADE = Weapon("barrow blade", 0, 1, 1, durability=2, tags=("ancient",),
                       description="A chieftain's burial sword, still true. "
                                   "Heavy-arms steel with a dead man's name.")
 
+# Heaven's own grave-steel (2026-09-12, the gates arc): the Marble Warden
+# of Candor carries the wight's blade under its own name and its own numbers
+# unchanged -- the row is mechanics, the name is fiction, and a reskin that
+# drops a differently-named sword is still the same sword.
+WARDEN_BLADE = Weapon("warden blade", 0, 1, 1, durability=2,
+                      tags=("ancient",), value=15,
+                      description="A warden's sword out of Candor, white "
+                                  "steel and still true. Heavy-arms steel "
+                                  "with no name on it at all.")
+
 # The gunner's COMMON gun (ranged combat, 2026-07-16): the quality
 # blunderbuss's poor cousin, so a mid-band foe row can shoot powder
 # without dropping 90s of quality brass into every fight (the same economy
@@ -379,6 +389,69 @@ FOES = {
 BANDIT_KINDS = ("archer", "bruiser", "cutthroat")   # the living-foe pool
 
 
+# --------------------------------------------------------------------------- #
+# THE GATE SKINS (2026-09-12, the gates arc's session 1)
+# --------------------------------------------------------------------------- #
+# Heaven and Hell over the calibrated catalog, in karma's HELL_SKINS shape:
+# a row key to a display name, and nothing else. The doctrine is unchanged --
+# the display name is fiction, the stat row is mechanics, and balance never
+# forks on a skin (rules.md, the bestiary).
+#
+# THE ASYMMETRY: Heaven's things are MADE and Hell's are BRED. Heaven reskins
+# the undead and the giant-kin as constructs; Hell reskins the wolves, the
+# beasts, the giant-kin and the drakes as its animals. Both wear the ladder
+# and the casters as their own people, and both use the bandit rows for the
+# HUMANS who follow them.
+GATE_SKINS = {
+    "heaven": {
+        "cutthroat": "Convert", "archer": "Pilgrim Bow",
+        "bruiser": "Lay Brother", "soldier": "Warden",
+        "veteran": "Sword Angel", "champion": "Choir Captain",
+        "blademaster": "Angel of the Gate", "warlord": "Archangel",
+        "hexer": "Voice of Measure", "pyromancer": "Flame Angel",
+        "magus": "Angel of Judgement",
+        "skeleton": "Broken Servant", "ghoul": "Hunting Servant",
+        "wight": "Marble Warden",
+        "ogre": "Marble Porter", "troll": "Marble Mender",
+        "giant": "Marble Colossus",
+    },
+    "hell": {
+        "cutthroat": "Reveler", "archer": "Wild Bow",
+        "bruiser": "Wild Man", "soldier": "Free Blade",
+        "veteran": "Faun Blade", "champion": "Horned Captain",
+        "blademaster": "Duke of the Feast", "warlord": "Prince of Hell",
+        "hexer": "Ice Demon", "pyromancer": "Fire Demon",
+        "magus": "Demon of Bargains",
+        "ogre": "Horned Brute", "troll": "Ember Troll",
+        "giant": "Horned Giant",
+        "wolf": "Hell Hound", "dire wolf": "Black Hound",
+        "boar": "Feast Boar", "bear": "Pit Bear",
+        "wyvern": "Ash Wyvern", "drake": "Hell Drake",
+        "dragon": "Hell Dragon",
+    },
+}
+
+# What a reskin carries when the name is the whole of the difference: the
+# Marble Warden's sword is the wight's, under Candor's own name.
+SKIN_WEAPONS = {"Marble Warden": WARDEN_BLADE}
+
+# Hell's BRED things -- the rows it dresses as animals rather than as people.
+# Everything else on its table follows somebody.
+GATE_BRED = frozenset(("ogre", "troll", "giant", "wolf", "dire wolf",
+                       "boar", "bear", "wyvern", "drake", "dragon"))
+
+# THE DISPOSITION, side by side with the names: the mercy class carries the
+# theme and no new mechanic is needed for it. Heaven's people and Heaven's
+# constructs are RELENTLESS -- the Law does not spare. Hell's people TAKE
+# SPOILS: Hell robs you, laughs, and leaves you alive, which is on theme.
+# Hell's animals are not listed at all and keep their own rows' ferocity.
+GATE_FEROCITY = {
+    "heaven": {kind: FEROCITY_RELENTLESS for kind in GATE_SKINS["heaven"]},
+    "hell": {kind: FEROCITY_TAKES_SPOILS for kind in GATE_SKINS["hell"]
+             if kind not in GATE_BRED},
+}
+
+
 def make_foe(kind: str, n: int, rng: random.Random,
              display: str | None = None,
              ferocity: int | None = None) -> Entity:
@@ -389,7 +462,13 @@ def make_foe(kind: str, n: int, rng: random.Random,
     generator's one trick for making many cultures from one calibrated catalog
     (quests.py THEMES). Balance never forks on a skin."""
     spec = FOES[kind]
-    weapon = spec.weapon if spec.weapon is not None else random_common_weapon(rng)
+    skinned = SKIN_WEAPONS.get(display)
+    if skinned is not None:
+        weapon = skinned      # the name carries the steel (SKIN_WEAPONS)
+    elif spec.weapon is not None:
+        weapon = spec.weapon
+    else:
+        weapon = random_common_weapon(rng)
     items = {}
     if weapon.ammo in AMMO_CAPS:
         items[weapon.ammo] = FOE_AMMO   # a spawned shooter comes loaded
@@ -582,6 +661,7 @@ SITES = {
 WEAPON_INDEX: dict[str, Weapon] = {
     **WEAPONS, **NATURAL_WEAPONS,
     RUSTED_BLADE.name: RUSTED_BLADE, BARROW_BLADE.name: BARROW_BLADE,
+    WARDEN_BLADE.name: WARDEN_BLADE,
     HAND_BOMBARD.name: HAND_BOMBARD,
 }
 

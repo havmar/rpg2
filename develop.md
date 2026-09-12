@@ -175,7 +175,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (five sessions, design in `gates.md`).
+  one build contract, THE GATES ARC (design in `gates.md`) -- four
+  sessions now, session 1 having shipped the same day.
   Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
@@ -240,7 +241,10 @@ a pointer: what the file is, how it's run, where its docs are.
   companion in worldsim.md's shape: a section is CUT when its session
   lands and its result goes to the permanent docs. Section 0 records the
   standing directives (the pact is a gimmick the arc ignores; the
-  low-band-only principle is set aside; conquest later).
+  low-band-only principle is set aside; conquest later). **Sections 1-3, 5,
+  6's ruin half, 7 and 8 are CUT** (2026-09-12, session 1): they are
+  rules.md's Heaven & Hell add-on part 1, dm.md's "The gates" and
+  writing.md's two name rows. What remains is sessions 2-5.
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -486,6 +490,25 @@ a pointer: what the file is, how it's run, where its docs are.
   slot WILL wear, factored out of `materialize_slot`) and `slot_tier` are
   the two readers `conquest.slot_garrison_level` needed: a siege is laid
   on a slot, not on an Area that may never have been built.
+  **THE GATES** (2026-09-12, THE GATES ARC's session 1; rules.md's Heaven
+  & Hell add-on part 1) are one section above `create_geography`, and they
+  are the file's first layer that adds a new AREA KIND. `roll_gates(world)`
+  runs between the natural-Area loop and `roll_census` — it needs terrain,
+  climate and country per tile and the census and the boards must see a
+  ruin standing before they roll — and it writes `world["gates"]` (four
+  records of `side` / `kind` / `tile` / `keeper`-or-`cut_from`), the four
+  tile tags, the four permanent rings of `gate-ruin` / `gate-city` place
+  states (day 0, the side in `by`, never expiring), and the two `ruin`
+  Areas with their six authored Sites materialized whole. See the dev map
+  entry for the constant-by-constant list; the two things to know here are
+  that `_build_ruin_sites` / `ruin_site_rosters` RUNTIME-IMPORT `quests`
+  (the cycle), and that `_validate_gates` is a `validate_world` clause, so
+  the placement rule is re-checked on every world rather than only in the
+  suite. `place_state_line` now consults `GATE_STATE_WORDS` before
+  `WAR_STATE_WORDS` (a ring names its SIDE in `by` the way an occupation
+  names a `who`), `map_glyph` draws `R` and `G` over the settlement glyph,
+  `map_legend_lines` opens with `gate_legend_lines`, and
+  `tile_brief_lines` leads with `gate_line`.
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
   since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
   2026-08-21** (the medieval world arc's session 2), and the version
@@ -518,6 +541,30 @@ a pointer: what the file is, how it's run, where its docs are.
   Tile its `fits` admits, because it will be read at all of them. Fixed
   Tile geography, historical settlements and country/tier name pools live
   in `places.py`.
+- `test_gates.py` — **THE GATES ARC's contract suite** (2026-09-12,
+  session 1), six parts. *The placement*: every clause of the eligibility
+  rule swept over forty worlds — the two sets, the authored tiles and the
+  mines, the capitals and their ring, the four-tile separation, the live
+  city's land neighbour — plus the weighted preference showing without
+  becoming a filter, the placement moving with the seed, and an empty
+  candidate set raising. *The record and the ring*: `world["gates"]` in
+  exactly the spec's four-key shape, the save round-trip, the two tile
+  tags, the ring as the tile and its LAND neighbours within Chebyshev 1,
+  each state dated day 0 and naming its side in `by`, the `R`/`G` marks
+  and the GATES legend, and the clause that pins what session 1 did NOT
+  do (the city tiles still belong to their countries). *The ruins*: the
+  third Area kind and its tags, six Sites at 2/5/8/11/14/17 over their
+  authored rooms, the deepest walking four, rosters inside the side's own
+  pool, determinism per seed, Candor's stranded angel, the empty boss
+  slot, and the free `go` from the countryside. *The foes*: both skin
+  tables against the catalog, the made/bred asymmetry, the disposition,
+  the warden blade against the barrow blade field for field, and the four
+  pools. *The ring's encounters*: the table against the pools, a tile
+  entry outranking a land entry and the land still being asked on
+  ordinary ground, and the danger ring on the road and the day afield.
+  *The delve*: forging over authored rooms, no board slot and no radius,
+  the field tranche with no turn-in, the thirty-day refill, and the
+  deepest Site sealing itself and clearing the ring.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -1000,6 +1047,13 @@ a pointer: what the file is, how it's run, where its docs are.
   `STATE_ENCOUNTERS` row. The campaign sim over these records is
   `conquest.roll_campaigns`; the words its marks read as are
   `places.WAR_STATE_WORDS`.
+  **THE TILE-LEVEL ENCOUNTER TABLE** (2026-09-12, the gates arc's session
+  1) is `STATE_ENCOUNTERS`' sibling one level down: `TILE_STATE_ENCOUNTERS`
+  keyed by a TILE's state and forked by SIDE (each leaf exactly an
+  encounter entry; its `kinds` are quests.py's four gate pools written out,
+  because quests imports this file), `STATE_DANGER`, and the readers
+  `tile_encounter_entries` / `tile_encounter` / `tile_danger`.
+  `ENCOUNTER_KEYS` gained `ferocity` and `_validate_encounter` checks it.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check; since 2026-08-22 it settles the wars to the same day).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -1189,12 +1243,19 @@ a pointer: what the file is, how it's run, where its docs are.
   opens the world layer (`worldsim.open_world`) on top of
   `create_geography`, because that is where the wars are rolled, and it
   rolls each world's campaign to `WAR_DAYS` (365). `python bench_worldgen.py
-  [--seeds N] [--only harvest|census|trade|wars]`; 100 seeds is the default and
+  [--seeds N] [--only harvest|census|trade|wars|gates]`; 100 seeds is the default and
   takes about twenty seconds, the arc's PINS were measured at 500 (about
   two minutes). Unlike `bench_abilities.py` and `bench_quests.py` this one
   IS reproducible — the layers are deterministic per seed — so it can
   clear a change. Re-run and append to benchlog after touching any
   constant in places.py's rolled half.
+  **The GATES sweep** (2026-09-12, the gates arc's session 1) is the fifth,
+  and the only one whose contract is enforced elsewhere:
+  `places._validate_gates` raises inside every `create_geography`, so what
+  the sweep adds is the histogram the rule does NOT force — which country
+  and which ground each of the four sites lands on, how many distinct tiles
+  it ever uses, and the observed pairwise separation and capital gap. Run it
+  after touching a weight function or the eligibility rule.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
@@ -1351,6 +1412,12 @@ a pointer: what the file is, how it's run, where its docs are.
   generated board covers the band; the benches still run them).
   One-shot: `python sites.py [--site
   hideout] [--seed N] [--training N]`.
+  **THE GATE SKINS** (2026-09-12, the gates arc's session 1): `GATE_SKINS`
+  -- two tables in karma's `HELL_SKINS` shape, Heaven's things MADE and
+  Hell's BRED -- with `GATE_BRED` and `GATE_FEROCITY` beside them (the
+  disposition the skin carries), `WARDEN_BLADE` in `WEAPON_INDEX`, and
+  `SKIN_WEAPONS`, the one lookup in `make_foe` that lets a display name
+  bring its own steel.
 - `quests.py` — **the quest & encounter generator over persistent places**
   (rules.md, the Quest System and World & Navigation add-ons): tree
   accessors, the threat math (all constants at the top, calibrated by
@@ -1412,6 +1479,12 @@ a pointer: what the file is, how it's run, where its docs are.
   Since 2026-08-15 (Europe MVP Closure) `NAME_PARTS` and `_settlement_name`
   are DELETED — the old fragment-assembled settlement naming, dead since
   names started coming from `places.SETTLEMENT_NAMES`.
+  Since 2026-09-12 (the gates arc's session 1) it also holds the four GATE
+  POOLS (`HEAVEN_RUIN_POOL` / `HEAVEN_CITY_POOL` / `HELL_RUIN_POOL` /
+  `HELL_CITY_POOL`, which `places.roll_gates` runtime-imports), and
+  `forge_quest` grew `site_keys=` / `skins=` / `ferocity=` / `desc=` -- with
+  `site_keys` it forges over Sites THE WORLD ALREADY OWNS and builds
+  nothing, which is what `delve` needs.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
@@ -1797,6 +1870,15 @@ a pointer: what the file is, how it's run, where its docs are.
   available as the local board's) and then `quests.rumor_lines` for the
   1-3 day groups. `board all` still shows the whole world and still moves
   only what the party could hear.
+  **THE DELVE** (2026-09-12, the gates arc's session 1): `cmd_delve` and
+  `ruin_site_lines` (the ruin's six places, their levels and whether
+  anything is in them), the delve branch in `_close_site` -- the FIELD
+  tranche, no turn-in, `places.close_ruin_site` on the way out -- and its
+  line in `tally_lines`; `tile_danger(state)` multiplying `_road_roll`,
+  `cmd_explore` and `cmd_camp`; the tile-first lookup in `wild_event` with
+  `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
+  and the stored sighting; the gate line and the dungeon list in
+  `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark legend.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -1929,10 +2011,13 @@ python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_rolled_world.py # the harvest and the census
 python -m unittest -v test_trade.py   # mines, goods and the trade network
 python -m unittest -v test_hookup.py  # the read surface + the League
+python -m unittest -v test_gates.py   # the gates: placement, ruins, delve
+python session.py delve               # the gate ruin's six places
 python econmap.py character           # what each Tile is CALLED
 python econmap.py routes 7            # one built world's trade network
-python bench_worldgen.py              # the four worldgen sweeps (100 seeds)
+python bench_worldgen.py              # the five worldgen sweeps (100 seeds)
 python bench_worldgen.py --seeds 500  # ...at the pins
+python bench_worldgen.py --only gates # where the four gate sites land
 python session.py tile [COORD]        # the DM's page behind one Tile
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -2526,6 +2611,59 @@ mechanic *does* and *why* is rules.md's job.
   sweep the measurement. **The three non-goals are law** and each has a
   test: no border moves, nothing outside the sim's own states is touched,
   and no war ever ends.
+- **The gates: the four sites, the ruins and the delve** (2026-09-12, THE
+  GATES ARC's session 1 — rules.md's Heaven & Hell add-on part 1, dm.md's
+  "The gates", `gates.md` for what is left to build) — split four ways.
+  `places.py` ROLLS and STORES, in one section above `create_geography`:
+  `HEAVEN_LANDS` / `HELL_LANDS` (the two sets), `GATE_SEPARATION` (4),
+  `GATE_SPECS` (the roll order and the four weight functions, which are
+  WEIGHTS and never filters), `GATE_KEYS` / `GATE_BY_KEY` / `GATE_TAGS`,
+  `RUIN_SITES` (the two authored six-Site dungeons; the deepest Site's
+  `boss` is None and is the slot session 2 names a `sites.BOSSES` key in)
+  with `RUIN_SHARES` for its four-room curve, `RUIN_REFILL_DAYS` (30),
+  `SIDE_WORDS` / `GATE_STATE_WORDS` / `GATE_WORDS` / `RUIN_LINES`, and
+  behind them `roll_gates(world)` — called between the natural-Area loop
+  and `roll_census` — with `gate_candidates` / `gate_ring` / `_ruin_area` /
+  `_build_ruin_sites` / `ruin_site_rosters`. The readers are `gate_here` /
+  `gate_line` / `gate_glyph` / `gate_legend_lines` / `ruin_area` /
+  `ruin_sites` / `ruin_site_state` / `refill_ruin_site` /
+  `close_ruin_site`, and `_validate_gates` is the new `validate_world`
+  clause that re-checks the whole placement rule on every world.
+  `_build_ruin_sites` and `ruin_site_rosters` RUNTIME-IMPORT `quests`
+  (quests imports places, so a module-level import would cycle — the
+  `people.make_npc` precedent). `sites.py` DRESSES: `GATE_SKINS` (the two
+  tables, each in karma's `HELL_SKINS` shape), `GATE_BRED` and
+  `GATE_FEROCITY` beside them (the side-level disposition: Heaven
+  relentless, Hell's PEOPLE take spoils, Hell's animals keep their rows),
+  `WARDEN_BLADE` in `WEAPON_INDEX`, and `SKIN_WEAPONS` — the one-line hook
+  in `make_foe` that lets a display name carry its own steel. `quests.py`
+  OWNS THE POOLS (`HEAVEN_RUIN_POOL` / `HEAVEN_CITY_POOL` /
+  `HELL_RUIN_POOL` / `HELL_CITY_POOL`) and `forge_quest` grew
+  `site_keys=` / `skins=` / `ferocity=` / `desc=`, which is what lets a
+  delve forge over Sites the world already owns instead of building new
+  ones. `worldsim.py` PUTS THEM ON THE ROAD: `TILE_STATE_ENCOUNTERS`
+  (keyed by TILE state, then forked by SIDE, each leaf exactly a
+  `STATE_ENCOUNTERS` entry; its `kinds` are the four pools written out
+  because worldsim cannot import quests, and `test_gates` pins the two
+  copies together), `STATE_DANGER`, and the readers
+  `tile_encounter_entries` / `tile_encounter` / `tile_danger`;
+  `ENCOUNTER_KEYS` gained `ferocity`. `session.py` PLAYS: `cmd_delve` and
+  `ruin_site_lines`, the delve branch in `_close_site` (the FIELD tranche,
+  no turn-in, `close_ruin_site` on the way out) and its line in
+  `tally_lines`, `tile_danger(state)` multiplying `_road_roll`,
+  `cmd_explore` and `cmd_camp`, the tile-first lookup in `wild_event` with
+  `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
+  and the stored sighting, the gate line and the ruin's dungeon list in
+  `cmd_look`, and `MAP_GATE_LEGEND` on the map page. `test_gates.py` is
+  the suite and `bench_worldgen.py`'s `gates` sweep the measurement.
+  **What session 1 deliberately did NOT build**, and where the hooks are:
+  the city tiles' TAKEOVER (they are rolled, ringed, tagged and drawn and
+  are otherwise ordinary tiles of their countries — session 4), the
+  deepest Sites' BOSSES (`RUIN_SITES[...][-1]["boss"]`, read by
+  `ruin_site_rosters` into the last room and by `ruin_site_state` into the
+  seal — session 2), and the ruin QUEST TEMPLATES (`gate-ruin` is already
+  a tag on both the tile and the ruin Area, so `QUEST_PLACE_REQUIREMENTS`
+  rows land with no further plumbing — session 2).
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,

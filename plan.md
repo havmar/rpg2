@@ -41,11 +41,13 @@ speaks are words), and **author the physical, derive the human**.
 Heaven and Hell come into the world: two foreign powers beyond two doors,
 opposed for longer than either remembers, each of which wants this world.
 The design is **`gates.md`** — the spec companion, in worldsim.md's
-shape: the setting (the timeline, the two powers and their inner axes,
-the pagan coding, Tom, the names and the tongue), the four rolled sites
-and their placement rule, the ruins as dungeons, the foe tables, the two
-sentinels, the Nephilim, the two city states, the two world-layer packets
-and the human side. Its calls are made; a build session reads its
+shape, and a section is CUT when the session that builds it lands. What
+is left in it after session 1 is Tom and the two bars, the city half of
+the gate layer, the two sentinels, the Nephilim, the two city states, the
+two world-layer packets, the human side and the quest templates. The
+SETTING and the ruins are no longer there: they are rules.md's Heaven &
+Hell add-on part 1, dm.md's "The gates" and writing.md's two name rows.
+Its calls are made; a build session reads its
 section and does not reopen them. Its section 0 records the directives
 this arc stands on, three of which every session must keep in view:
 **the Hell pact and its enforcement are a gimmick this arc ignores and
@@ -53,25 +55,12 @@ does not remove**; **the low-band-only principle is set aside** (the
 start level is rolled, the content spans the ladder); **four one-tile
 city states, semi-random, conquest later**.
 
-Five sessions, in the order that boots. Each ends with the standard
-paperwork (develop.md, "Where a finished feature is written up") and CUTS
-its sections from gates.md.
+Five sessions, in the order that boots; **session 1, the four sites on
+the map, shipped 2026-09-12** (designlog 2026-09-12 (A); a new world now
+has two ruins to walk into at any level, at `R` on the map). Each ends
+with the standard paperwork (develop.md, "Where a finished feature is
+written up") and CUTS its sections from gates.md.
 
-1. **The four sites on the map** (gates.md sections 1–3, 5, 6 ruin half,
-   7, 8). `places.roll_gates` between the natural-Area loop and the
-   census: Candor and Libera as `ruin`-kind Areas with six authored,
-   worldgen-materialized Sites each at levels 2/5/8/11/14/17; the
-   `gate-ruin` and `gate-city` rings as tile states; `sites.GATE_SKINS`
-   and the four pools; `worldsim.TILE_STATE_ENCOUNTERS` and
-   `STATE_DANGER` read in `wild_event` and `_road_roll`; the `delve`
-   command with the 30-day refill; the map marks `R` and `G`, the GATES
-   legend group, the `tile`/`look` lines; bench_worldgen's gates section
-   (placement over 200 seeds). Docs: rules.md's Heaven & Hell add-on
-   (setting and ruins), dm.md's section, writing.md's two name rows and
-   the tongue. The city half of the roll (the tile takeover) is session
-   4's; session 1 rolls all four TILES and stamps all four rings but
-   builds only the ruins on them. After this session a new world has two
-   ruins to walk into at any level.
 2. **The two sentinels and the ruin jobs** (sections 4 relics, 9, 14
    ruin templates). `sites.BOSSES` read by `make_foe`; Zohariel the
    Sentinel (target 17) and Saar the Old Host (target 16) on Legend

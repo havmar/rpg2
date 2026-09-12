@@ -145,7 +145,8 @@ from places import (CAPITAL_TILES, CLIMATE_PROFILES, CULTURE_LANDS,
                     CULTURE_OF, LAND_SPECS, add_state, clear_state,
                     detail_wrap, land_id, stable_seed, tile_coordinate,
                     tile_id, tile_label)
-from sites import FOES           # the encounter outlet's vocabulary: a card
+from sites import (FOES,        # the encounter outlet's vocabulary: a card
+                   GATE_SKINS, GATE_FEROCITY)   # ...and the gates' faces
                                  # that puts foes on a road names catalog rows
                                  # like every other roster in the game
 
@@ -603,6 +604,63 @@ STATE_ENCOUNTERS = {
                          "bruiser": "Straggler"},
                "chance": 0.35},
 }
+
+# --------------------------------------------------------------------------- #
+# THE TILE-LEVEL ENCOUNTER TABLE (2026-09-12, the gates arc's session 1)
+# --------------------------------------------------------------------------- #
+# STATE_ENCOUNTERS is keyed by a LAND's states; this is its sibling one level
+# down, keyed by a TILE's. The ground is more local than the country, so a
+# tile entry OUTRANKS a land entry in `session.wild_event`: inside a gate's
+# ring, what the party meets is what the gate put there.
+#
+# The fork by SIDE is what the land-level table never needs: a ring state
+# carries `heaven` or `hell` in its `by` word, and the two sides field
+# entirely different things. Each leaf is exactly a STATE_ENCOUNTERS entry.
+# The `kinds` tuples are the four pools of `quests.py` written out -- this
+# file cannot import quests (quests imports it), and an authored literal is
+# what every other row here is anyway; `test_gates` pins the two against
+# each other.
+#
+# The entry never touches the LEVEL. The ring changes WHO, and the danger
+# ring below changes HOW OFTEN; the party-independent danger curve is a
+# contract neither of them may bend.
+TILE_STATE_ENCOUNTERS = {
+    "gate-ruin": {
+        "heaven": {"kinds": ("skeleton", "ghoul", "wight",
+                             "ogre", "troll", "giant"),
+                   "where": "any", "as": "something out of the ruin",
+                   "skins": GATE_SKINS["heaven"],
+                   "ferocity": GATE_FEROCITY["heaven"], "chance": 0.6},
+        "hell": {"kinds": ("wolf", "dire wolf", "boar", "bear",
+                           "ogre", "troll", "giant",
+                           "wyvern", "drake", "dragon"),
+                 "where": "any", "as": "something out of the ruin",
+                 "skins": GATE_SKINS["hell"],
+                 "ferocity": GATE_FEROCITY["hell"], "chance": 0.6},
+    },
+    "gate-city": {
+        "heaven": {"kinds": ("cutthroat", "archer", "bruiser", "soldier",
+                             "veteran", "champion", "blademaster",
+                             "warlord", "hexer", "pyromancer", "magus"),
+                   "where": "road", "as": "a patrol out of Concordia",
+                   "skins": GATE_SKINS["heaven"],
+                   "ferocity": GATE_FEROCITY["heaven"], "chance": 0.35},
+        "hell": {"kinds": ("cutthroat", "archer", "bruiser", "soldier",
+                           "veteran", "champion", "blademaster",
+                           "warlord", "hexer", "pyromancer", "magus"),
+                 "where": "road", "as": "revelers out of Saturna",
+                 "skins": GATE_SKINS["hell"],
+                 "ferocity": GATE_FEROCITY["hell"], "chance": 0.35},
+    },
+}
+
+# THE DANGER RING (2026-09-12). What a tile's states do to how OFTEN the
+# wilds roll on it: the per-day chance on the road, the day afield and the
+# night camped, all multiplied by this. The ruin's ring doubles them; a
+# gate CITY's ring carries no multiplier at all -- a patrol on the road is
+# not a more dangerous road, only a different one.
+STATE_DANGER = {"gate-ruin": 2.0}
+
 
 # WHAT A STATE PUTS IN THE CRIME LAYER'S MARK TABLE (2026-08-11, the
 # religion & magic rung). The third of the same shape: a state that makes a
@@ -5701,6 +5759,48 @@ def local_encounter(world: dict, polity: str, where: str,
     return entry
 
 
+def tile_encounter_entries(tile: dict, where: str = "any") -> list[dict]:
+    """The entries a TILE's own active states put on this ground. A ring
+    state names its side in `by`, and the side picks the table's leaf."""
+    entries = []
+    for state in tile.get("states", ()):
+        if not state.get("active"):
+            continue
+        table = TILE_STATE_ENCOUNTERS.get(state["id"])
+        if table is None:
+            continue
+        entry = table.get(state.get("by"))
+        if entry is None:
+            raise ValueError(f"{tile['id']}: {state['id']} names no side")
+        entries.append(dict(entry))
+    return [e for e in entries
+            if where == "any" or e.get("where", "any") in (where, "any")]
+
+
+def tile_encounter(tile: dict, where: str,
+                   rng: random.Random) -> dict | None:
+    """Roll ONE of the tile's own entries, or None. `local_encounter`'s
+    sibling, and it is asked FIRST: the ground the party is standing on is
+    more local than the country it belongs to."""
+    entries = tile_encounter_entries(tile, where)
+    if not entries:
+        return None
+    entry = entries[0] if len(entries) == 1 else rng.choice(entries)
+    if rng.random() >= entry.get("chance", ENCOUNTER_CHANCE):
+        return None
+    return entry
+
+
+def tile_danger(tile: dict) -> float:
+    """The multiplier this tile's states put on the per-day encounter
+    chance -- 1.0 on ordinary ground, and the product where several stack."""
+    danger = 1.0
+    for state in tile.get("states", ()):
+        if state.get("active"):
+            danger *= STATE_DANGER.get(state["id"], 1.0)
+    return danger
+
+
 # --- the MARK outlet's corner: what the world puts in the crime tables ------ #
 # (2026-08-11, the religion & magic rung.) The priced menu covers what a state
 # does to a price and the encounter table covers who it puts on a road; this
@@ -5987,7 +6087,7 @@ def shelter_roll(rng: random.Random) -> dict | None:
 QUEST_KEYS = ("post", "pay", "slots", "reprice")
 JOB_KEYS = ("title", "desc", "pool", "sites", "giver", "epilogue",
             "failure_epilogue", "places", "skins", "align")
-ENCOUNTER_KEYS = ("kinds", "where", "as", "skins", "chance")
+ENCOUNTER_KEYS = ("kinds", "where", "as", "skins", "chance", "ferocity")
 
 
 def _validate_quest(key: str, spec: dict) -> None:
@@ -6036,7 +6136,8 @@ def _validate_encounter(key: str, spec: dict) -> None:
         raise ValueError(f"{key}: not an encounter term: {sorted(unknown)}")
     if not spec.get("kinds"):
         raise ValueError(f"{key}: an encounter entry with no foes in it")
-    for kind in tuple(spec["kinds"]) + tuple(spec.get("skins") or ()):
+    for kind in (tuple(spec["kinds"]) + tuple(spec.get("skins") or ())
+                 + tuple(spec.get("ferocity") or ())):
         if kind not in FOES:
             raise ValueError(f"{key}: no such foe row: {kind}")
     if spec.get("where", "any") not in ENCOUNTER_WHERE:
@@ -6411,6 +6512,17 @@ def validate_content() -> None:
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")
         _validate_encounter(f"state {state_id}", entry)
+    # The TILE table is not keyed on STATE_WORDS: a tile state is places.py's
+    # vocabulary (GATE_STATE_WORDS), not a land's.
+    for state_id, sides in TILE_STATE_ENCOUNTERS.items():
+        if set(sides) != {"heaven", "hell"}:
+            raise ValueError(f"TILE_STATE_ENCOUNTERS: {state_id} owes both "
+                             f"sides an entry")
+        for side, entry in sides.items():
+            _validate_encounter(f"tile state {state_id}/{side}", entry)
+    for state_id in STATE_DANGER:
+        if state_id not in TILE_STATE_ENCOUNTERS:
+            raise ValueError(f"STATE_DANGER: {state_id} is no tile state")
     for edge in RELATIONS:
         for side in ("from", "to"):
             if edge[side] not in LAND_SPECS:

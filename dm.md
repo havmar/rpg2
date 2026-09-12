@@ -723,6 +723,59 @@ while other people are fighting over it.
   of the weather -- one line when the party crosses a mark, and silence
   otherwise.
 
+### The gates -- Heaven and Hell (2026-09-12, the gates arc)
+
+**Two foreign worlds have doors into this one.** Four sites are on every
+map from day one, rolled at worldgen and listed on the map legend under
+GATES: two DEAD gate cities a thousand years abandoned (Heaven's **Candor**
+drawn `R`, Hell's **Libera**) and two LIVE ones twenty-seven years old
+(Heaven's **Concordia** drawn `G`, Hell's **Saturna**). rules.md's Heaven &
+Hell add-on is the setting; this is how it plays at the table.
+
+- **Neither power is good and neither is evil, and the table should feel
+  that.** Heaven heals the village, walls it, feeds it, shuts the tavern
+  and takes the strange child away. Hell hangs the lord, burns the debt
+  book, throws a feast every week, leaves the fields untended, and somebody
+  owes somebody a year. Play each one doing its virtue and its vice in the
+  same scene and never editorialize about which is worse.
+- **The two ruins are DUNGEONS and they are the arc's playable half.**
+  Stand on the ruin's tile, `go` into it (a free step, same Tile), and
+  `look` lists six named places with their levels: 2, 5, 8, 11, 14, 17.
+  `delve SITE` opens one. There is no giver, no board slot and no turn-in
+  -- the party walks in, fights the rooms, and the field pay lands when the
+  last one falls. A cleared place refills thirty days later; the deepest
+  one, once what holds it is dead, never does.
+- **Narrate a ruin as a dead city, not as a cave.** Candor is white stone,
+  glass, geometry and lamps that still burn; the things in it are MADE --
+  marble that walks, a servant with a broken arm still carrying. Libera is
+  a feast that never ended: the table still laid, kennels, cages, a vine
+  pit still bearing. Its things are BRED. The party's first scene in either
+  is the ruin itself, one or two concrete details, and then the fight.
+- **The ring is a real thing the player can feel.** Every tile within one
+  of a ruin carries `gate-ruin` and prints it on the Tile page. On that
+  ground the encounter chance is DOUBLED and most of what comes is out of
+  the ruin. Say so once when the party arrives -- something has been coming
+  down off the ruin all year, the shepherds have moved the flocks -- and
+  then let the dice carry it.
+- **The tongue is one language in two registers, and that is a table
+  rule.** Heaven speaks LATIN and every party member speaks Latin, so
+  Heaven is always understandable. Hell speaks the OLD TONGUE: a Latin
+  speaker follows it WITH DIFFICULTY -- gets the gist, misses the terms,
+  and a bargain's exact words are exactly what one misses. **Nothing in the
+  engine checks this.** It is yours to play: ask again, be misunderstood on
+  purpose, let a demon of rank switch to a deliberately bad Latin. Never
+  turn it into a soft-lock; it is texture and it is comedy as often as it
+  is menace.
+- **Names carry the mood** (writing.md's two rows). Heaven's people are
+  BOUND: every name ends in the suffix that means "of the Law" -- Zohariel,
+  Dinael, Tohara. Hell's are UNBOUND: a bare root, no suffix, and an
+  epithet EARNED rather than given -- Saar Nine-Debts, Lahav the Cup, Dror
+  Who Opened the Kennels. If you invent one at the table, keep the rule.
+- **Do not promise the endgame.** The bar Tom set across each old gate is
+  at the bottom of each ruin, and what one would DO to a live gate is not
+  designed. The party can reach the bottom, take what is there, and the
+  ruin goes quiet. Say nothing about what comes next.
+
 ### The sky (2026-08-08, the weather)
 
 Every land rolls a sky every day. Unlike the wealth band, the weather has

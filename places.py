@@ -2520,6 +2520,460 @@ def reveal_tile(world: dict, tile: dict | str, day: int | None = None) -> list[d
     return found
 
 
+# --------------------------------------------------------------------------- #
+# THE GATES (2026-09-12, the gates arc's session 1)
+# --------------------------------------------------------------------------- #
+# Four rolled sites on the authored map: two dead gate cities (the RUINS,
+# barred a thousand and twenty-seven years ago) and two live ones (the CITY
+# STATES, twenty-seven years old).  `gates.md` was the design; rules.md's
+# Heaven & Hell add-on is the played rule.
+#
+# What this layer writes is ground, not politics: the four tiles, the four
+# rings of tile states around them, the tile tags the quest placement reads,
+# and -- for the two ruins -- an Area of kind `ruin` carrying six authored
+# Sites with rosters built at worldgen.  The CITY half of the takeover (the
+# tile changing country, the census slot, the capital) is session 4's; until
+# then a gate-city tile is an ordinary tile of its country wearing a ring, a
+# tag, a record and a map glyph.
+#
+# The layer runs between the natural-Area loop and `roll_census`: it needs
+# terrain, climate and country per tile, and the census and the quest boards
+# have to see the ruin standing before they roll.
+
+HEAVEN_LANDS = ("byzantium", "seraptania", "umaia", "andalusia")
+HELL_LANDS = ("phyrascia", "teutonia", "thule", "vellisclavia", "tergal")
+
+# At least three clear tiles between any two sites, so no two share a ring.
+GATE_SEPARATION = 4
+
+# How long a cleared ruin Site stays cleared before the ring feeds it again.
+RUIN_REFILL_DAYS = 30
+
+
+def _chebyshev(a: dict, b: dict) -> int:
+    return max(abs(a["row"] - b["row"]), abs(a["column"] - b["column"]))
+
+
+def _candor_weight(world: dict, tile: dict) -> float:
+    """A white city on high ground: the Alps, the Pyrenees, the Balkans."""
+    return 4.0 if tile["terrain"] in ("mountains", "hills") else 1.0
+
+
+def _libera_weight(world: dict, tile: dict) -> float:
+    """The wild city: the Fens, the wildwood, the broken hills."""
+    if tile["terrain"] in ("marsh", "hills") or tile["cover"] == "deep forest":
+        return 4.0
+    return 1.0
+
+
+def _concordia_weight(world: dict, tile: dict) -> float:
+    """A colony that feeds itself and walls a plain."""
+    return 3.0 if (tile["terrain"] == "plains"
+                   and "farmland" in tile["tags"]) else 1.0
+
+
+def _saturna_weight(world: dict, tile: dict) -> float:
+    """A feast-city at the edge of the wood."""
+    if tile["terrain"] in ("plains", "hills") and "forest" in tile["tags"]:
+        return 2.0
+    if tile["climate"] in ("taiga", "continental"):
+        return 2.0
+    return 1.0
+
+
+# The roll order is the design's: the two ruins first, then the two cities,
+# each removing its exclusion ring from the draws after it.
+GATE_SPECS = (
+    {"key": "candor", "name": "Candor", "side": "heaven", "kind": "ruin",
+     "lands": HEAVEN_LANDS, "weight": _candor_weight},
+    {"key": "libera", "name": "Libera", "side": "hell", "kind": "ruin",
+     "lands": HELL_LANDS, "weight": _libera_weight},
+    {"key": "concordia", "name": "Concordia", "side": "heaven",
+     "kind": "city", "lands": HEAVEN_LANDS, "weight": _concordia_weight},
+    {"key": "saturna", "name": "Saturna", "side": "hell", "kind": "city",
+     "lands": HELL_LANDS, "weight": _saturna_weight},
+)
+GATE_KEYS = tuple(spec["key"] for spec in GATE_SPECS)
+# The four words the roll stamps on a gate's own tile. Like the trade tags,
+# they are the SEED's business, not the authored ground's.
+GATE_TAGS = frozenset(("gate-ruin", "gate-city", "heaven-ruin", "hell-ruin",
+                       "heaven-city", "hell-city"))
+GATE_BY_KEY = {spec["key"]: spec for spec in GATE_SPECS}
+
+# The two ruins' dungeons, authored whole (gates.md section 7). Six Sites
+# each at levels 2/5/8/11/14/17 -- the whole ladder in six steps, three
+# apart, so a start at any level finds a site within two levels of it.
+#
+#   `rooms`   the authored room walk (three rooms; the deepest site four)
+#   `add`     room index -> kinds the fiction puts there whatever the pool
+#             rolled (Candor's stranded angel keeps the cells)
+#   `boss`    the deepest Site's one-off, named by the arc's SECOND session
+#             (`sites.BOSSES`); None here means nothing of the kind is alive
+#             in it, which is what makes a cleared depth stay cleared.
+RUIN_SITES = {
+    "candor": (
+        {"name": "THE OUTER TERRACES", "level": 2,
+         "rooms": ("the fallen stair", "the statue yard",
+                   "the broken gate")},
+        {"name": "THE CHOIR HALL", "level": 5,
+         "rooms": ("the nave", "the loft", "the vestry")},
+        {"name": "THE GLASS GARDEN", "level": 8,
+         "rooms": ("the walk", "the lamp house", "the pool")},
+        {"name": "THE MEASURING HOUSE", "level": 11,
+         "rooms": ("the scale room", "the archive", "the vault")},
+        {"name": "THE PREFECTURE", "level": 14,
+         "rooms": ("the court", "the cells", "the roof"),
+         # A stranded angel keeps the cells: a champion by authored roster,
+         # never out of the ruin's own pool of made things.
+         "add": {1: ("champion",)}},
+        {"name": "THE GATE PLAZA", "level": 17,
+         "rooms": ("the approach", "the ring", "the gate", "the bar"),
+         "boss": None},
+    ),
+    "libera": (
+        {"name": "THE FALLEN FEAST-HALL", "level": 2,
+         "rooms": ("the long table", "the kitchens", "the cellar")},
+        {"name": "THE VINE PITS", "level": 5,
+         "rooms": ("the terraces", "the press", "the vats")},
+        {"name": "THE KENNELS", "level": 8,
+         "rooms": ("the runs", "the whelping room", "the master's house")},
+        {"name": "THE WILD MARKET", "level": 11,
+         "rooms": ("the stalls", "the cages", "the counting house")},
+        {"name": "THE HUNT LODGE", "level": 14,
+         "rooms": ("the yard", "the trophy hall", "the roof")},
+        {"name": "THE GATE HOLLOW", "level": 17,
+         "rooms": ("the descent", "the ring", "the gate", "the bar"),
+         "boss": None},
+    ),
+}
+
+# The deepest Site walks FOUR rooms and `quests.ROOM_SHARES` is keyed to the
+# three a generated job can span, so the gate's own curve is authored here:
+# the same rising shape, the same ~2-reference-encounter total, one more step.
+RUIN_SHARES = {4: (0.42, 0.54, 0.66, 0.88)}
+
+RUIN_LINES = {
+    "candor": "Candor is white stone under a thousand years of weather: "
+              "terraces, a choir hall with the hum still in it, and a "
+              "plaza at the bottom with a bar across the gate.",
+    "libera": "Libera is a wild city gone back to the ground: a feast-hall "
+              "with the table still laid, kennels, a market of cages, and "
+              "a hollow at the bottom with a bar across the gate.",
+}
+RUIN_SITE_LINES = {
+    "candor": "White stone, and something made still keeping it.",
+    "libera": "The feast never stopped down here; something bred is still "
+              "at it.",
+}
+SIDE_WORDS = {"heaven": "Heaven", "hell": "Hell"}
+# The RING, as a page reads it (`place_state_line`). Permanent, dated day 0,
+# and never cleared -- except at the bottom of a ruin whose boss is dead.
+GATE_STATE_WORDS = {
+    "gate-ruin": "in the ring of {side}'s dead gate city",
+    "gate-city": "in the ring of {side}'s gate city",
+}
+# What the two dead cities and the two live ones are CALLED on a page.
+GATE_WORDS = {
+    "ruin": {"heaven": "Heaven's dead city", "hell": "Hell's dead city"},
+    "city": {"heaven": "Heaven's gate city", "hell": "Hell's gate city"},
+}
+
+
+def gate_candidates(world: dict, spec: dict,
+                    taken: list[dict]) -> list[dict]:
+    """The tiles this site may land on, in tile order (gates.md section 5).
+
+    Land, in a country of its side's set, off the authored cities and off
+    the mines, never on or beside a capital, at least GATE_SEPARATION from
+    every site already placed -- and, for a LIVE city, still touching the
+    country it is cut out of, because the enclave's whole point is that its
+    donor stays its neighbour.
+    """
+    capitals = {tile_row_column(tid) for tid in CAPITAL_TILES.values()}
+    out = []
+    for tid in world["tile_order"]:
+        tile = world["tiles"][tid]
+        if tile["biome"] == "sea" or tile["country"] not in spec["lands"]:
+            continue
+        here = (tile["row"], tile["column"])
+        if here in HISTORICAL_BY_TILE or here in MINES:
+            continue
+        if any(max(abs(here[0] - row), abs(here[1] - column)) <= 1
+               for row, column in capitals):
+            continue
+        if any(_chebyshev(tile, other) < GATE_SEPARATION for other in taken):
+            continue
+        if spec["kind"] == "city" and not any(
+                world["tiles"][nid]["biome"] != "sea"
+                and world["tiles"][nid]["country"] == tile["country"]
+                for nid in tile["neighbors"]):
+            continue
+        out.append(tile)
+    return out
+
+
+def gate_ring(world: dict, tile: dict) -> list[dict]:
+    """A gate's tile and every LAND tile within Chebyshev 1 of it."""
+    ring = []
+    for row in range(tile["row"] - 1, tile["row"] + 2):
+        for column in range(tile["column"] - 1, tile["column"] + 2):
+            if not (1 <= row <= MAP_ROWS and 1 <= column <= MAP_COLUMNS):
+                continue
+            other = world["tiles"][tile_id(row, column)]
+            if other["biome"] != "sea":
+                ring.append(other)
+    return ring
+
+
+def _ruin_area(world: dict, spec: dict, tile: dict) -> dict:
+    """The ruin itself: a third kind of Area beside `settlement` and
+    `natural`, standing on the tile beside its countryside. People live
+    beside ruins -- the tile keeps its country, its census and its board."""
+    key = spec["key"]
+    side = spec["side"]
+    aid = f"{tile['id']}/area/ruin"
+    area_spec = {
+        "id": aid, "name": f"{spec['name']} (ruin)", "kind": "ruin",
+        "subtype": "ruined city", "role": "ruined city",
+        "tags": ("ruin", "ruined city", "gate-ruin", f"{side}-ruin",
+                 tile["terrain"], tile["country"]),
+        "description": RUIN_LINES[key],
+    }
+    area = _new_area_record(area_spec, tile["country"], tile,
+                            world["seed"], 2)
+    # Famous: everybody has heard of the white ruin, and nobody has to
+    # explore a Tile to find a dead city standing on it.
+    area["known"] = True
+    area["gate"] = key
+    world["areas"][aid] = area
+    tile["areas"].append(aid)
+    world["lands"][tile["country"]]["areas"].append(aid)
+    return area
+
+
+def _build_ruin_sites(world: dict, spec: dict, area: dict) -> None:
+    """The six authored Sites, materialized AT WORLDGEN with their rosters
+    rolled off the ruin's own pool -- the player reads six named places with
+    their levels, which is the ttrpg dungeon in this engine's shape."""
+    from quests import (new_site, new_room, slug_name, build_site_rooms,
+                        HEAVEN_RUIN_POOL,
+                        HELL_RUIN_POOL)   # runtime import (quests imports us)
+    pool = HEAVEN_RUIN_POOL if spec["side"] == "heaven" else HELL_RUIN_POOL
+    key = spec["key"]
+    for index, site_spec in enumerate(RUIN_SITES[key], 1):
+        site_id = f"{area['id']}/site/{index}-{slug_name(site_spec['name'])}"
+        site = new_site(world, area["id"], site_id, site_spec["name"],
+                        site_spec["level"], known=True, template="ruin",
+                        domain="ruin")
+        site["description"] = RUIN_SITE_LINES[key]
+        site["ruin"] = {"gate": key, "side": spec["side"], "index": index,
+                        "level": site_spec["level"], "pool": list(pool),
+                        "boss": site_spec.get("boss"),
+                        "deepest": index == len(RUIN_SITES[key]),
+                        "cleared_day": None, "refills": 0, "quest": None}
+        for name, kinds in ruin_site_rosters(world, site):
+            new_room(world, site_id, f"{site_id}/{slug_name(name)}", name,
+                     kinds)
+
+
+def ruin_site_rosters(world: dict, site: dict) -> list[tuple[str, list[str]]]:
+    """One Site's room walk and its rosters, rolled off a seed derived from
+    the site and its REFILL count -- so worldgen and every refill after it
+    are the same function of the world seed and nothing is stored twice."""
+    from quests import build_site_rooms      # runtime import (see above)
+    record = site["ruin"]
+    authored = RUIN_SITES[record["gate"]][record["index"] - 1]
+    rooms = authored["rooms"]
+    rng = random.Random(stable_seed(world["seed"], site["id"], "ruin-roster",
+                                    record["refills"]))
+    built = build_site_rooms(record["level"], len(rooms),
+                             tuple(record["pool"]), rng, rooms,
+                             shares=RUIN_SHARES.get(len(rooms)))
+    for index, kinds in authored.get("add", {}).items():
+        built[index][1].extend(kinds)
+    if record["boss"]:
+        built[-1][1].append(record["boss"])
+    return built
+
+
+def roll_gates(world: dict) -> None:
+    """THE GATE LAYER: four sites rolled onto the authored map, all four
+    rings stamped, and the two RUINS built (gates.md sections 5-7).
+
+    An empty candidate set raises. With four or five countries a side and a
+    four-tile exclusion ring this cannot happen on the authored map, and a
+    raise is the correct answer if a later map edit makes it possible.
+    """
+    rng = random.Random(stable_seed(world["seed"], "world", "gates", 0))
+    gates: dict[str, dict] = {}
+    taken: list[dict] = []
+    for spec in GATE_SPECS:
+        candidates = gate_candidates(world, spec, taken)
+        if not candidates:
+            raise ValueError(f"{spec['name']}: no eligible tile in "
+                             f"{'/'.join(spec['lands'])}")
+        weights = [spec["weight"](world, tile) for tile in candidates]
+        tile = rng.choices(candidates, weights)[0]
+        taken.append(tile)
+        record = {"side": spec["side"], "kind": spec["kind"],
+                  "tile": tile["id"]}
+        # A ruin's country KEEPS it; a city's country loses the tile in
+        # session 4, which is why the two words are different.
+        record["keeper" if spec["kind"] == "ruin" else "cut_from"] = \
+            tile["country"]
+        gates[spec["key"]] = record
+    world["gates"] = gates
+
+    for spec in GATE_SPECS:
+        record = gates[spec["key"]]
+        tile = world["tiles"][record["tile"]]
+        state = f"gate-{spec['kind']}"
+        tile["tags"].extend((state, f"{spec['side']}-{spec['kind']}"))
+        for other in gate_ring(world, tile):
+            ring_state = add_state(world, other, state, day=0)
+            ring_state["by"] = spec["side"]
+        if spec["kind"] == "ruin":
+            area = _ruin_area(world, spec, tile)
+            _build_ruin_sites(world, spec, area)
+
+
+# --- the readers ----------------------------------------------------------- #
+
+def gate_here(world: dict, tile: dict | str) -> tuple[str, dict] | None:
+    """The gate STANDING ON this tile, as (key, record), or None. The ring
+    around one is a tile state, not this."""
+    tid = tile if isinstance(tile, str) else tile["id"]
+    for key, record in world["gates"].items():
+        if record["tile"] == tid:
+            return key, record
+    return None
+
+
+def gate_line(world: dict, tile: dict | str) -> str | None:
+    """The one line a page leads with when the party stands on a gate."""
+    found = gate_here(world, tile)
+    if found is None:
+        return None
+    key, record = found
+    return (f"{GATE_BY_KEY[key]['name'].upper()} -- "
+            f"{GATE_WORDS[record['kind']][record['side']]}"
+            + (" (ruin)" if record["kind"] == "ruin" else ""))
+
+
+def ruin_area(world: dict, tile: dict | str) -> dict | None:
+    """The ruin Area on this tile, or None where no ruin stands."""
+    tid = tile if isinstance(tile, str) else tile["id"]
+    for aid in world["tiles"][tid]["areas"]:
+        area = world["areas"][aid]
+        if area["kind"] == "ruin":
+            return area
+    return None
+
+
+def ruin_sites(world: dict, area: dict) -> list[dict]:
+    """The six authored Sites of a ruin, deepest last. A quest hung on the
+    ruin by an ordinary posting is not one of these."""
+    return [world["sites"][sid] for sid in area["sites"]
+            if world["sites"][sid].get("ruin")]
+
+
+def ruin_site_state(site: dict, day: int) -> str:
+    """`open`, `cleared` (and refilling), or `sealed` -- the deepest Site
+    with its boss dead, which the ring no longer feeds."""
+    record = site["ruin"]
+    if record["cleared_day"] is None:
+        return "open"
+    if record["deepest"] and not record["boss"]:
+        return "sealed"
+    return ("open" if day - record["cleared_day"] >= RUIN_REFILL_DAYS
+            else "cleared")
+
+
+def refill_ruin_site(world: dict, site: dict, day: int) -> None:
+    """The ring feeds a cleared Site back up: a re-rolled roster over the
+    same authored rooms, thirty days after it was emptied."""
+    record = site["ruin"]
+    record["refills"] += 1
+    record["cleared_day"] = None
+    record["quest"] = None
+    for (name, kinds), room_id in zip(ruin_site_rosters(world, site),
+                                      site["rooms"]):
+        room = world["rooms"][room_id]
+        room["name"] = name
+        room["kinds"] = list(kinds)
+        room["visited"] = False
+        room["occupants"] = []
+    _event(world, day, site["id"], "ruin_refill", new_state="open")
+
+
+def close_ruin_site(world: dict, site: dict, day: int) -> list[str]:
+    """A delve cleared: the Site empties, and the DEEPEST one takes the
+    ring with it. Nothing refills a depth whose boss is dead -- the bar is
+    gone and the ruin goes quiet."""
+    record = site["ruin"]
+    record["cleared_day"] = day
+    record["quest"] = None
+    if not (record["deepest"] and not record["boss"]):
+        return []
+    tile = world["tiles"][world["areas"][site["area"]]["tile"]]
+    for other in gate_ring(world, tile):
+        clear_state(world, other, "gate-ruin", day=day)
+    return [f"The ring around {GATE_BY_KEY[record['gate']]['name']} goes "
+            f"quiet -- nothing comes out of the ruin any more."]
+
+
+def _validate_gates(world: dict) -> None:
+    """The placement rule, checked on the world that was rolled from it."""
+    gates = world["gates"]
+    if tuple(gates) != GATE_KEYS:
+        raise ValueError(f"the gates are {list(GATE_KEYS)}, got {list(gates)}")
+    capitals = {tile_row_column(tid) for tid in CAPITAL_TILES.values()}
+    tiles = [world["tiles"][gates[key]["tile"]] for key in GATE_KEYS]
+    for key, tile in zip(GATE_KEYS, tiles):
+        spec = GATE_BY_KEY[key]
+        record = gates[key]
+        if (record["side"], record["kind"]) != (spec["side"], spec["kind"]):
+            raise ValueError(f"{key}: the record disagrees with the spec")
+        if tile["country"] not in spec["lands"]:
+            raise ValueError(f"{key}: {tile['country']} is not in its set")
+        here = (tile["row"], tile["column"])
+        if tile["biome"] == "sea":
+            raise ValueError(f"{key}: a gate stands on land")
+        if here in HISTORICAL_BY_TILE or here in MINES:
+            raise ValueError(f"{key}: on an authored tile")
+        if any(max(abs(here[0] - row), abs(here[1] - column)) <= 1
+               for row, column in capitals):
+            raise ValueError(f"{key}: on or beside a capital")
+        tag = f"gate-{record['kind']}"
+        if tag not in tile["tags"] or f"{record['side']}-{record['kind']}" \
+                not in tile["tags"]:
+            raise ValueError(f"{key}: the tile wears no gate tag")
+        for other in gate_ring(world, tile):
+            if tag not in [s["id"] for s in other["states"] if s["active"]]:
+                raise ValueError(f"{key}: the ring is not stamped at "
+                                 f"{other['id']}")
+    for i, first in enumerate(tiles):
+        for second in tiles[i + 1:]:
+            if _chebyshev(first, second) < GATE_SEPARATION:
+                raise ValueError("two gates are within "
+                                 f"{GATE_SEPARATION} tiles")
+    for key in ("candor", "libera"):
+        area = ruin_area(world, gates[key]["tile"])
+        if area is None:
+            raise ValueError(f"{key}: no ruin Area on its tile")
+        sites = ruin_sites(world, area)
+        if len(sites) != len(RUIN_SITES[key]):
+            raise ValueError(f"{key}: {len(sites)} Sites, not "
+                             f"{len(RUIN_SITES[key])}")
+        for site, spec in zip(sites, RUIN_SITES[key]):
+            if site["level"] != spec["level"]:
+                raise ValueError(f"{site['id']}: level {site['level']} is "
+                                 f"not the authored {spec['level']}")
+            if len(site["rooms"]) != len(spec["rooms"]):
+                raise ValueError(f"{site['id']}: {len(site['rooms'])} rooms, "
+                                 f"not {len(spec['rooms'])}")
+
+
 def create_geography(seed: int | None) -> dict:
     """Build the fixed 540-Tile Europe frame and its seeded population."""
     rows = load_europe_map()
@@ -2612,6 +3066,12 @@ def create_geography(seed: int | None) -> dict:
         tile["areas"].append(aid)
         tile["natural_area"] = aid
         world["lands"][tile["country"]]["areas"].append(aid)
+
+    # THE GATES (2026-09-12): four rolled sites on the authored map, all
+    # four rings stamped and the two ruins built. It runs HERE because it
+    # needs terrain, climate and country per tile and the census and the
+    # boards have to see a ruin standing before they roll.
+    roll_gates(world)
 
     # THE ROLLED WORLD (2026-08-21, sessions 2 and 3): the census first --
     # it is what a start can stand in -- then the trade network the census
@@ -2827,6 +3287,7 @@ def validate_world(world: dict) -> None:
         raise ValueError("the tile store and tile_order disagree")
     _validate_ground(world)
     _validate_countries(world)
+    _validate_gates(world)
 
     capitals, slot_ids = set(), set()
     for tid in order:
@@ -3326,6 +3787,7 @@ def shortest_path(origin: dict | str, dest: dict | str) -> list[str]:
 MAP_GUTTER = "   "               # room for the two-digit row label
 MAP_GLYPH_LEGEND = ". sea  # land  ^ mtns  ~ river"
 MAP_MARK_LEGEND = "@ party  ! job  C city  T town  v village"
+MAP_GATE_LEGEND = "R gate ruin  G gate city"
 
 
 def known_slots(world: dict, tile: dict | str) -> list[dict]:
@@ -3358,13 +3820,23 @@ def settlement_glyph(world: dict, tile: dict) -> str | None:
     return mark
 
 
+def gate_glyph(world: dict, tile: dict) -> str | None:
+    """`R` a dead gate city, `G` a living one -- the two marks that outrank
+    the census in the settlement-glyph slot (2026-09-12). Four cells on the
+    whole map, and they are the most notable ground in the world."""
+    found = gate_here(world, tile)
+    return None if found is None else ("R" if found[1]["kind"] == "ruin"
+                                       else "G")
+
+
 def map_glyph(world: dict, tile: dict, party: str | None = None,
               objectives: Iterable[str] = ()) -> str:
     if tile["id"] == party:
         return "@"
     if tile["id"] in set(objectives):
         return "!"
-    return settlement_glyph(world, tile) or BIOME_LETTERS[tile["biome"]]
+    return (gate_glyph(world, tile) or settlement_glyph(world, tile)
+            or BIOME_LETTERS[tile["biome"]])
 
 
 def map_lines(world: dict, party: str | None = None,
@@ -3395,11 +3867,26 @@ def _legend_group(prefix: str, items: list[str], width: int = 40) -> list[str]:
                          break_on_hyphens=False)
 
 
+def gate_legend_lines(world: dict, width: int = 40) -> list[str]:
+    """All four gates with their coordinate and their side, in roll order.
+    They are known from day one -- everybody has heard of Concordia, and
+    the white ruin is on every map that was ever drawn."""
+    items = []
+    for key in GATE_KEYS:
+        record = world["gates"][key]
+        tile = world["tiles"][record["tile"]]
+        items.append(f"{GATE_BY_KEY[key]['name']} "
+                     f"{tile_coordinate(tile['row'], tile['column'])} "
+                     f"({SIDE_WORDS[record['side']]}, {record['kind']})")
+    return _legend_group("GATES: ", items, width)
+
+
 def map_legend_lines(world: dict, width: int = 40,
                      limit: int = 10) -> list[str]:
-    """Known settlements grouped by country: the historical cities first,
-    then as many other known places as the page has room for."""
-    lines: list[str] = []
+    """The four GATES first, then known settlements grouped by country: the
+    historical cities first, then as many other known places as the page has
+    room for."""
+    lines: list[str] = gate_legend_lines(world, width)
     for country, land in world["lands"].items():
         cities: list[str] = []
         others: list[str] = []
@@ -3465,8 +3952,15 @@ def place_state_line(entry: dict) -> str:
     it, and the day it started."""
     who = entry.get("who")
     named = WAR_STATE_NAMED.get(entry["id"]) if who else None
-    word = (named.format(who=who) if named else
-            WAR_STATE_WORDS.get(entry["id"], entry["id"].replace("-", " ")))
+    if entry["id"] in GATE_STATE_WORDS:
+        # A gate's ring names its SIDE rather than a person: the state
+        # carries it in `by`, the way an occupation carries `who`.
+        word = GATE_STATE_WORDS[entry["id"]].format(
+            side=SIDE_WORDS[entry["by"]])
+    else:
+        word = (named.format(who=who) if named else
+                WAR_STATE_WORDS.get(entry["id"],
+                                    entry["id"].replace("-", " ")))
     since = entry.get("since")
     return word + (f" (day {since})" if since is not None else "")
 
@@ -3729,6 +4223,9 @@ def tile_brief_lines(world: dict, tile: dict | str,
     ground = [tile["terrain"], tile["climate"], tile["cover"]]
     if tile["biome"] != "basic":        # `basic` is a map GLYPH, not ground
         ground.append(tile["biome"])
+    gate = gate_line(world, tile)
+    if gate:            # the site LEADS: it is what this Tile is
+        lines.append(f"  {gate}")
     lines.append("  " + " / ".join(ground))
     lines.append(f"  {tile_character(world, tile)}")
     extra = [tag for tag in tile["tags"]

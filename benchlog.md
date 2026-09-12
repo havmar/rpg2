@@ -3028,3 +3028,70 @@ odds are exact and unmoved.
 change; nothing else was touched. `WOUND_TIER_SEVERITY` (3 / 4) and
 `WOUND_SEVERITY_MAX` (8) are recorded in develop.md's tuning section as the
 feel pair with their fit above.
+
+---
+
+## 2026-09-12 — THE GATES: where the four sites land (the gates arc's session 1)
+
+`python bench_worldgen.py --seeds 200 --only gates`, the new fifth sweep.
+The placement RULE is not measured here — `places._validate_gates` raises
+inside every `create_geography`, so a world that breaks a clause never
+reaches the bench. What the sweep is for is the half the rule deliberately
+leaves loose: the WEIGHTED terrain preference, which is a thumb on the
+scale and never a filter, and the country histogram that falls out of it.
+
+```
+--- THE GATES (200 worlds) ---
+  Candor     heaven  ruin  preferred ground 69%  (83 distinct tiles)
+    terrain: hills 42%, plains 30%, hills/wooded 14%, mountains/wooded 12%
+    lands:   byzantium 44%, umaia 39%, seraptania 10%, andalusia 7%
+  Libera     hell    ruin  preferred ground 76%  (76 distinct tiles)
+    terrain: plains/deep forest 46%, plains 18%, hills/wooded 16%,
+             hills/deep forest 10%
+    lands:   vellisclavia 39%, thule 26%, teutonia 14%, tergal 14%,
+             phyrascia 6%
+  Concordia  heaven  city  preferred ground 68%  (95 distinct tiles)
+    terrain: plains 81%, hills 12%, mountains/wooded 3%, hills/wooded 3%
+    lands:   umaia 52%, byzantium 30%, seraptania 15%, andalusia 2%
+  Saturna    hell    city  preferred ground 76%  (92 distinct tiles)
+    terrain: plains 38%, plains/deep forest 30%, hills/wooded 14%,
+             mountains/wooded 10%
+    lands:   vellisclavia 38%, thule 30%, teutonia 12%, tergal 10%,
+             phyrascia 9%
+  pairwise separation (>= 4)         mean 11.8 (min 4.0, max 29.0)
+  distance to nearest capital (>= 2) mean 3.5 (min 2.0, max 9.0)
+```
+
+**Read.** The weight is doing exactly the job it was specified to do and no
+more. Each site lands on its preferred ground in about seven worlds in ten
+(68-76%), which is "most worlds, never all" — the sentence gates.md's
+section 5 argued for, and the reason it is a weighted draw over the whole
+eligible set rather than a hard filter: a hard filter over a set this small
+would make the map predictable, and the player would learn where to look.
+Each site uses 76-95 DISTINCT tiles over 200 worlds, so the placement is
+genuinely per-campaign; nothing is pinned in practice.
+
+Two numbers worth writing down because they will be argued about later:
+
+- **Candor's plains 30%** is the loosest of the four. `×4` on mountain or
+  hills is not enough to dominate a southern set whose eligible tiles are
+  mostly plains, and a white ruin on a southern plain is not wrong — it
+  just is not the Alps. If the picture wants to be tighter, the weight is
+  the dial, not the rule.
+- **Umaia takes 39% of Candor and 52% of Concordia.** It is the largest
+  member of the southern set by eligible-tile count and the draw is
+  uniform-before-weights, so this is arithmetic rather than a bug. It does
+  mean that the most common world puts Heaven's colony in the south-east.
+  Nothing downstream reads the keeper or the donor yet; session 4 is where
+  that starts to matter, and if the spread wants flattening the place to do
+  it is a per-land normalization inside `gate_candidates`.
+
+`min separation 4` and `min capital gap 2` are the two hard clauses showing
+they bind: the four-tile rule is reached in some worlds (so it is a real
+constraint, not slack), and no site ever sits on or beside a capital.
+
+The other four sweeps were not re-run: this session touched no constant in
+places.py's harvest, census or trade halves, and the gate layer consumes
+its own derived child seed (`stable_seed(seed, "world", "gates", 0)`), so
+no other layer's stream moved. Test suite: **1114 OK** (1062 before, +52 in
+the new `test_gates.py`).

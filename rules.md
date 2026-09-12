@@ -5732,3 +5732,241 @@ marks on a Tile's own page and on the DM's tile brief; the war's own people
 on the roads of a country at war. The DM's `world` page opens with the
 three wars — who is fighting, the heralds, what each holds, and where
 Andalusia's vassalage fell.
+
+---
+
+# Heaven & Hell — Add-on, part 1 (2026-09-12, the gates arc's session 1)
+
+Two foreign worlds have doors into this one, and the arc that builds them
+is THE GATES ARC. This add-on is the setting and the ground: what the two
+powers are, what came through and when, and the two dead cities a party
+can walk into at any level from day one. The city states, the two
+sentinels, the Nephilim and the two world-layer packets are the arc's
+later sessions and are not here yet.
+
+> **This add-on is the setting authority.** The Hell Pact section above
+> ("an evil god", "the gods of Light") is the OLD frame, kept as it is
+> because the pact carries the crime content and nothing here has to fit
+> it. Where the two disagree, this add-on wins. A later sitting decides
+> whether the pact is rewritten onto this setting or cut.
+
+## The timeline (three dates, and the game prints one of them)
+
+| when | what |
+|---|---|
+| 1027 years ago | **The Closing.** Tom bars both gates. The two gate cities, Candor and Libera, die within a generation. The people of either side caught on this side go native. |
+| 27 years ago | **The Return.** Two new gates open, in new places. Both powers come through and build. Each has had 27 years: a walled city, and a first generation of half-blood children now grown. |
+| now | Two young colonies, two old ruins, and new-blood half-bloods exactly the age of a level 1 character. |
+
+Nobody knows why the gates closed or why they reopened, and the game does
+not tell. The Church counts its years from the Closing, so this is **the
+year 1027** — the only date the game ever prints, and only on a lore page.
+
+## The two powers
+
+They are foreign worlds, not afterlives: two civilizations from beyond two
+doors, opposed to each other for longer than either remembers, each of
+which wants this world and each of which calls the other the enemy. The
+human words for them are **Heaven** and **Hell**, and the game uses those
+words without apology. **Neither is good. Neither is evil. Each holds
+both.**
+
+**Heaven — order, purity, conventional beauty.** A hierarchy that heals,
+walls, tidies, teaches, and takes the strange child away. White stone,
+glass, geometry, choirs, gold, lamps that do not burn. Its people are
+**angels**: tall, luminous, winged, beautiful the way a cathedral is
+beautiful, and they do not age. They bind with **law**, and their law
+applies to everyone equally, which is both its kindness and its cruelty.
+Their servants are **made** — marble servants, wardens, colossi: a
+construct is Heaven's technology, mundane to them and magical to us. Its
+virtue is protection, healing, honesty, beauty, the poor fed and the roads
+safe; its vice is contempt, coldness, the register, the removal, order at
+any price. Its inner axis is **THE GARDENERS against THE PRUNERS** — the
+Gardeners want humans raised up (schools, healers, clean water, the child
+with the gift taught), the Pruners want the world made pure (the register
+of the half-blood, the removal, the wild talent put out). Both are angels;
+both are Heaven. What Heaven does to a village under its hand: the well is
+clean, the granary is full, the wall is new, the tavern is shut, the
+strange child is gone.
+
+**Hell — freedom, wildness, appetite.** Free companies that cancel debts,
+hang the lord, hold a feast every week, open the cages and leave the fields
+untended. Fire, wine, horn, hoof, hound, night. Its people are **demons**:
+horned, handsome in a rough way, some goat-legged (**fauns** is the plain
+word for those), some tailed, all warm to the touch, and they do not age
+either. They bind with the **personal oath and the personal debt**: a
+bargain is sacred to Hell in a way no law is, which is why a demon keeps a
+promise it hates and breaks a statute without noticing. Their servants are
+**bred** — hounds, boars, drakes, things that hunt and things that
+regenerate. Its virtue is liberation, joy, courage, honesty of appetite,
+the debt torn up, the slave loosed; its vice is consumption, cruelty for
+the joke of it, the feast that eats its guests, envy. Its inner axis is
+**THE FEAST against THE HUNGER** — the Feast wants humans set loose (debts
+cancelled, serfs freed, cages opened), the Hunger wants humans consumed
+(appetite without limit, the bargain that takes a year of life, the village
+drunk into ruin and owned by the morning). What Hell does to a village
+under its hand: the lord is hanged, the debt book is burned, there is a
+feast every week, the fields are untended, and somebody owes somebody a
+year.
+
+## The pagan coding: both human religions came from the gates
+
+Both descend from the gate era, and neither knows it.
+
+- **The Sun communion is what the memory of Candor became.** The Church's
+  Latin is Heaven's tongue as humans learned it a thousand years ago and
+  kept in the schools; the Church's angels are Heaven's people remembered;
+  its cosmology — a heaven above, a hell below — is two cities remembered
+  as two directions. Saint Tom is its founding saint.
+- **The old gods of the north are what the memory of Libera became.**
+  Thule's grove, the horned figures on its stones, the feast-days that turn
+  the year upside down, Tergal's dark shaman and the practice: all of it is
+  Hell's first city remembered by people who no longer know what they are
+  remembering. Thule's old gods have a Tom too — a smith who forged the bar.
+- The returned powers know this and the human churches do not. Heaven
+  regards the Church as its own child gone strange; Hell regards the grove
+  as its own, gone quiet.
+
+**The stranded** are angels and demons caught on this side at the Closing.
+They do not age, so some are still alive, a thousand years native: a hermit
+in the hills who is an angel and has forgotten how to fly, an old woman in
+a fen village who has run the same feast for forty generations. They are
+few, named once and kept. Both returned powers count them as deserters or
+as saints depending on which faction is talking, and the old-blood
+half-blood lines descend from them.
+
+**Tom** is the mythical figure who closed both gates, and the name stays
+Tom. What the game asserts is only this: 1027 years ago a person called Tom
+barred both gates in the same season, and both cities died. Everything past
+that is a version — Saint Tom to the Sun communion, Tom the Smith to
+Thule's grove, Tom who sewed the sky shut to Tergal's shamans, a criminal
+to Heaven's Pruners, a mistake to its Gardeners, a hero to Hell's Feast, a
+thief to its Hunger. Whether Tom was human, half-blood, angel or demon, and
+whether Tom is alive, is deliberately open. The design keeps one hook:
+**only a half-blood could have touched both gates**, so both powers believe
+the old-blood lines are Tom's people, and act on it.
+
+**The tongue is one language in two registers.** Heaven speaks **Latin** —
+the church's Latin came from it, every party member speaks Latin, and
+Heaven is therefore never a soft-lock. Hell speaks the **Old Tongue**, the
+older register, rougher; it is `Old Tongue` on the SPEAKS line. A Latin
+speaker follows it with difficulty, dm.md's table rule says how that plays,
+and nothing in the engine checks it. Demons of rank also speak Latin, badly
+and on purpose. The name sounds for both are writing.md's two new rows.
+
+## The four sites, and where they roll
+
+Four sites are rolled at worldgen and stored on the world record: two ruins
+(Heaven's **Candor**, Hell's **Libera**) and two live gate cities (Heaven's
+**Concordia**, Hell's **Saturna**). **Hell is north, Heaven is south** —
+Heaven's two roll in Byzantium, Seraptania, Umaia or Andalusia, Hell's in
+Phyrascia, Teutonia, Thule, Vellisclavia or Tergal.
+
+A site's tile must be land in a country of its side's set; it is never a
+historical-city tile, never a capital, never adjacent to a capital, and
+never a marked mine tile; the four stand at least **four tiles apart** in
+Chebyshev distance, so no two ever share a neighbour ring; and a live
+city's tile must keep at least one land neighbour in the country it is cut
+out of. Over that eligible set the roll is **weighted, never filtered**:
+Candor prefers mountain or hills (a white city on high ground), Libera
+prefers marsh, deep forest or hills (the wild city), Concordia prefers a
+farmland plain, Saturna prefers wooded plains and hills or the taiga and
+continental north. About seven worlds in ten put each site on its preferred
+ground, which is the point of a weight: the map is never predictable and is
+usually right. An empty candidate set raises rather than inventing a site.
+
+**The ring.** Every land tile within one tile of a ruin carries the
+permanent state `gate-ruin`, and the same ring of `gate-city` stands around
+each live city. Both name their side, both are dated day 0, and neither
+expires. The map draws a ruin as **`R`** and a live city as **`G`**, in the
+settlement-glyph slot, and the legend lists all four under GATES with the
+coordinate and the side. The tile's own page leads with the site.
+
+**Session 1 builds the ruins only.** The two city tiles are rolled, ringed,
+tagged and drawn, and they are otherwise ordinary tiles of their countries:
+the tile takeover, the city's own census and its country are a later
+session's.
+
+## The ruins as dungeons
+
+A ruin is an Area of kind **`ruin`** — a third kind beside `settlement` and
+`natural` — standing on the tile beside its countryside and its
+settlements. People live beside ruins: the tile keeps its country, its
+census and its board. The ruin is known from day one (everybody has heard
+of the white ruin), `look` lists it under "Also on this Tile", and `go`
+walks to it for free, because a ruin and the fields around it are one map
+cell.
+
+Its **six Sites are authored and materialized at worldgen**, and the player
+reads them as a list of six named places with their levels — the ttrpg
+dungeon in this engine's shape:
+
+| # | Candor (Heaven) | Libera (Hell) | level |
+|---|---|---|---|
+| 1 | THE OUTER TERRACES | THE FALLEN FEAST-HALL | 2 |
+| 2 | THE CHOIR HALL | THE VINE PITS | 5 |
+| 3 | THE GLASS GARDEN | THE KENNELS | 8 |
+| 4 | THE MEASURING HOUSE | THE WILD MARKET | 11 |
+| 5 | THE PREFECTURE | THE HUNT LODGE | 14 |
+| 6 | THE GATE PLAZA | THE GATE HOLLOW | 17 |
+
+Levels 2/5/8/11/14/17 is the whole ladder in six steps, three apart, so a
+start at any level finds a site within two levels of it. Each site walks
+three authored rooms and the deepest walks four (the approach, the ring,
+the gate, and the bar Tom set across it). Rosters are built at worldgen off
+the ruin's own pool and are deterministic per seed; one body is placed by
+hand rather than by the pool — a stranded angel keeps the cells of Candor's
+Prefecture.
+
+**`delve SITE`** is the way in: a known Site of the ruin the party is
+standing in, opened without a giver. It forges a job on the spot over the
+Site's authored rooms, and the ordinary room walk, fights, encounter XP and
+loot follow. **Clearing pays the FIELD tranche of a job at that level and
+no turn-in**, because there is nobody down there to turn it in to; what
+else the ruin pays is what is lying in it. A cleared Site **refills after
+30 days** with a re-rolled roster over the same rooms — the ring feeds it.
+The **deepest Site never refills** once what holds it is dead: the bar is
+gone, the ruin's whole `gate-ruin` ring clears that day, and the ground
+goes quiet.
+
+## The foes of the gates
+
+The doctrine is unchanged: the display name is fiction, the stat row is
+mechanics, and balance never forks on a skin. Two skin tables dress the
+calibrated catalog, and the asymmetry is the setting's — **Heaven's things
+are MADE and Hell's are BRED**. Heaven reskins the undead and the giant-kin
+as constructs (Broken Servant, Hunting Servant, Marble Warden, Marble
+Porter, Marble Mender, Marble Colossus) and has no animals at all; Hell
+reskins the wolves, the beasts, the giant-kin and the drakes as its own
+(Hell Hound, Black Hound, Feast Boar, Pit Bear, Horned Brute, Ember Troll,
+Horned Giant, Ash Wyvern, Hell Drake, Hell Dragon) and has no undead. Both
+wear the humanoid ladder and the casters as their people — Convert, Warden,
+Sword Angel, Choir Captain, Angel of the Gate, Archangel against Reveler,
+Free Blade, Faun Blade, Horned Captain, Duke of the Feast, Prince of Hell —
+and both use the bandit rows for the humans who follow them.
+
+The one thing a gate skin does change is the **disposition**, and it uses
+the mercy class that already exists rather than a new rule. Heaven's people
+and Heaven's constructs are **relentless**: the Law does not spare. Hell's
+people **take spoils**: Hell robs you, laughs, and leaves you alive, which
+is on theme. Hell's animals keep their own rows' ferocity. One weapon
+belongs to a name rather than to a row: the Marble Warden carries the
+**warden blade**, the wight's barrow steel under Candor's own name and with
+its numbers unchanged.
+
+**The ring's own encounters.** A tile's states now have an encounter table
+of their own, and it OUTRANKS the country's: the ground under the party is
+more local than the country it belongs to. Inside a ruin's ring, six times
+in ten what the road or the day afield turns up is **something out of the
+ruin** — that side's ruin pool wearing that side's names. Inside a live
+city's ring, on roads only, about a third of the time it is **a patrol out
+of Concordia** or **revelers out of Saturna**. Neither touches the LEVEL:
+the party-independent danger curve is a contract, and the ring changes WHO,
+never how hard.
+
+**The danger ring.** A ruin's ring **doubles** the per-day encounter chance
+— on the road, on a day afield, and on a night camped. A gate city's ring
+carries no multiplier: a patrol on the road is a different road, not a more
+dangerous one. Again the level roll is untouched. The ring makes fights
+more frequent, not harder, and when a ruin's depth is cleared for good the
+doubling goes with the ring.

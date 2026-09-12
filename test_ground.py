@@ -172,14 +172,15 @@ class TheLandsPotential(unittest.TestCase):
         3): the roads follow the rolled census, so which Tiles wear
         `trade-route`, `port` and `sea-lane` IS the seed's business. That
         those words move while every ground word holds is the claim, and
-        test_trade.py asserts the other half of it."""
+        test_trade.py asserts the other half of it. The GATE tags
+        (2026-09-12) are exempt for the same reason and test_gates.py
+        asserts their half."""
+        rolled = set(places.TRADE_TAGS) | places.GATE_TAGS
         first, second = _world(1), _world(999)
         for tid, tile in first["tiles"].items():
             other = second["tiles"][tid]
-            ground = [tag for tag in tile["tags"]
-                      if tag not in places.TRADE_TAGS]
-            theirs = [tag for tag in other["tags"]
-                      if tag not in places.TRADE_TAGS]
+            ground = [tag for tag in tile["tags"] if tag not in rolled]
+            theirs = [tag for tag in other["tags"] if tag not in rolled]
             self.assertEqual(
                 (tile["climate"], tile["terrain"], tile["cover"], ground),
                 (other["climate"], other["terrain"], other["cover"],

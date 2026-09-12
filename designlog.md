@@ -7439,3 +7439,198 @@ it. develop.md registers the file. Nothing in the code moved.
 **Parked**: the live-gate endgame; conquest by the city states; the pact
 rewritten onto the setting or cut; the north's draugr and grave ghosts
 still owed by the monsters & fauna dump.
+
+---
+
+## 2026-09-12 (A) — Session 1 of the Gates arc: the four sites on the map
+
+The arc's first build session, against plan.md item 1 and gates.md sections
+1-3, 5, the ruin half of 6, 7 and 8. Those sections are now CUT from
+gates.md; what shipped is below and where it went is named with it.
+
+### What shipped, and where
+
+**The roll** — `places.roll_gates(world)`, slotted in `create_geography`
+between the natural-Area loop and `roll_census`, off the derived child seed
+`stable_seed(seed, "world", "gates", 0)`. It draws all four sites in the
+design's order (Candor, Libera, Concordia, Saturna), each removing its
+exclusion ring from the draws after it, and writes `world["gates"]` in
+exactly section 6's shape — four records of `side` / `kind` / `tile` and
+`keeper` (a ruin) or `cut_from` (a city). `gate_candidates` is the
+eligibility rule in one function: land in the side's set, off
+`HISTORICAL_BY_TILE` and off `MINES`, never on or within Chebyshev 1 of a
+capital, at least `GATE_SEPARATION` (4) from every site already placed, and
+— for a live city only — still touching the country it is cut out of. Over
+that set the draw is WEIGHTED (`GATE_SPECS[i]["weight"]`), never filtered.
+An empty candidate set raises, as the spec asks.
+
+**The rings and the tags** — all four, including the two cities'. Each
+gate's tile and every LAND tile within Chebyshev 1 of it takes a permanent
+`gate-ruin` / `gate-city` place state, day 0, never expiring, with the side
+in `by`; the gate's own tile takes the two tags (`gate-ruin` /
+`heaven-ruin` and so on). `place_state_line` grew a `GATE_STATE_WORDS`
+branch so the ring reads as *in the ring of Heaven's dead gate city (day
+0)* on both tile pages.
+
+**The ruins** — `ruin` is a third Area kind beside `settlement` and
+`natural`, subtype `ruined city`, `known=True`, standing on the tile beside
+its natural Area and its settlements. Six authored Sites each
+(`places.RUIN_SITES`) at levels 2/5/8/11/14/17, materialized AT WORLDGEN
+with rosters from `quests.build_site_rooms` off the side's pool, so they
+are deterministic per seed and re-rollable on refill. Candor's stranded
+angel is a `champion` placed by the site's authored roster (`"add": {1:
+("champion",)}`), never out of the pool of made things.
+
+**The foes** — `sites.GATE_SKINS` (the full section 8 table, two dicts in
+karma's `HELL_SKINS` shape), `GATE_BRED` and `GATE_FEROCITY` beside them,
+`WARDEN_BLADE` in `WEAPON_INDEX`, `SKIN_WEAPONS` read by `make_foe`. The
+four pools are `quests.HEAVEN_RUIN_POOL` / `HEAVEN_CITY_POOL` /
+`HELL_RUIN_POOL` / `HELL_CITY_POOL`, exactly as listed.
+
+**The ring's encounters** — `worldsim.TILE_STATE_ENCOUNTERS` and
+`STATE_DANGER` with the readers `tile_encounter_entries` /
+`tile_encounter` / `tile_danger`; `session.wild_event` asks the tile before
+the land and never falls through when the tile answers; `session.tile_danger`
+multiplies `_road_roll`, `cmd_explore` and `cmd_camp`.
+
+**The delve** — `session.cmd_delve`, `ruin_site_lines`, the delve branch in
+`_close_site`, `places.ruin_site_state` / `refill_ruin_site` /
+`close_ruin_site` and `RUIN_REFILL_DAYS` (30).
+
+**The surfaces** — `R` and `G` in the settlement-glyph slot
+(`places.gate_glyph` inside `map_glyph`), `MAP_GATE_LEGEND` under the mark
+legend, the GATES group opening `map_legend_lines`
+(`places.gate_legend_lines`), `gate_line` leading `tile_brief_lines` and
+`cmd_look`, and the ruin's six places listed in `cmd_look` where an
+ordinary Area lists its sites.
+
+**Paperwork** — rules.md's *Heaven & Hell — Add-on, part 1* (the setting,
+the sites, the ruins, the delve, the foes, and the line saying it outranks
+the pact section where they disagree); dm.md's *The gates*; writing.md's
+two name rows and the one-tongue-two-registers note; develop.md's Files,
+dev map and Running; benchlog's 2026-09-12 entry; `test_gates.py` (52
+tests; suite 1062 -> 1114).
+
+### The [build settles] calls
+
+- **`GATE_SKINS`'s "exact shape"** was read as: each SIDE's table is in
+  `HELL_SKINS` shape (a flat row-key to display-name dict), so it can be
+  handed straight to anything that already takes a skins dict — a quest's
+  `skins`, an encounter entry's, `roster_kinds_line`. The disposition is a
+  SEPARATE table beside it (`GATE_FEROCITY`), which is what "a side-level
+  disposition beside the names" was taken to mean. Hell's animals are
+  simply absent from its half of that table and keep their rows' ferocity;
+  the membership test is `GATE_BRED`.
+- **How the warden blade reaches the Marble Warden.** `make_foe` takes a
+  `display` and a `ferocity` but no weapon, and threading a weapon table
+  alongside `skins` through every spawn path would have cost four
+  signatures. Instead `sites.SKIN_WEAPONS` is keyed by DISPLAY NAME and
+  read in `make_foe`: the name carries the steel. One table, one line, and
+  it generalizes to any future reskin that should drop something of its
+  own.
+- **`TILE_STATE_ENCOUNTERS` forks one level deeper than
+  `STATE_ENCOUNTERS`.** The spec says "keyed by tile state id, entry shape
+  of `STATE_ENCOUNTERS`", but a ring state's content depends on its SIDE
+  (carried in the state's `by`), and the two sides field entirely different
+  things. The table is therefore state id -> side -> entry, and each LEAF
+  is exactly a `STATE_ENCOUNTERS` entry (`_validate_encounter` checks every
+  one at import). A missing side raises rather than answering neutrally.
+- **The pools are written out twice.** `worldsim` cannot import `quests`
+  (quests imports worldsim), so the four gate entries' `kinds` are literal
+  tuples, which is what every other row in that file is anyway.
+  `test_gates.test_the_table_mirrors_the_four_pools` is the pin that keeps
+  the two copies identical.
+- **The four-room curve.** The deepest Site walks four rooms and
+  `quests.ROOM_SHARES` is keyed to the three a generated job can span.
+  Rather than widen `ROOM_SHARES` (which would silently let `forge` build
+  four-encounter jobs), the gate's own curve is `places.RUIN_SHARES = {4:
+  (0.42, 0.54, 0.66, 0.88)}` — the same rising shape and the same
+  ~2-reference-encounter total, one more step. Note that the PAY still
+  clamps at three (`rpg.quest_xp_total` and friends do `min(3, encounters)`),
+  so the deepest Site's fourth room is an extra fight at the same
+  per-encounter share. Left as is: the bottom of a ruin should cost more
+  than it pays, and session 2's boss lands in that room.
+- **`forge_quest` grew `site_keys=`.** The spec says a delve is forged
+  through `forge_quest`, but a ruin's Sites already exist and are authored;
+  forging would have built a second, parallel layout and thrown the
+  authored rooms away. With `site_keys` the call builds nothing and wraps
+  the Sites the world already owns — plus `skins=`, `ferocity=` and `desc=`
+  so the wrapper can carry the gate's dressing. `release_quest_places` is
+  unaffected: it only deletes sites whose id contains `quest-<qid>-`, and a
+  ruin Site's does not.
+- **`align="neutral"`** for a delve. `record_karma` already passes anything
+  but `good`/`dark` straight through, so a delve moves no meter — correct:
+  nobody is wronged by clearing a dead city and nobody is served either.
+- **"a land neighbour in the same country"** for the live-city clause was
+  read as the tile's own CARDINAL neighbours (the `neighbors` list, what
+  `travel` walks), not the Chebyshev-1 eight. The cardinal reading is the
+  stronger one and it is what "neighbour" means everywhere else in
+  places.py.
+- **Concordia's weight** is `×3` when the tile is `plains` AND carries the
+  `farmland` tag — "a colony that feeds itself and walls a plain" read
+  literally, rather than either half alone. It lands on plains in 81% of
+  worlds, so the reading is not too narrow.
+- **`quest["delve"]` carries the Site id**, and `_close_site` branches on
+  it before its `pays_here` ladder: field tranche, no silver, no turn-in,
+  status `done`, and `places.close_ruin_site` on the way out. `tally_lines`
+  has a matching branch so the between-fights display never quotes a
+  turn-in that does not exist.
+- **A delve quest is re-entered, not re-forged.** `site["ruin"]["quest"]`
+  holds the open job, so `delve` on a Site the party walked out of resumes
+  it rather than stacking a second quest on the same rooms.
+- **`look` inside a ruin** lists the six delve places instead of "Sites in
+  reach", but still prints any OTHER known site in the Area underneath: an
+  ordinary posting can legally land a camp in a ruin (the Area carries the
+  tile's terrain and country tags), and it must stay reachable with `go`.
+
+### Two tests were widened rather than weakened
+
+`test_ground.test_the_ground_is_the_same_in_every_campaign` now exempts
+`places.GATE_TAGS` alongside `TRADE_TAGS`: the gate tags are the SEED's
+business exactly as the trade tags are, and `test_gates` asserts the other
+half (the ground words all still hold). `test_wars.war_states` now filters
+out `GATE_STATE_WORDS` — its docstring always said "every state the
+campaign sim has written", and a Tile now carries worldgen's permanent
+rings too. Neither change removes a claim.
+
+### What was deliberately left, and the hooks for it
+
+- **The city tiles are rolled, ringed, tagged and drawn and nothing else.**
+  They still belong to their countries, their census is untouched, and no
+  `capital_tile` moved. Session 4 does the takeover; `world["gates"][k]
+  ["cut_from"]` is the donor it needs and
+  `test_gates.test_the_city_tiles_are_still_ordinary_tiles_of_their_country`
+  is the clause it will delete.
+- **The deepest Sites have no boss.** `RUIN_SITES["candor"][-1]["boss"]` is
+  `None`; naming a `sites.BOSSES` key there is the whole of session 2's
+  wiring on this side — `ruin_site_rosters` appends it to the last room and
+  `site["ruin"]["boss"]` carries it onto the save. The SEAL already reads
+  that field: a cleared deepest Site with no boss alive does not refill and
+  clears the ruin's ring the same day (`places.close_ruin_site`), which is
+  the hook the spec asked to be built now.
+- **No ruin quest templates.** `gate-ruin` is already a tag on both the
+  gate's tile and the ruin Area, so session 2's
+  `QUEST_PLACE_REQUIREMENTS` rows land with no further plumbing; the only
+  thing it must remember is that `domain: "natural"` currently excludes
+  kind `ruin` (`quests._select_quest_area`) and has to be widened to admit
+  it.
+- **No armory entries, no relics.** The bars are named in the ruins' fiction
+  (the deepest Site's fourth room is *the bar*) and are otherwise absent.
+
+### What felt wrong
+
+- **The deepest Site is soft without its boss.** At level 17 the four rooms
+  come out as three trolls and a troll, or four giants; the escalation the
+  room shares describe is there, but nothing in the bottom room reads as a
+  bottom. That is session 2's job and it is the right order — but a world
+  built today will let a level-17 party walk the bar out of Candor against
+  ordinary catalog rows, and that should not be played before session 2
+  lands.
+- **The ring doubles the road AND the camp AND the explore roll**, which
+  compounds harder than it looks: a party that camps twice on ruin ground
+  while working its way up the six Sites is meeting the ruin's own pool at
+  roughly the rate a road fight used to come at. It is the designed effect
+  and the level roll is untouched, but it is the first number to look at if
+  the ring reads as punishing in play.
+- **Umaia gets Heaven's colony in half of all worlds** (benchlog's read).
+  Nothing downstream cares yet; session 4 will.

@@ -306,6 +306,18 @@ GIANTKIN_POOL = ("ogre", "troll", "giant")
 SPIDER_POOL = ("great spider",)
 DRAKE_POOL = ("wyvern", "drake", "dragon")
 
+# THE GATE POOLS (2026-09-12, the gates arc): what comes out of the two ruins
+# and what stands in the two gate cities. Heaven's things are MADE, so its
+# ruin is the undead rows and the giant-kin wearing marble; Hell's are BRED,
+# so its ruin is the beasts. The two CITY pools are the same list twice on
+# purpose -- a garrison is a garrison, and what differs is the name over it
+# (`sites.GATE_SKINS`). The stranded angel of Candor's fifth site is a
+# `champion` placed by that site's authored roster, never out of the pool.
+HEAVEN_RUIN_POOL = UNDEAD_POOL + GIANTKIN_POOL
+HEAVEN_CITY_POOL = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
+HELL_RUIN_POOL = WOLF_POOL + BEAST_POOL + GIANTKIN_POOL + DRAKE_POOL
+HELL_CITY_POOL = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
+
 # KEYED BY CULTURE (2026-08-21, the nine): nine countries share four card
 # packets and four quest tables. What a country owns is its names, its
 # capital and its tongue; what a culture owns is the work its people post.
@@ -1215,7 +1227,11 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
 def forge_quest(world: dict, qid: str, level: int, places: int,
                 encounters: int, pool: tuple[str, ...], name: str,
                 rng: random.Random, area_key: str = "",
-                align: str = "good", proof: str = "") -> dict:
+                align: str = "good", proof: str = "",
+                site_keys: tuple[str, ...] = (),
+                skins: dict | None = None,
+                ferocity: dict | None = None,
+                desc: str = "(DM-forged)") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
@@ -1224,7 +1240,32 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
     site's roster must be dead before the job is done (2026-08-08).
 
     The shape is (places, encounters) since 2026-07-26 -- the same two
-    numbers a generated quest carries."""
+    numbers a generated quest carries.
+
+    `site_keys` forges over Sites THE WORLD ALREADY OWNS (2026-09-12, the
+    gates arc's `delve`): a ruin's authored rooms are the job, so nothing is
+    built and nothing is rolled -- the quest is the wrapper that lets the
+    ordinary room walk, the encounter XP and the loot run over them.
+    `skins` and `ferocity` dress the rosters (`sites.GATE_SKINS`)."""
+    if site_keys:
+        rooms_each = [len(world["sites"][key]["rooms"]) for key in site_keys]
+        quest = {"id": qid, "name": name, "desc": desc,
+                 "origin": area_key, "level": level,
+                 "skins": dict(skins or {}),
+                 "ferocity": dict(ferocity or {}),
+                 "sites": list(site_keys), "site_count": len(site_keys),
+                 "encounters": sum(rooms_each),
+                 "xp_total": quest_xp_total(level, sum(rooms_each)),
+                 "silver_total": 0,     # nobody pays for a delve: the ruin
+                                        # pays in what is lying in it
+                 "next": {"site": 0, "room": 0},
+                 "forced": True,
+                 "status": "open", "align": align, "epilogue": ""}
+        for key in site_keys:
+            site = world["sites"][key]
+            if qid not in site["quest_ids"]:
+                site["quest_ids"].append(qid)
+        return quest
     # Forge pins the shape, so build its world-owned places directly instead
     # of asking build_quest to roll and then discarding a second layout.
     places = max(1, places)
@@ -1248,9 +1289,10 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
             new_room(world, site_id, f"{site_id}/{slug_name(rn)}", rn,
                      kinds, quest=qid)
         site_ids.append(site_id)
-    quest = {"id": qid, "name": name, "desc": "(DM-forged)",
+    quest = {"id": qid, "name": name, "desc": desc,
              "origin": area_key, "level": level,
-             "skins": {}, "sites": site_ids, "site_count": places,
+             "skins": dict(skins or {}), "ferocity": dict(ferocity or {}),
+             "sites": site_ids, "site_count": places,
              "encounters": encounters,
              "xp_total": quest_xp_total(level, encounters),
              "silver_total": quest_silver(level, encounters),

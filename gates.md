@@ -54,180 +54,19 @@ Written down so they stay settled:
 
 ---
 
-## 1. The timeline (three dates, nothing else)
+> **Sections 1-3, 5, the ruin half of 6, 7 and 8 are CUT** (2026-09-12,
+> session 1 shipped). Where they went: the setting (the timeline, the two
+> powers and their axes, the pagan coding, the stranded, the tongue) and
+> the sites, the rings, the ruins-as-dungeons, `delve` and the foe tables
+> are **rules.md's `Heaven & Hell - Add-on, part 1`**; the table manner is
+> **dm.md's "The gates"**; the two name-sound rows and the
+> one-tongue-two-registers note are **writing.md's "The nine name sounds"**;
+> the code pointers are **develop.md's dev map**, the placement numbers
+> **benchlog.md's 2026-09-12 entry**, and the build record (with every
+> [build settles] call) **designlog.md's 2026-09-12 (A)**. Section 4 (Tom)
+> is kept whole because session 2 builds the two bars and Tom's stone out
+> of it. What remains below is sessions 2-5.
 
-| when | what |
-|---|---|
-| 1027 years ago | **The Closing.** Tom bars both gates. The two gate cities, Candor and Libera, die within a generation. The people of either side caught on this side of their gate are stranded; they go native. |
-| 27 years ago | **The Return.** Two new gates open, in new places. Both powers come through and build. Each has had 27 years: a walled city, a first generation of half-blood children now grown. |
-| now | Two young colonies, two old ruins, a first generation of new-blood Nephilim exactly the age of a level 1 character. |
-
-Nobody knows why the gates closed or why they reopened, and the game does
-not tell. The Church counts its years from the Closing: this is **the
-year 1027**. That is the only date the game ever prints, and only on the
-lore page.
-
-## 2. The two powers
-
-They are foreign worlds, not afterlives. Two civilizations from beyond
-two doors, opposed to each other for longer than either remembers, each
-of which wants this world and each of which calls the other the enemy.
-The human words for them are **Heaven** and **Hell**, and the game uses
-those words without apology (writing.md: familiar words are strengths).
-Neither is good. Neither is evil. Each holds both.
-
-### Heaven — order, purity, conventional beauty
-
-A hierarchy that heals, walls, tidies, teaches, and takes the strange
-child away. White stone, glass, geometry, choirs, gold, lamps that do not
-burn. Its people are **angels**: tall, luminous, winged, and beautiful in
-the way a cathedral is beautiful. They do not age. They bind with **law**,
-and their law applies to everyone equally, which is both its kindness and
-its cruelty. Their servants are **made**: marble servants, wardens,
-colossi — the parked "robot servants" item is closed by this (a construct
-is Heaven's technology, mundane to them, magical to us).
-
-- Its virtue: protection, healing, honesty, beauty, the poor fed and the
-  roads safe.
-- Its vice: contempt, coldness, the register, the removal, order at any
-  price.
-- **Its inner axis: THE GARDENERS against THE PRUNERS.** The Gardeners
-  want humans raised up: schools, healers, clean water, the child with
-  the gift taught. The Pruners want the world made pure: the register of
-  the half-blood, the removal, the strange child taken, the wild talent
-  put out. Both are angels; both are Heaven; the Prefect balances them.
-
-What Heaven does to a village under its hand: the well is clean, the
-granary is full, the wall is new, the tavern is shut, the strange child is
-gone.
-
-### Hell — freedom, wildness, appetite
-
-Free companies that cancel debts, hang the lord, hold a feast every week,
-open the cages and leave the fields untended. Fire, wine, horn, hoof,
-hound, night. Its people are **demons**: horned, handsome in a rough way,
-some goat-legged (**fauns** is the plain word for those), some tailed,
-all warm to the touch. They do not age either. They bind with the
-**personal oath and the personal debt**: a bargain is sacred to Hell in a
-way no law is, which is why a demon keeps a promise it hates and breaks a
-statute without noticing. Their servants are **bred**: hounds, boars,
-drakes, things that hunt and things that regenerate — Hell's technology
-is the living kind.
-
-- Its virtue: liberation, joy, courage, honesty of appetite, the debt torn
-  up, the slave loosed.
-- Its vice: consumption, cruelty for the joke of it, the feast that eats
-  its guests, envy.
-- **Its inner axis: THE FEAST against THE HUNGER.** The Feast wants
-  humans set loose: debts cancelled, serfs freed, cages opened, a
-  festival that is genuinely for everyone. The Hunger wants humans
-  consumed: appetite without limit, the bargain that takes a year of
-  life, the village drunk into ruin and owned by the morning. Both are
-  demons; both are Hell; the Lord of Misrule balances them.
-
-What Hell does to a village under its hand: the lord is hanged, the debt
-book is burned, there is a feast every week, the fields are untended, and
-somebody owes somebody a year.
-
-### The pagan coding, taken all the way [decided]
-
-Both human religions descend from the gate era, and neither knows it.
-
-- **The Sun communion is what the memory of Candor became.** The Church's
-  Latin is Heaven's tongue as humans learned it a thousand years ago and
-  kept in the schools. The Church's angels are Heaven's people
-  remembered; its cosmology (a heaven above, a hell below) is two cities
-  remembered as two directions. Saint Tom is its founding saint.
-- **The old gods of the north are what the memory of Libera became.**
-  Thule's grove, the horned figures on its stones, the feast-days that
-  turn the year upside down, Tergal's dark shaman and the practice — all
-  of it is Hell's first city remembered by people who no longer know
-  what they are remembering. Thule's old gods have a Tom too: a smith who
-  forged the bar.
-- The returned powers know this and the human churches do not. Heaven
-  regards the Church as its own child gone strange; Hell regards the
-  grove as its own, gone quiet.
-- **What the Church makes of the Return** is rolled by placement (section
-  5): the crown whose rite HOSTS Heaven's city says the god's own country
-  has come back; the other rite says it is an invasion wearing the god's
-  face. That question is one new card in the joint synod deck.
-- **What the pagans make of it**: where Hell's city lands in Thule or
-  Tergal, the grove or the shamans know their own ("the horned ones have
-  come back") and Hell has friends. Where it lands in a Sun-communion land
-  of the north, the Church there faces it with a crusade tension.
-
-### The stranded
-
-Angels and demons caught on this side at the Closing. They do not age, so
-some are alive, a thousand years native: a hermit in the hills who is an
-angel and has forgotten how to fly; an old woman in a fen village who has
-run the same feast for forty generations. They are **few, named once and
-kept** (the wild-talent rule). Both returned powers count the stranded
-as deserters or as saints depending on the faction talking. The old-blood
-Nephilim lines descend from them.
-
-## 3. The names
-
-### The tongue
-
-One language, two registers. On the sheet:
-
-- **Heaven speaks Latin.** Its high register is the church's Latin,
-  because the church's Latin came from it. A Latin speaker understands an
-  angel, and every party member speaks Latin (rules.md, the tongues), so
-  Heaven's city is never a soft-lock.
-- **Hell speaks the Old Tongue.** The old register, older than Latin,
-  rougher. On the SPEAKS line it is `Old Tongue`. A Latin speaker follows
-  it with difficulty; dm.md's table rule says so and nothing in the engine
-  checks it. Demons of rank also speak Latin, badly and on purpose.
-
-### The name sounds (two new rows for writing.md's table)
-
-Invented sounds, not claims about any real language. ASCII only.
-
-| power | place sound | example places | person sound | example people |
-|---|---|---|---|---|
-| Heaven | Latin abstractions of order and light: Concordia, Claritas, Candor; districts and works take -arium, -orium | Concordia, Candor, Lucidarium, Ordinatorium | Hebrew-shaped, ending -el or -iel, roots meaning light, law, measure, truth | Oriel, Zohariel, Dinael, Emetiel; Orah, Zohara, Tohara, Noga |
-| Hell | older Italic, the shapes under Latin: -a, -os, -om, kept hard; roots of feast, free, wild, wine, wolf, night | Saturna, Libera, Ferwos, Silwa, Noktia | Hebrew-shaped, NO -el ever, a bare root and a hard ending, and at the table an epithet after it | Lahav, Saar, Dror, Resheph, Zaam; Simcha, Taava, Dama, Chaga |
-
-The person-name rule is the mood carrier. Heaven's names are BOUND: every
-one ends in the suffix that means "of the Law". Hell's names are
-UNBOUND: no suffix, and a demon of any standing carries an epithet
-earned, not given — Saar Nine-Debts, Lahav the Cup, Dror Who Opened
-the Kennels. The epithet is Hell's answer to Heaven's rank. The existing
-Hell reskin names (Chain-Devil, Spite-Imp, Pit Bully) are already in this
-register and stay.
-
-**Name pools** [build settles the full lists; these are the seed].
-
-Heaven, people, 16 each:
-- m: Oriel, Zohariel, Dinael, Emetiel, Yashariel, Barakiel, Kavodiel,
-  Hodiel, Netzachel, Tikuniel, Ruachiel, Tohariel, Sedekiel, Nogahel,
-  Amitiel, Gevuriel
-- f: Orah, Zohara, Tohara, Noga, Emeta, Shalomit, Tzedeka, Hodaya,
-  Netzacha, Yashara, Dinah, Baraka, Kavoda, Tikuna, Ruacha, Gevura
-
-Hell, people, 16 each:
-- m: Lahav, Saar, Dror, Resheph, Zaam, Raam, Peret, Chagai, Esh, Yayin,
-  Shikor, Basar, Lehav, Tzachok, Dam, Chofesh
-- f: Simcha, Taava, Dama, Chaga, Lahava, Saara, Drora, Zaama, Rina,
-  Esha, Yayina, Basra, Tzachoka, Chofsha, Rama, Peretza
-
-Places (the cities are fixed names; the pools serve districts, works,
-gates and the ruins' sites):
-- Heaven: Concordia (the live city), Candor (the ruin), and for sites:
-  Lucidarium, Ordinatorium, Claritas, Serenitas, Mensura, Puritas,
-  Candelabrum, Speculum
-- Hell: Saturna (the live city), Libera (the ruin), and for sites:
-  Ferwos, Silwa, Noktia, Winom, Lupos, Fawnos, Dwenos, Kaldom
-
-### Titles
-
-- Heaven's ruler is **the Prefect** (of Concordia); the garrison
-  commander is **the Warden of the Gate**.
-- Hell's ruler is **the Lord of Misrule** (of Saturna), elected at the
-  feast for a year and a day; the garrison commander is **the Master of
-  Hounds**.
 
 ## 4. Tom
 
@@ -268,106 +107,20 @@ Where Tom exists in the game (keep lore local and actionable):
 - **One fact line per culture** on the lore page (the table above, in
   the culture's own words).
 
-## 5. The four sites and where they roll
+## 6. The gate layer: the CITY half (session 4)
 
-Four rolled sites, all at worldgen, all stored on the world record. Two
-belong to Heaven (the ruin Candor and the live city Concordia), two to
-Hell (the ruin Libera and the live city Saturna).
+Session 1 shipped `places.roll_gates(world)` -- the roll, `world["gates"]`,
+all four rings, the tile tags and the two ruins (see rules.md's Heaven &
+Hell add-on and develop.md's dev map for what exists). What it
+deliberately did NOT do is the city tiles' TAKEOVER. The city tiles today
+are ordinary tiles of their countries wearing a ring, two tags, a record
+entry and the map glyph `G`. This is what session 4 adds on top.
 
-**The sets** [decided, designer's list]:
-
-- **South (Heaven's two)**: Byzantium, Seraptania, Umaia, Andalusia.
-- **North (Hell's two)**: Phyrascia, Teutonia, Thule, Vellisclavia,
-  Tergal.
-
-**The eligibility rule** for a candidate tile:
-
-1. land, in a country of the right set;
-2. not a historical-city tile (`HISTORICAL_BY_TILE`), not a capital, and
-   not adjacent (Chebyshev distance 1) to a capital tile;
-3. not a marked mine tile;
-4. terrain and climate preference by site (below);
-5. **Chebyshev distance >= 4 from each of the other three** (at least
-   three clear tiles between any two) [decided: the designer said 3–4,
-   the design takes 4 so two sites never share a neighbour ring];
-6. a live city's tile must have at least one land neighbour in the same
-   country it is cut from (the enclave is cut out of a country, and that
-   country must remain its neighbour so the relations row means
-   something).
-
-**Terrain and climate preference**, applied as a weighted draw over the
-eligible set, never as a hard filter (a hard filter with a small set
-would make placement predictable):
-
-| site | prefers | weight | why |
-|---|---|---|---|
-| Candor (Heaven's ruin) | mountain or hills | ×4 | a white city on high ground; the Alps, the Pyrenees, the Balkans |
-| Concordia (Heaven's city) | plains, farmland tag | ×3 | a colony that feeds itself and walls a plain |
-| Libera (Hell's ruin) | marsh, deep forest cover, or hills | ×4 | the wild city; the Fens, the wildwood |
-| Saturna (Hell's city) | plains or hills with the forest tag; taiga or continental climate | ×2 | a feast-city at the edge of the wood |
-
-The roll order is Candor, Libera, Concordia, Saturna, each drawn off the
-world seed's derived child seed (`places.child_seed`-style, the
-established habit), each removing its exclusion ring from the next
-draw. If any draw finds an empty set, the layer raises: with 4/5
-countries a side and a 4-tile ring this cannot happen on the authored
-map, and a raise is the correct answer if a later map edit makes it
-possible (develop.md: never soften a reader).
-
-**What each site does to its tile:**
-
-- **A ruin** is an Area on the tile, named `Candor (ruin)` / `Libera
-  (ruin)`, of place kind `ruin`, added to the tile's Area list beside the
-  natural inventory. The tile keeps its country, its census and its
-  board: people live beside ruins. The ruin Area carries the authored
-  Site list of section 7, materialized lazily like every other Site.
-- **A live city takes the tile.** The tile's country becomes the city
-  state (`concordia` / `saturna`); its settlement census is replaced by
-  ONE slot of tier `city` wearing the authored name; the country it was
-  cut from loses the tile. The city is its country's capital. The tile's
-  ground, climate, harvest and goods are untouched: Concordia stands on
-  whatever plain it took.
-- **The ring.** Every tile within Chebyshev distance 1 of a ruin carries
-  the permanent state `gate-ruin` (with the side as its `by` word,
-  `heaven` or `hell`). Every tile within distance 1 of a live city
-  carries `gate-city` likewise. Both are ordinary place states (dated,
-  visible, printed by `tile` and the map block), never expiring.
-
-**Map marks.** The two ruins draw as `R` on the map grid, the two cities
-as `G` (a gate), in the settlement-glyph position (the `C`/`T`/`v` slot); the legend lists all four
-under their own heading, GATES, with the coordinate and the side. The
-`tile` brief and `look` lead with the site when standing on it.
-
-## 6. The gate layer (worldgen)
-
-A new worldgen layer, `places.roll_gates(world)`, slotted in
-`create_geography` **between the natural-Area loop and `roll_census`**
-(today places.py:2614–2619): it needs terrain, climate and country per
-tile and must run before the census and before quest posting. It rolls
-the four sites of section 5 off the child seed `stable_seed(seed,
-"world", "gates", 0)`, and writes:
-
-- `world["gates"]` — the record the whole arc reads:
-  ```
-  {"candor":    {"side": "heaven", "kind": "ruin", "tile": tid, "keeper": "byzantium"},
-   "libera":    {"side": "hell",   "kind": "ruin", "tile": tid, "keeper": "thule"},
-   "concordia": {"side": "heaven", "kind": "city", "tile": tid, "cut_from": "seraptania"},
-   "saturna":   {"side": "hell",   "kind": "city", "tile": tid, "cut_from": "teutonia"}}
-  ```
-  `keeper` is the human country whose tile holds the ruin; `cut_from` is
-  the human country the city's tile was taken out of.
-- For each **city**: `tile["country"]` re-homed to the city state; the
-  tile moved from the donor land's `tiles` list to the city state's; the
-  land record's `capital_tile` set (see the validator note); the census
-  will then seat the city (below).
-- For each **ruin**: a ruin Area on the tile (section 7).
-- The **rings**: `add_state(world, tile, "gate-ruin", day=0)` on the ruin
-  tile and its eight neighbours (land tiles only), with `state["by"] =
-  side`; `add_state(world, tile, "gate-city", day=0)` likewise around each
-  city. Ordinary `_fact` records; `since` 0; never cleared.
-- Tile tags: the ruin tile gains `gate-ruin` and `<side>-ruin`; the city
-  tile gains `gate-city` and `<side>-city`. Natural Areas inherit tile
-  tags verbatim, which is how the quest placement finds them.
+**The takeover.** For each **city** in `world["gates"]`: `tile["country"]`
+re-homed to the city state; the tile moved from the donor land's `tiles`
+list to the city state's; the land record's `capital_tile` set (see the
+validator note); the census then seats the city (below). `cut_from` on the
+record already names the donor.
 
 **The census and the city.** `roll_census` treats a gate-city tile like
 an authored historical tile: ONE slot, tier `city`, `name` the authored
@@ -389,12 +142,16 @@ taught the gates, and the fix is one shape:
   each, of the right set.
 - **The capital tile becomes a per-world land fact.** `CAPITAL_TILES` is
   a module constant today, consumed by `worldsim.capital_tile` for the
-  sky read. It becomes `land["capital_tile"]`, set for the nine from
+  sky read AND by `places.gate_candidates` for the no-capital clause. It
+  becomes `land["capital_tile"]`, set for the nine from
   `HISTORICAL_CITIES` and for the two from the roll; `worldsim.capital_tile`
   reads the land record. The "nine capitals named explicitly" check in
   `_validate_fixed_data` stays about the nine.
 - `quests.generate_world`'s `capital = next(s for s in setts if
   s.get("capital"))` works unchanged once the city slot is `capital`.
+- `places._validate_gates` (session 1's clause) will need its city half
+  widened the same way: it checks the placement rule, and after the
+  takeover a city tile's `country` is no longer its `cut_from`.
 
 **Homelands.** `people.HOMELANDS` (the birth roll for the PC, companions
 and recruits) becomes `HUMAN_HOMELANDS`: the nine. Nobody is *born* in
@@ -411,154 +168,6 @@ clause relaxes to "every tier the country can seat", and each city state
 authors one `city` name and nothing else. [decided: relax the clause,
 don't author districts nobody will see.]
 
-**Bench.** `bench_worldgen.py` gains a gates section: over 200 seeds,
-every site lands in its set, the four pairwise Chebyshev distances are
->= 4, no site is on or beside a capital, and the terrain preference
-shows in the histogram (Candor on hills/mountains in most worlds, Libera
-on marsh/deep-forest/hills in most). Numbers to benchlog.
-
-## 7. The ruins as dungeons
-
-Each ruin is an Area of kind `ruin` (a third kind beside `settlement`
-and `natural`), subtype `ruined city`, `known=True` (famous), tags
-`(ruin, ruined city, gate-ruin, <side>-ruin, <terrain>, <country>)`. It
-sits beside the tile's natural Area and settlements; `look` lists it
-under "Also on this Tile", `go` walks to it for free.
-
-**Its Sites are authored, materialized AT WORLDGEN, and listed like a
-dungeon's rooms** — the player sees six named places with their levels,
-which is the ttrpg dungeon in this engine's shape. Each Site has an
-authored level, an authored room list (three rooms; the deepest site
-four), and rosters built by `build_site_rooms(level, n, pool, rng,
-roles)` off the ruin's pool at worldgen, so they are deterministic per
-seed and re-rollable on refill. The quest length rule (1–3 encounters a
-job) is respected because a Site IS the unit: one Site is one job's worth.
-
-**Candor (Heaven's ruin)** — pool: the constructs (`HEAVEN_RUIN_POOL`,
-section 8), plus a stranded angel at the deep end.
-
-| # | site | level | rooms | what is there |
-|---|---|---|---|---|
-| 1 | THE OUTER TERRACES | 2 | fallen stair, statue yard, broken gate | broken servants; the white stone starts here |
-| 2 | THE CHOIR HALL | 5 | the nave, the loft, the vestry | hunting servants; the hall still hums |
-| 3 | THE GLASS GARDEN | 8 | the walk, the lamp house, the pool | a marble warden; lamps that still burn |
-| 4 | THE MEASURING HOUSE | 11 | the scale room, the archive, the vault | marble porters; the register of a thousand years ago |
-| 5 | THE PREFECTURE | 14 | the court, the cells, the roof | a marble colossus; a stranded angel keeps the cells |
-| 6 | THE GATE PLAZA | 17 | the approach, the ring, the gate, the bar | the Sentinel of Candor and the Candor bar |
-
-**Libera (Hell's ruin)** — pool: the bred things (`HELL_RUIN_POOL`).
-
-| # | site | level | rooms | what is there |
-|---|---|---|---|---|
-| 1 | THE FALLEN FEAST-HALL | 2 | the long table, the kitchens, the cellar | hell hounds; the table is still laid |
-| 2 | THE VINE PITS | 5 | the terraces, the press, the vats | feast boars, revelers gone wild |
-| 3 | THE KENNELS | 8 | the runs, the whelping room, the master's house | black hounds; an ember troll sleeps here |
-| 4 | THE WILD MARKET | 11 | the stalls, the cages, the counting house | horned brutes; every debt of a thousand years ago |
-| 5 | THE HUNT LODGE | 14 | the yard, the trophy hall, the roof | a horned giant; an ash wyvern nests on the roof |
-| 6 | THE GATE HOLLOW | 17 | the descent, the ring, the gate, the bar | the Old Host of Libera and the Libera bar |
-
-Levels 2/5/8/11/14/17 [decided]: the whole ladder in six steps, three
-apart, so a start at any level finds a site within two levels of it.
-
-**Entering a site: `delve`.** A new command, `delve SITE` (a known Site of
-the ruin the party stands in), opens it without a giver: it forges a
-quest on the spot through `quests.forge_quest` (`"forced": True`, no
-board slot, no radius, no giver, `align` neutral) over the Site's
-authored rooms, and the ordinary room walk, fights, encounter XP and
-loot follow. Clearing pays the FIELD tranche of a job at that level and
-no turn-in (there is nobody to turn it in to). A cleared Site **refills**
-after `RUIN_REFILL_DAYS` = 30: the ring feeds it. The deepest Site does
-NOT refill once its boss is dead: the bar is gone and the ring goes quiet
-(the ruin's `gate-ruin` states are cleared on the day; the world changed).
-
-**Jobs that point in.** The neighbouring boards post work into the ruins
-through the ordinary placement (tag `gate-ruin` on the ruin Area; the
-three-day radius holds, so only settlements near a ruin post ruin jobs —
-which is the "increased activity around" felt on the board). Templates
-(section 9) name a Site by stem and reuse it (`reuse: "prefer"`), so a
-ruin job is one of the six Sites with a giver and a turn-in on top.
-
-## 8. The foes
-
-Doctrine unchanged (rules.md, the bestiary): display name is fiction,
-the stat row is mechanics, balance never forks on a skin. Two skin tables
-in `sites.py`, `GATE_SKINS = {"heaven": {...}, "hell": {...}}`, in the
-exact shape of karma's `HELL_SKINS`, and pools in `quests.py` beside the
-others.
-
-**The asymmetry [decided]:** Heaven's things are MADE, Hell's are BRED.
-Heaven reskins the undead and the giant-kin as constructs; Hell reskins
-the wolves, beasts, giant-kin and drakes as its animals. Both reskin the
-ladder and the casters as their people, and both use the bandit rows as
-the HUMANS who follow them.
-
-| row (level) | Heaven | Hell |
-|---|---|---|
-| cutthroat (1) | Convert | Reveler |
-| archer (1) | Pilgrim Bow | Wild Bow |
-| bruiser (2) | Lay Brother | Wild Man |
-| soldier (3) | Warden | Free Blade |
-| veteran (6) | Sword Angel | Faun Blade |
-| champion (10) | Choir Captain | Horned Captain |
-| blademaster (15) | Angel of the Gate | Duke of the Feast |
-| warlord (19) | Archangel | Prince of Hell |
-| hexer (3) | Voice of Measure | Ice Demon |
-| pyromancer (6) | Flame Angel | Fire Demon |
-| magus (10) | Angel of Judgement | Demon of Bargains |
-| skeleton (2) | Broken Servant | — |
-| ghoul (4) | Hunting Servant | — |
-| wight (8) | Marble Warden | — |
-| ogre (5) | Marble Porter | Horned Brute |
-| troll (8) | Marble Mender | Ember Troll |
-| giant (12) | Marble Colossus | Horned Giant |
-| wolf (1) | — | Hell Hound |
-| dire wolf (3) | — | Black Hound |
-| boar (2) | — | Feast Boar |
-| bear (4) | — | Pit Bear |
-| wyvern (10) | — | Ash Wyvern |
-| drake (14) | — | Hell Drake |
-| dragon (18) | — | Hell Dragon |
-
-The Ice Demon and Fire Demon names already exist in karma's hellgate
-card and are kept. The Marble Warden drops the wight's barrow blade under
-its own fixed name, `warden blade` [build settles: a second fixed Weapon
-in `WEAPON_INDEX`, same numbers].
-
-**Pools:**
-
-- `HEAVEN_RUIN_POOL` = UNDEAD_POOL + GIANTKIN_POOL (constructs only; the
-  stranded angel of site 5 is a `champion` placed by the site's authored
-  roster, not the pool)
-- `HEAVEN_CITY_POOL` = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
-- `HELL_RUIN_POOL` = WOLF_POOL + BEAST_POOL + GIANTKIN_POOL + DRAKE_POOL
-- `HELL_CITY_POOL` = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
-
-**Disposition [decided, no new mechanics]:** the mercy class carries the
-theme. Heaven's people and constructs spawn `FEROCITY_RELENTLESS` (the
-Law does not spare); Hell's people spawn `FEROCITY_TAKES_SPOILS` (Hell
-robs you, laughs, and leaves you alive, which is on theme) and its
-animals keep their rows' `FEROCITY_BREAKS`. The per-spawn `ferocity=`
-override on `make_foe` does it; the skin tables carry a side-level
-disposition beside the names.
-
-**The ring's encounters.** Two small engine changes, both in
-`session.wild_event`:
-
-1. **A tile-level encounter table.** `worldsim.TILE_STATE_ENCOUNTERS`,
-   keyed by tile state id, in the entry shape of `STATE_ENCOUNTERS`
-   (`kinds`, `where`, `as`, `skins`, `chance`). `wild_event` reads the
-   party's tile's active states through it beside the land-level
-   `local_encounter`, and a tile entry outranks a land entry (the ground
-   is more local than the country). `gate-ruin` maps to the side's ruin
-   pool and skins, `where: any`, chance 0.6, `as` "something out of the
-   ruin"; `gate-city` maps to the side's city pool, `where: road`,
-   chance 0.35, `as` "a patrol out of Concordia" / "revelers out of
-   Saturna". Level is still the road's own roll: the ring changes WHO.
-2. **The danger ring.** `STATE_DANGER = {"gate-ruin": 2.0}`: the arrival
-   tile's states multiply the per-day encounter chance in `_road_roll`,
-   and the explore and camp chances on that tile. The wild level roll is
-   untouched (the contract: the ring makes fights more frequent, not
-   harder). `gate-city` carries no multiplier.
 
 ## 9. The two sentinels (the bosses)
 
@@ -869,16 +478,18 @@ contract in plan.md pointing here; each ends with the standard paperwork
 (rules.md add-on, dm.md, develop.md, benchlog, designlog, the plan entry
 deleted, the section here CUT).
 
+**Session 1, the four sites on the map, SHIPPED 2026-09-12** (designlog
+2026-09-12 (A)); its sections are cut from this file. Four remain.
+
 | # | session | ships | this file's sections |
 |---|---|---|---|
-| 1 | **The four sites on the map** | `roll_gates` rolling all four TILES and stamping all four rings (the city tiles' takeover waits for session 4), `world["gates"]`, the two ruin Areas with their six Sites each, the rings, the skin tables and pools, the tile encounter table and the danger ring, `delve` and the refill, the map marks and legend, the `tile`/`look` lines, bench_worldgen's gates section, rules.md's Heaven & Hell add-on part 1 (setting + ruins), dm.md's section, writing.md's two name rows and the tongue | 1–3 (setting), 5, 6 (the ruin half), 7, 8 |
 | 2 | **The two sentinels and the ruin jobs** | `sites.BOSSES`, `make_foe` reading it, the two bosses, the two bars in the armory, bench_bestiary's `--bosses` pass, the ruin quest templates on every culture's table (section 9's templates, `QUEST_PLACE_REQUIREMENTS` rows on `gate-ruin`), Tom's stone site | 4 (the relics), 9, the templates of section 14 |
 | 3 | **The Nephilim** | `Entity.blood`, the rolls, `--blood`, the floors and the two fields, the sheet line, `TRAIT_NOTES`, dm.md's Nephilim paragraph, `test_start` coverage | 12 |
 | 4 | **The two city states** | catalog v4, the city half of `roll_gates` (tile takeover, census, capital_tile as a land fact, the validators), name pools, `RULER_TITLES`/`DEFENDER_ROLES`, `HUMAN_HOMELANDS`, the `gate_city` templates and their menus, the two culture quest tables (section 14), a STUB packet each (the validator's minimum: four constitutions, two tensions, one card a track, one fact, one relation) | 6 (the city half), 10, the minimum of 11 |
 | 5 | **The packets and the human side** | the full two packets, the state words, menus and encounters, the HOST-resolved relations, the synod card, the four culture facts, the host facts, the crusade tension and card, the pact pointer line, the lore pages | 11 in full |
 
-Session 1 is the biggest and is the one that makes the arc PLAYABLE:
-after it a new world has two ruins to walk into at any level. Sessions
+Session 1 was the biggest and is what made the arc PLAYABLE: a new world
+now has two ruins to walk into at any level. Sessions
 2 and 3 are additive and small. Session 4 is the one that touches
 validators and the country machinery and must leave the world booting
 with eleven lands; its packet stubs exist only so the validator passes,
