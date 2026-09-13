@@ -2102,7 +2102,9 @@ a pointer: what the file is, how it's run, where its docs are.
   charged twice), `discover_area` is gone from `explore` (which now works
   the current Tile's own countryside, walking out of a settlement for
   free), `cmd_go` gained the sibling-Area step, `cmd_look` leads with the
-  TILE and prints the four roads out with their day costs, `_cast_teleport`
+  TILE -- behind the gate line, where there is one (2026-09-13), as the
+  `tile` brief always has -- and prints the four roads out with their day
+  costs, `_cast_teleport`
   charges `places.path_days` (and finally matches a settlement by NAME
   again — the tile-scoped Area keys had broken the old key-substring
   match), and the hell-task road estimate in `cmd_take` reads the same
@@ -2118,12 +2120,18 @@ a pointer: what the file is, how it's run, where its docs are.
   **THE DELVE** (2026-09-12, the gates arc's session 1): `cmd_delve` and
   `ruin_site_lines` (the ruin's six places, their levels and whether
   anything is in them), the delve branch in `_close_site` -- the FIELD
-  tranche, no turn-in, `places.close_ruin_site` on the way out -- and its
-  line in `tally_lines`; `tile_danger(state)` multiplying `_road_roll`,
+  tranche, no turn-in, `places.close_ruin_site` on the way out, and since
+  2026-09-13 the taken-list removal, since a delve has no turn-in to come
+  off it at -- and its line in `tally_lines`; the refill inside `cmd_delve`
+  dropping the party's own `state["rooms"]` records for that Site (they
+  outrank the ring's fresh roster in `reclaim_room`) and `cmd_go` refusing
+  a Site that carries a `ruin` record and naming `delve` instead;
+  `tile_danger(state)` multiplying `_road_roll`,
   `cmd_explore` and `cmd_camp`; the tile-first lookup in `wild_event` with
   `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
-  and the stored sighting; the gate line and the dungeon list in
-  `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark legend.
+  and the stored sighting; the gate line (which LEADS the page) and the
+  dungeon list in `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark
+  legend.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -2340,7 +2348,9 @@ mechanic *does* and *why* is rules.md's job.
   `QUEST_ENCOUNTER_SHARE` / `QUEST_TURNIN_SHARE` — this is the GAME's pay,
   split three ways since 2026-08-08 (encounters / field / turn-in), and
   `quest_clear_xp` is the REMAINDER so the three always sum to
-  `quest_xp_total` exactly — and the site-FIXTURE
+  `quest_xp_total` exactly; `ENCOUNTER_MULT` and all five readers run 1-4
+  since 2026-09-13, where 4 is the gate ruin's deepest Site and nothing
+  else (a POSTING is still 1-3 -- `quests.ROOM_SHARES` is the proof) — and the site-FIXTURE
   ladder `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_silver` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `SILVER_PER_SITE_LEVEL` knobs, which now serves only
@@ -2876,7 +2886,9 @@ mechanic *does* and *why* is rules.md's job.
   WEIGHTS and never filters), `GATE_KEYS` / `GATE_BY_KEY` / `GATE_TAGS`,
   `RUIN_SITES` (the two authored six-Site dungeons; the deepest Site's
   `boss` is None and is the slot session 2 names a `sites.BOSSES` key in)
-  with `RUIN_SHARES` for its four-room curve, `RUIN_REFILL_DAYS` (30),
+  with `RUIN_SHARES` for its four-room curve -- rescaled 2026-09-13 to the
+  2.10 `ROOM_SHARES[3]` spends, against an `ENCOUNTER_MULT` that now has an
+  honest 4 -- `RUIN_REFILL_DAYS` (30),
   `SIDE_WORDS` / `GATE_STATE_WORDS` / `GATE_WORDS` / `RUIN_LINES`, and
   behind them `roll_gates(world)` — called between the natural-Area loop
   and `roll_census` — with `gate_candidates` / `gate_ring` / `_ruin_area` /
@@ -2884,7 +2896,14 @@ mechanic *does* and *why* is rules.md's job.
   `gate_line` / `gate_glyph` / `gate_legend_lines` / `ruin_area` /
   `ruin_sites` / `ruin_site_state` / `refill_ruin_site` /
   `close_ruin_site`, and `_validate_gates` is the new `validate_world`
-  clause that re-checks the whole placement rule on every world.
+  clause that re-checks the whole placement rule on every world. Three
+  2026-09-13 corrections live in the same section: `_city_takeover` calls
+  `_refresh_border` on the taken tile and its neighbours (the `border` tag
+  is written one pass BEFORE the gates roll, and the natural Area holds a
+  copy of it), `refill_ruin_site` clears the Site's `routed` mark, and the
+  gate record carries `sealed_day` -- None until `close_ruin_site` seals
+  the deepest Site, and the one fact outside the ruin's own Sites that
+  says nothing comes out of it any more.
   `_build_ruin_sites` and `ruin_site_rosters` RUNTIME-IMPORT `quests`
   (quests imports places, so a module-level import would cycle — the
   `people.make_npc` precedent). `sites.py` DRESSES: `GATE_SKINS` (the two
@@ -2930,7 +2949,10 @@ mechanic *does* and *why* is rules.md's job.
   read `deepest and boss_dead` where they read `deepest and not boss` —
   the Old Host takes spoils and can break and run out of its own hollow,
   so a cleared depth with no body in it refills like any other.
-  `_validate_gates` checks the authored key against `sites.BOSSES`,
+  `ruin_site_rosters` omits the boss once `boss_dead` (there is one
+  Sentinel and one bar, whatever refills or re-forges the Site --
+  2026-09-13), `_validate_gates` checks the authored key against
+  `sites.BOSSES`,
   `materialize_site` honors an authored `spec["template"]` (Tom's stone is
   a shrine and its name does not say so), and the Area tag merge now drops
   `GATE_TAGS` as well as `TRADE_TAGS`, so only the ruin Area wears
@@ -2942,8 +2964,16 @@ mechanic *does* and *why* is rules.md's job.
   off the world seed), `cmd_room` passing both it and the quest's own
   `ferocity` into `make_foe` (session 1 stored that dict and nobody read
   it), `record_drops` / `mark_boss_dead` in `resolve_encounter`'s won
-  branch, the `drops` map on the save, and `cmd_give` looking there before
-  the catalog. `rpg.py` gained `the(name)` — the article helper behind
+  branch -- and, since 2026-09-13, in the UNRESOLVED and RETREAT branches
+  too, so a boss killed in a fight the party then breaks off counts and
+  its bar is kept and announced where it fell -- the `drops` map on the
+  save, `claim_armory_piece` (a one-off drop whose name matches an armory
+  entry marks it `taken` and rewrites its `where`: the only status any
+  entry has ever been given after `roll_armory` rolled it `known`), and
+  `cmd_give` looking at the drops before the catalog. `sites.make_foe`
+  gives a `BOSSES` row its authored name with NO running number
+  (2026-09-13): there is one Zohariel, and a bare name is also what
+  `_named_dead` reads as a body the fiction cast. `rpg.py` gained `the(name)` — the article helper behind
   `fallen_weapons_line` and `equip_weapon`, so a piece that names itself
   never reads "the the Candor bar". `place_catalog.json` gained TOM'S
   STONE in all eleven western and southern natural inventories.

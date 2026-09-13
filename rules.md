@@ -1405,10 +1405,13 @@ permanent ability, silver buys staying power** — never the reverse.
   the attrition rework). There are **two deliberate ladders** in `rpg.py` —
   do not unify them:
   - **The quest ladder — the game.** A generated quest is 1-3 encounters
-    (below); its whole pay is
+    (below) and a gate ruin's deepest Site is four; its whole pay is
     `quest_xp_total(L, enc) = 44 × (L + 1) × ENCOUNTER_MULT[enc]` XP and
     `quest_silver(L, enc) = 18 × L × ENCOUNTER_MULT[enc]` silver, with
-    `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2}`. The multiplier rises
+    `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2, 4: 2.8}` — the 4 is the
+    delve's and nothing else reaches it (2026-09-13: the four-room job had
+    been paying four THREE-encounter shares against a total quoted at
+    three). The multiplier rises
     **sub-linearly** on purpose: the fixed overhead of a job — the trip out,
     the giver, the turn-in — is paid once whether you fight once or three
     times, so three fights are worth more than one but nothing like three
@@ -3634,8 +3637,10 @@ no half-edge position exists: an edge is atomic.
   complete current record: ID, template/source, seed, all facts/reveal flags,
   children, links, occupants, quest attachments, and used natural-Site
   inventory.
-- **`go NAME`** moves from an area into a known site, from a site to one of
-  its known rooms, **or across to a known sibling Area on the same Tile** —
+- **`go NAME`** moves from an area into a known site (a gate ruin's six
+  depths excepted: they are `delve`'s, and `go` says so), from a site to one
+  of its known rooms, **or across to a known sibling Area on the same
+  Tile** —
   the town and the countryside around it are one 30x60 km map cell, so
   crossing between them costs no day either. (`travel NAME` for a place on
   the current Tile does the same thing and says so.) Entering a Site reveals
@@ -5950,16 +5955,19 @@ the ruin's own pool and are deterministic per seed; one body is placed by
 hand rather than by the pool — a stranded angel keeps the cells of Candor's
 Prefecture.
 
-**`delve SITE`** is the way in: a known Site of the ruin the party is
-standing in, opened without a giver. It forges a job on the spot over the
+**`delve SITE`** is the way in, and the only one: a known Site of the ruin
+the party is standing in, opened without a giver (`go` names a depth and
+points back here). It forges a job on the spot over the
 Site's authored rooms, and the ordinary room walk, fights, encounter XP and
 loot follow. **Clearing pays the FIELD tranche of a job at that level and
 no turn-in**, because there is nobody down there to turn it in to; what
 else the ruin pays is what is lying in it. A cleared Site **refills after
 30 days** with a re-rolled roster over the same rooms — the ring feeds it.
 The **deepest Site never refills** once what holds it is dead: the bar is
-gone, the ruin's whole `gate-ruin` ring clears that day, and the ground
-goes quiet.
+gone, the ruin's whole `gate-ruin` ring clears that day, the gate record is
+dated with the day it sealed, and the ground goes quiet. A dead one is
+never seated again either, by refill or by a re-forged job: there is one
+Sentinel, one Old Host, and one bar apiece for the life of the world.
 
 ## The foes of the gates
 
