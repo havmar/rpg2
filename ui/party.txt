@@ -1,12 +1,11 @@
 RPG2 PARTY SHEET -- day 2, at Byzantium
-  > Venice > Venice > the village
-  graveyard > crypt steps
-purse: 115s
+  > Venice > Salicetum
+purse: 325s
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Nerva -- byzantium m, age 32
-  L5  training 2  XP 338/500  points 0
+  L5  training 2  XP 435/500  points 0
   DEX 5  STR 3  MIND 6  CHA 4
   HP 14/14  STA 3/8  Power 0/6
   masterwork wooden staff | healingx1,
@@ -16,21 +15,19 @@ party: 1/1 companion slot(s) filled (CHA
   speaks: Latin, Norse
 
 (companion) Varro -- byzantium m, age 17
-  L5  training 2  XP 338/500  points 0
+  L5  training 2  XP 435/500  points 0
   DEX 4  STR 6  MIND 5  CHA 5
   HP 11/12  STA 5/8  Power 3/5
   zweihander | healingx1, staminax1
   abilities: first_blood
   pools bought: hp +2, power +2, sta +2
   speaks: Latin, Tergal
-  satisfaction 7/10
+  satisfaction 8/10
   interest: animals; dress:
     professional; looks: weathered
 
-active quest [q01] The Restless Crypt:
-  THE WORK IS DONE -- return to Aurelia
-  at Salicetum (`turnin q01`)
-  due day 7 -- 5 days left
+active quest [q01] The Restless Crypt is
+  COMPLETE
 THE PACT: assignment [q28] Blood on the
   Altar at Salicetum (grace to take it
   runs to day 11).

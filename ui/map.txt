@@ -1,7 +1,6 @@
 RPG2 MAP -- day 2
 the party is at Byzantium > Venice >
-  Venice > the village graveyard > crypt
-  steps
+  Salicetum
 
             111111111122222222223
    123456789012345678901234567890
@@ -46,11 +45,11 @@ HERE: Venice (R12C14) -- Byzantium,
   Erzberg - Venice: iron
   +6 more
   Venice Countryside (coast)
-  Venice (metropolis)  <- the party, 6
-    job(s)
+  Venice (metropolis)  6 job(s)
   Petrapolis (city)  6 job(s)
   Castranova (town)  5 job(s)
-  Salicetum (village)  2 job(s)
+  Salicetum (village)  <- the party, 2
+    job(s)
 
 -- Byzantium --
   [PROSPEROUS] Heaven's gate city stands
@@ -88,10 +87,3 @@ Umaia cities: Qurtuba R14C04, Jerusalem
 Tergal cities: Kyiv R10C27*
 Concordia cities: Concordia R12C18*
 Saturna cities: Saturna R04C14*
-
--- quests in hand (where they lead) --
-
-[q01] The Restless Crypt (L5) @
-  Salicetum
-  - the village graveyard (L5): cleared
-  - R12C14: here
