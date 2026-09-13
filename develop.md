@@ -1511,16 +1511,6 @@ a pointer: what the file is, how it's run, where its docs are.
   temperate human basic pass as the last dedicated review record. No further
   Land worksheet blocks the MVP implementation; reuse the format for focused
   wording or later special-feature review when useful.
-- `gates_review.md` — **THE GATES ARC's post-build review** (2026-09-13):
-  the five shipped sessions checked against the design as it stood at
-  `32cdb60`, ranked — bugs at the seams (the boss's body lost on a
-  retreat, card-posted gate jobs without a mercy class, every land's wild
-  pool widened to the same 23 kinds, ruin jobs unreachable in most worlds,
-  the deepest site overpaying against the 3-encounter clamp, refill leaving
-  the party's room records, city-born recruits), the smaller seams, the
-  build-decided deviations from the design, and the stale doc lines. A
-  finding list for a follow-up sitting, not a contract; items come out of
-  it as they are fixed.
 - `CLAUDE.md` — **the auto-loaded dispatcher**: the play/dev mode fork and
   the doc pointers, nothing else. It is injected into EVERY agent session,
   including play — keep it short and register-neutral; shared fiction style

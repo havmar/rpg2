@@ -3423,3 +3423,75 @@ land against a day-3 counter and now rolls the world first, and
 `test_places.test_the_world_layer_owes_every_country_a_deck` asks the
 reachability question of `_possible_relations()` because the only edges
 that reach a city state have a rolled end.
+
+## 2026-09-13 — the gates review: what the seam fixes moved
+
+The post-build review of THE GATES ARC (designlog 2026-09-13) fixed
+twenty-odd seams in one sitting. Three of them touch measured numbers;
+the rest are correctness and are pinned by tests, not benches.
+
+**The ruin jobs' reach** (`python bench_worldgen.py --only ruins`, new
+sweep, 200 `create_geography` worlds, settlements that COULD post a ruin
+job). Before, the ruin family used the ordinary three-day radius; after,
+`RUIN_TARGET_DAYS` = 6:
+
+| radius | Candor: worlds with a poster | mean posters | Libera: worlds | mean |
+|---|---|---|---|---|
+| 3 (before) | 76/200 (38%) | 0.47 | 54/200 (27%) | 0.34 |
+| 4 | 109/200 | 0.80 | 98/200 | 0.67 |
+| 5 | 151/200 | 1.29 | 123/200 | 1.09 |
+| **6 (after)** | **180/200 (90%)** | **1.88** | **153/200 (77%)** | **1.60** |
+| 7 | 187/200 | 2.45 | 166/200 | 2.17 |
+
+Six is where most worlds get a board without the ring becoming everybody's
+neighbourhood; the ruins prefer slow ground and are barred from capitals
+and their ring, which is why three reached so few. The opening posting
+never draws a ruin job whatever the radius.
+
+**The wilderness is the pre-arc wilderness again.** `wild_pool` for the
+nine lands is byte-identical to the 2026-09-11 tree (west and south 15
+kinds, Thule 18, Tergal 19 — no ogre, troll, giant, wyvern, drake or
+dragon on a Phyrascian road). The arc had put all eight ruin templates on
+every culture's table, which made every land's road table the same 23
+kinds; the templates are now offered at posting time instead. The same
+change found that `wild_pool`'s level-tie order was set-iteration order —
+a different tuple every process — and it now sorts by (level, name). The
+two city states' pools are their own tables' union: Concordia the ladder
+(8), Saturna the ladder plus dire wolf, giant-kin and drakes (13).
+
+**The deepest site's pay reconciles.** At L17 the four-room delve quoted
+1742 XP (a three-encounter total, the clamp) and actually paid 4 x 232 +
+698 = 1626. `ENCOUNTER_MULT` gained 4: 2.8 and the four quest-XP readers
+clamp at 4: the quote is 2218 = 4 x 222 + 886 field + 444 turn-in, and the
+delve pays encounters plus field = **1774** (+9% over what it paid,
+exactly what it quotes). `RUIN_SHARES[4]` was rescaled 2.50 -> 2.10 to
+match `ROOM_SHARES[3]`'s budget; over seeds 1-12 x both ruins the rosters
+are identical at either budget (one at-level giant-kin or drake body a
+room), so the fix moved the quote, not the fight.
+
+**The two EPIC city rows band (9, 20)** now (`EPIC_BAND_FLOOR` off the
+drake pool's weakest row, the floor The Dragon's Tribute already stood
+on); they posted at L2-L3 before.
+
+**Nothing else moved.** `bench_bestiary.py --bosses` (2000 trials a
+column) reproduces (B) with the bosses unnumbered: Saar 52.9 / 58.0 /
+79.5 win% (B: 52.4 / 58.8 / 79.9), Zohariel 62.6 / 63.7 / 86.7 (63.3 /
+63.6 / 86.3). `bench_worldgen.py --only gates` (40 seeds) is unchanged in
+shape after the capital source moved to the land record: Candor on its
+preferred ground 72%, Libera 72%, Concordia 62%, Saturna 80%, pairwise
+separation mean 11.5 (min 4), nearest capital mean 3.5 (min 2). The
+`border` sweep is 0 mismatches over 2700 tiles, city tiles and their
+neighbours included (28/40 city tiles and 84 neighbours were wrong).
+
+**Careers** (`bench_quests.py --part career`, 200 a run) — re-measured
+because `bench_quests.ALL_TEMPLATES` had been counting the eight ruin
+rows eleven times apiece: reach **L5 90% / L8 76% / L11 42% / L14 18% /
+L17 8% / L20 5%** against 2026-09-01's 91 / 77 / 39 / 16 / 8 / 1; the
+dead's median level 9 (p10-p90 4-14), defeat mercies 0.84 a career,
+turn-ins 46 / 47 / 6 / 1. Inside the run-to-run noise of 200 careers;
+no lever pulled.
+
+Test suite: **1297 OK** (1234 before). One pre-existing test was
+widened rather than weakened: `test_ground`'s same-ground-every-campaign
+check now exempts `border` on the ceded tiles' neighbours, because a
+gate city's border is the seed's business like its tags.

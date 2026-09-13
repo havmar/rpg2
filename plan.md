@@ -108,7 +108,10 @@ parked here:
   one-tile countries that were designed to be able to take land later, no
   war is rolled over either of them, and the crusade against the feast
   town is a card rather than a front precisely because this does not
-  exist yet.
+  exist yet. Two small questions from the 2026-09-13 review ride with it:
+  whether a gate city's one-tile countryside should roll the DONOR's wild
+  pool rather than the city's own tables (`wild_pool` takes no world
+  today), and a relation row out of Saturna that reads `lord-hanged`.
 - **Languages with mechanics.** Session 3 SHIPPED who speaks what (the
   SPEAKS line) and dm.md's table rule; an engine reader — a rumor radius
   that stops at a language border, a quest gated on a tongue, an
