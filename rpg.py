@@ -572,8 +572,9 @@ ENCOUNTER_XP = 15       # the flat off-script rate (session `fight N`) -- the
 QUEST_XP = 55           # the level-1 site-clear lump (the hideout's quest pay)
 QUEST_SILVER = 15         # the level-1 site's silver (the hideout's quest pay)
 
-# The QUEST ladder (2026-07-26). A quest is 1-3 encounters (quests.py's
-# QUEST_ENCOUNTERS); its pay is a level curve times an encounter multiplier
+# The QUEST ladder (2026-07-26). A posted quest is 1-3 encounters (quests.py's
+# QUEST_ENCOUNTERS) and a gate ruin's deepest Site is four (`delve`); the pay
+# is a level curve times an encounter multiplier
 # that rises SUB-linearly, so a three-fight job pays more than a one-fight job
 # but nothing like three times more -- the trip, the giver, and the turn-in
 # cost the same either way. QUEST_ENCOUNTER_SHARE of the XP falls as the
@@ -593,7 +594,14 @@ QUEST_SILVER_PER_LEVEL = 18   # the other career-pace knob. At the measured
                             # UNCHANGED: silver is the quantity that inflates,
                             # and the rework's whole spine is not to price
                             # recovery in it.
-ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2}
+ENCOUNTER_MULT       = {1: 1.0, 2: 1.6, 3: 2.2, 4: 2.8}
+                            # ...and 4, which no POSTED job is: the series
+                            # continues (+0.6 a step) for the one shape that
+                            # reaches it, the gate ruin's deepest Site, whose
+                            # four authored rooms `delve` forges as one job
+                            # (2026-09-13 -- before that the four rooms each
+                            # drew a three-encounter share and the job
+                            # overpaid).
 QUEST_ENCOUNTER_SHARE = 0.40    # paid as the encounters fall
 QUEST_TURNIN_SHARE = 0.20       # paid where the GIVER stands (2026-08-08,
                                 # the turn-in stage), banded by the turn-in
@@ -633,13 +641,13 @@ def quest_xp_total(level: int, encounters: int) -> int:
     """Total XP a level-L quest of `encounters` fights pays, quoted at the duo
     baseline (encounter shares + the turn-in lump)."""
     return round(QUEST_XP_PER_LEVEL * (level + 1)
-                 * ENCOUNTER_MULT[max(1, min(3, encounters))])
+                 * ENCOUNTER_MULT[max(1, min(4, encounters))])
 
 
 def quest_encounter_xp(level: int, encounters: int) -> int:
     """One encounter's share of a quest's XP -- flat: every fight on the job
     pays the same, whichever place it stands in."""
-    enc = max(1, min(3, encounters))
+    enc = max(1, min(4, encounters))
     return max(1, round(quest_xp_total(level, enc)
                         * QUEST_ENCOUNTER_SHARE / enc))
 
@@ -647,7 +655,7 @@ def quest_encounter_xp(level: int, encounters: int) -> int:
 def quest_turnin_xp(level: int, encounters: int) -> int:
     """The TURN-IN tranche (2026-08-08): what reporting back to the giver
     pays, banded by the day it lands. The only XP the clock ever touches."""
-    enc = max(1, min(3, encounters))
+    enc = max(1, min(4, encounters))
     return max(1, round(quest_xp_total(level, enc) * QUEST_TURNIN_SHARE))
 
 
@@ -655,7 +663,7 @@ def quest_clear_xp(level: int, encounters: int) -> int:
     """The FIELD tranche, paid unbanded at work-done (the last site closed):
     whatever the encounter shares and the turn-in tranche leave of the
     total. Before the turn-in stage (2026-08-08) this was the whole lump."""
-    enc = max(1, min(3, encounters))
+    enc = max(1, min(4, encounters))
     return (quest_xp_total(level, enc)
             - enc * quest_encounter_xp(level, enc)
             - quest_turnin_xp(level, enc))
@@ -664,7 +672,7 @@ def quest_clear_xp(level: int, encounters: int) -> int:
 def quest_silver(level: int, encounters: int) -> int:
     """A level-L quest's silver, paid whole at the turn-in."""
     return round(QUEST_SILVER_PER_LEVEL * level
-                 * ENCOUNTER_MULT[max(1, min(3, encounters))])
+                 * ENCOUNTER_MULT[max(1, min(4, encounters))])
 
 # --- Weapons (Phase 4 first slice) ------------------------------------------ #
 # A weapon is an OFFENSE package: it modifies the attack pressure roll, the
