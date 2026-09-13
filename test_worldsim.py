@@ -2463,11 +2463,17 @@ class ThePoliticsContent(unittest.TestCase):
 
     def test_the_two_gate_packets_carry_the_designs_own_keys(self) -> None:
         """gates.md section 11's card list, key by key: nothing renamed,
-        nothing quietly dropped when the packets went from stub to whole."""
+        nothing quietly dropped when the packets went from stub to whole.
+
+        Two moves since (2026-09-13, the post-build review): THE SERMON is
+        the HOST's card now, so it is not in this list, and the gate is
+        shut by a second card keyed on the QUARANTINE, because a Concordia
+        that rolled the Pruners' government without the Prefect's quarrel
+        could never see the gate shut at all."""
         expected = {
             "heaven": {"the-register", "the-removal", "the-cure-line",
-                       "the-gate-guarded", "a-stranded-one",
-                       "the-lamp-thieves", "the-sermon",
+                       "the-gate-guarded", "the-gate-guarded-by-law",
+                       "a-stranded-one", "the-lamp-thieves",
                        "the-servant-loose", "clear-sky",
                        "the-choir-season"},
             "hell": {"the-feast-spills", "the-debt-book", "the-lord-hanged",
@@ -2989,12 +2995,14 @@ class TheReligionAndMagicContent(unittest.TestCase):
     def test_conduct_not_creed(self) -> None:
         """The design requirement: no inquisition against casting as such.
         The hunt exists, and it admits only on what somebody DID -- the
-        talent that went off -- never on a land, a ruler or a faith."""
+        talent that went off -- never on a land, a ruler or a faith. It
+        runs in every HUMAN country (scoped 2026-09-13): the gift is born
+        in villages and the two one-tile city states have none."""
         hunt = worldsim.CARDS_BY_KEY["magic/the-hunt"]
         self.assertEqual(hunt["admits"]["states"], ("talent-loose",))
         self.assertFalse(hunt["admits"]["constitution"])
         self.assertFalse(hunt["admits"]["traits"])
-        self.assertEqual(hunt["land"], (worldsim.ANY_LAND,))
+        self.assertEqual(hunt["land"], tuple(places.HUMAN_COUNTRIES))
 
     def test_the_wild_talent_and_the_seeress_are_kept(self) -> None:
         """RECURRENCE is the property that makes an NPC exist at all: the

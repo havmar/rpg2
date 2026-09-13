@@ -1804,20 +1804,34 @@ class TheHumanSide(unittest.TestCase):
 
     def test_the_return_questions_news_names_both_answers(self):
         """Which rite welcomes the Return is an ADDRESS, not an opinion:
-        the one that has Concordia on its own ground."""
+        the one that has Concordia on its own ground. Both rite words open
+        a sentence in the line, so the hook hands them over capitalized
+        (2026-09-13)."""
         for seed in (1, 2, 3, 4, 5, 6):
             built = played(seed)
             host = worldsim.gate_land(built, "concordia")
             fields = worldsim._return_hook(built, "byzantium", 5,
                                            random.Random(1))
-            keeps = ("the old rite"
+            keeps = ("The old rite"
                      if places.CULTURE_OF[host] == "southern"
-                     else "the western church")
-            other = ("the western church" if keeps == "the old rite"
-                     else "the old rite")
+                     else "The western church")
+            other = ("The western church" if keeps == "The old rite"
+                     else "The old rite")
             self.assertEqual(fields["hosting"], keeps, seed)
             self.assertEqual(fields["other"], other, seed)
             self.assertEqual(fields["host"], built["lands"][host]["name"])
+
+    def test_the_synod_line_starts_every_sentence_upper_case(self):
+        """The rendered news line, read the way the table reads it: no
+        sentence in it opens in lower case (2026-09-13, the post-build
+        review's find)."""
+        built = played(1)
+        _quiet(built, "byzantium")
+        worldsim.set_state(built, "byzantium", "schism-near", 3)
+        _fire(built, "byzantium", "communion/the-return-question", 4)
+        line = worldsim.take_news(built, "byzantium", 4)[0]
+        for sentence in [s.strip() for s in line.split(". ") if s.strip()]:
+            self.assertTrue(sentence[0].isupper(), sentence)
 
     def test_the_crusade_tension_is_stamped_only_on_a_sun_host(self):
         seen = set()
@@ -1925,17 +1939,99 @@ class TheTwoChains(unittest.TestCase):
             worldsim.named_authority(built, "concordia",
                                      "nephilim-child")["name"], who["name"])
 
-    def test_the_removal_posts_the_childs_quest(self):
+    def test_the_removal_posts_the_childs_quest_on_the_hosts_board(self):
+        """The work is in the host country, so the job is (2026-09-13):
+        a village child taken through a door in the Prefecture is read off
+        a board down the road, not off Concordia's own one board."""
         posted = worldsim.CARDS_BY_KEY[
             "heaven/the-removal"]["outlets"]["quest"]["post"]
         self.assertEqual(posted["title"], "Bring the Child Home")
         self.assertEqual(posted["align"], "good")
+        self.assertEqual(posted["at"], "host")
         built = played(1)
+        host = worldsim.gate_land(built, "concordia")
         _quiet(built, "concordia")
         _fire(built, "concordia", "heaven/the-removal", 9)
+        self.assertNotIn("Bring the Child Home",
+                         [j["job"]["title"] for j
+                          in worldsim.board_postings(built, "concordia")])
         live = [j["job"]["title"] for j
-                in worldsim.board_postings(built, "concordia")]
+                in worldsim.board_postings(built, host)]
         self.assertIn("Bring the Child Home", live)
+
+    def test_the_hanged_lord_posts_his_mens_job_on_the_hosts_board(self):
+        built = played(1)
+        host = worldsim.gate_land(built, "saturna")
+        _quiet(built, "saturna")
+        _fire(built, "saturna", "hell/the-lord-hanged", 9)
+        self.assertNotIn("The Lord's Men",
+                         [j["job"]["title"] for j
+                          in worldsim.board_postings(built, "saturna")])
+        self.assertIn("The Lord's Men",
+                      [j["job"]["title"] for j
+                       in worldsim.board_postings(built, host)])
+
+    def test_the_three_cards_that_offer_two_employers(self):
+        """THE DARK OUTLETS (2026-09-13). Three cards put up two jobs at
+        once -- the same trouble with a good employer and a dark one -- and
+        the player picks whose money he takes. Opposite aligns, distinct
+        board keys, and no shared site stem to collide on."""
+        pairs = {"heaven/the-removal": ("Bring the Child Home",
+                                        "Deliver the Child"),
+                 "hell/the-debt-book": ("The Year Owed",
+                                        "Collect the Year"),
+                 "hell/a-stranded-one": ("The Old Feast", "Bring Her In")}
+        for key, (good, dark) in pairs.items():
+            outlet = worldsim.CARDS_BY_KEY[key]["outlets"]["quest"]
+            self.assertEqual(outlet["post"]["title"], good)
+            self.assertEqual(outlet["dark"]["title"], dark)
+            self.assertEqual(outlet["post"]["align"], "good")
+            self.assertEqual(outlet["dark"]["align"], "dark")
+            self.assertEqual(outlet["post"]["pool"], outlet["dark"]["pool"])
+            self.assertEqual(outlet["post"]["skins"],
+                             outlet["dark"]["skins"])
+            self.assertEqual(outlet["post"]["ferocity"],
+                             outlet["dark"]["ferocity"])
+            self.assertFalse(set(outlet["post"]["sites"])
+                             & set(outlet["dark"]["sites"]), key)
+        built = played(1)
+        host = worldsim.gate_land(built, "concordia")
+        _quiet(built, "concordia")
+        _fire(built, "concordia", "heaven/the-removal", 9)
+        board = worldsim.board_postings(built, host)
+        both = {j["key"]: j["job"]["align"] for j in board
+                if j["key"].startswith("heaven/the-removal")}
+        self.assertEqual(both, {"heaven/the-removal": "good",
+                                "heaven/the-removal/dark": "dark"})
+
+    def test_both_employers_reach_one_board_and_pay_the_dark_premium(self):
+        """A dark card job is a dark job: it goes up beside its twin, the
+        board prints it as one, and the karma machinery reads it off
+        `align` exactly as it reads a dark template's."""
+        built = played(1)
+        settlement = next(s for s in quests.settlements(built)
+                          if s["land"] == "saturna")
+        _quiet(built, "saturna")
+        worldsim.set_state(built, "saturna", "feast-spilled", 3)
+        _fire(built, "saturna", "hell/the-debt-book", 4)
+        posted = {}
+        for posting in worldsim.board_postings(built, "saturna"):
+            if not posting["key"].startswith("hell/the-debt-book"):
+                continue
+            quest = quests._post_card_quest(built, settlement, posting,
+                                            random.Random(5), day=4)
+            posted[quest["name"]] = quest
+        self.assertEqual(set(posted), {"The Year Owed", "Collect the Year"})
+        self.assertEqual(posted["The Year Owed"]["align"], "good")
+        self.assertEqual(posted["Collect the Year"]["align"], "dark")
+        self.assertGreater(
+            quests.quest_silver_posted(posted["Collect the Year"]),
+            posted["Collect the Year"]["silver_total"])
+        self.assertEqual(quests.quest_silver_posted(posted["The Year Owed"]),
+                         posted["The Year Owed"]["silver_total"])
+        self.assertFalse(
+            set(posted["The Year Owed"]["sites"])
+            & set(posted["Collect the Year"]["sites"]))
 
     def test_the_child_is_a_person_of_the_host_country(self):
         """A half-blood on Concordia's list is a VILLAGE child, and the
@@ -1995,6 +2091,181 @@ class TheTwoChains(unittest.TestCase):
         host = worldsim.gate_land(built, "concordia")
         self.assertTrue(worldsim.mark_roles(built, host, "burglary"))
         self.assertTrue(worldsim.mark_roles(built, host, "con"))
+
+
+class TheCardPostedJobs(unittest.TestCase):
+    """What a card's own job carries (2026-09-13, the post-build review).
+    The nine jobs the two packets post field the gates' own people, and
+    the mercy class has to travel with the names: a Marble Warden met off
+    a board is as relentless as one met in the ruin."""
+
+    def _gate_jobs(self, side: str) -> list[dict]:
+        return [posting["job"]
+                for spec in worldsim.CARDS if spec["land"] == (
+                    places.CITY_STATE_OF_SIDE[side],)
+                for posting in worldsim._card_jobs(spec)]
+
+    def test_every_gate_card_job_carries_its_sides_disposition(self):
+        wanted = {"heaven": ("Bring the Child Home", "Deliver the Child",
+                             "The Hermit's Escort", "The Lamp Thieves",
+                             "The Servant That Walks"),
+                  "hell": ("The Year Owed", "Collect the Year",
+                           "The Lord's Men", "Hounds off the Road",
+                           "The Old Feast", "Bring Her In",
+                           "Open the Cages")}
+        for side, titles in wanted.items():
+            jobs = {job["title"]: job for job in self._gate_jobs(side)}
+            self.assertEqual(set(jobs), set(titles), side)
+            for title, job in jobs.items():
+                self.assertEqual(job["ferocity"],
+                                 dict(sites.GATE_FEROCITY[side]), title)
+
+    def test_a_warden_off_the_childs_job_is_relentless(self):
+        """The bug this pins: `job()` had no `ferocity` field at all, so
+        every warden a card posted fought at the catalog row's own mercy
+        class and took the party's purse instead of finishing it."""
+        built = played(3)
+        tpl = worldsim.CARDS_BY_KEY[
+            "heaven/the-removal"]["outlets"]["quest"]["post"]
+        settlement = next(s for s in quests.settlements(built)
+                          if s["land"] == worldsim.gate_land(built,
+                                                             "concordia"))
+        quest = quests.build_quest(built, "qtest", tpl, settlement["key"],
+                                   4, random.Random(7))
+        self.assertEqual(quest["ferocity"]["soldier"],
+                         rpg.FEROCITY_RELENTLESS)
+        warden = sites.make_foe("soldier", 1, random.Random(7),
+                                display=quest["skins"]["soldier"],
+                                ferocity=quest["ferocity"]["soldier"])
+        self.assertIn("Warden", warden.name)
+        self.assertEqual(warden.ferocity, rpg.FEROCITY_RELENTLESS)
+
+    def test_the_lamp_job_pays_on_the_lamps(self):
+        job = worldsim.CARDS_BY_KEY[
+            "heaven/the-lamp-thieves"]["outlets"]["quest"]["post"]
+        self.assertEqual(job["proof"], "the lamps")
+
+    def test_the_validator_still_refuses_a_key_it_does_not_know(self):
+        """The new fields widened the job schema; they did not open it."""
+        good = worldsim.CARDS_BY_KEY[
+            "hell/the-kennels-open"]["outlets"]["quest"]
+        worldsim._validate_quest("test", dict(good))     # the real one
+        with self.assertRaises(ValueError):
+            worldsim._validate_quest("test", dict(good, bounty=3))
+        with self.assertRaises(ValueError):
+            worldsim._validate_quest(
+                "test", {"post": dict(good["post"], hazard="fire")})
+        with self.assertRaises(ValueError):
+            worldsim._validate_quest(
+                "test", {"post": dict(good["post"],
+                                      ferocity={"no such row": 2})})
+        with self.assertRaises(ValueError):
+            worldsim.job("Nowhere", "x", pool=("wolf",), sites=("a hill",),
+                         giver="a shepherd", epilogue="", failure_epilogue="",
+                         at="the moon")
+
+
+class TheDeckScopes(unittest.TestCase):
+    """Which deck a card sits in (2026-09-13, the post-build review). Three
+    cards were in the wrong one, and each was invisible rather than loud:
+    a state nobody could set, a tension nobody could roll, a witch-hunt at
+    the Prefecture."""
+
+    def test_the_sermon_is_the_hosts_card_and_only_the_hosts(self):
+        """`pulpit-against` runs off `preached-against` on the HOST, so
+        the card that sets it has to be a card the host can draw."""
+        spec = worldsim.CARDS_BY_KEY["heaven/the-sermon"]
+        self.assertEqual(set(spec["land"]), set(places.HUMAN_COUNTRIES))
+        self.assertEqual(spec["admits"]["states"], ("hosts-heaven",))
+        self.assertFalse(spec["admits"]["tension"])
+        for seed in (1, 2, 3, 4):
+            built = played(seed)
+            host = worldsim.gate_land(built, "concordia")
+            for polity in built["lands"]:
+                deck = worldsim._deck(built, polity, "crisis",
+                                      worldsim.tensions_of(built, polity))
+                drawable = ("heaven/the-sermon" in deck
+                            and worldsim.admits(
+                                built, polity,
+                                spec["admits"], weather="clear"))
+                self.assertEqual(drawable, polity == host, (seed, polity))
+
+    def test_the_sermon_turns_the_hosts_pulpit_on_concordia(self):
+        built = played(2)
+        host = worldsim.gate_land(built, "concordia")
+        _quiet(built, host)
+        _quiet(built, "concordia")
+        before = worldsim.term(built, "concordia", "goods")
+        _fire(built, host, "heaven/the-sermon", 6)
+        self.assertIn("preached-against", worldsim.state_ids(built, host))
+        self.assertIn("pulpit-against",
+                      [s["id"] for s
+                       in worldsim.derived_states(built, "concordia")])
+        self.assertGreater(worldsim.term(built, "concordia", "goods"),
+                           before)
+
+    def test_a_war_alone_does_not_put_hounds_on_saturnas_road(self):
+        """`at-war` is stamped at worldgen and never cleared, so reading
+        it here made the row a standing fact in half of all worlds."""
+        self.assertEqual(
+            next(e["when"] for e in worldsim._GATE_RELATIONS
+                 if e["kind"] == "the hunt"), ("hunt-up",))
+        seen_war = False
+        for seed in range(1, 13):
+            built = played(seed)
+            host = worldsim.gate_land(built, "saturna")
+            if "at-war" not in worldsim.state_ids(built, host):
+                continue
+            seen_war = True
+            self.assertNotIn("hounds-out",
+                             [s["id"] for s
+                              in worldsim.derived_states(built, "saturna")],
+                             seed)
+            worldsim.set_state(built, host, "hunt-up", 5)
+            self.assertIn("hounds-out",
+                          [s["id"] for s
+                           in worldsim.derived_states(built, "saturna")],
+                          seed)
+        self.assertTrue(seen_war, "no rolled war reached a Hell host")
+
+    def test_the_quarantine_shuts_the_gate_without_the_prefects_quarrel(
+            self):
+        """`admits` is AND across kinds, so a Concordia that rolled the
+        Pruners' government but not the Prefect's quarrel could never see
+        the gate shut. A second card, keyed on the constitution."""
+        built = played(1)
+        layer = worldsim.land_layer(built, "concordia")
+        layer["tensions"] = [t for t in layer["tensions"]
+                             if t != "prefect-vs-church"]
+        worldsim.set_constitution(built, "concordia", "quarantine", 3)
+        _quiet(built, "concordia")
+        worldsim.set_constitution(built, "concordia", "quarantine", 3)
+        deck = worldsim._deck(built, "concordia", "crisis",
+                              layer["tensions"])
+        shut = [key for key in deck
+                if "gate-shut" in ((worldsim.CARDS_BY_KEY[key]["outlets"]
+                                    .get("state") or {}).get("while", ()))]
+        self.assertEqual(shut, ["heaven/the-gate-guarded-by-law"])
+        spec = worldsim.CARDS_BY_KEY["heaven/the-gate-guarded-by-law"]
+        self.assertTrue(worldsim.admits(built, "concordia", spec["admits"],
+                                        weather="clear"))
+        _fire(built, "concordia", "heaven/the-gate-guarded-by-law", 6)
+        self.assertIn("gate-shut", worldsim.state_ids(built, "concordia"))
+
+    def test_no_witch_hunt_at_the_prefecture(self):
+        """The gift is born in villages; the two city states have none."""
+        for polity in places.CITY_STATES:
+            for track in worldsim.TRACKS:
+                deck = worldsim._deck(world(1), polity, track)
+                self.assertFalse([k for k in deck
+                                  if k.startswith("magic/")],
+                                 (polity, track))
+        built = played(1)
+        for polity in places.HUMAN_COUNTRIES:
+            deck = worldsim._deck(built, polity, "crisis",
+                                  worldsim.tensions_of(built, polity))
+            self.assertIn("magic/wild-talent", deck, polity)
+            self.assertIn("magic/the-hunt", deck, polity)
 
 
 class TheGateCrowns(unittest.TestCase):
