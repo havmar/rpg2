@@ -1680,8 +1680,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `forge_quest` grew `site_keys=` / `skins=` / `ferocity=` / `desc=` -- with
   `site_keys` it forges over Sites THE WORLD ALREADY OWNS and builds
   nothing, which is what `delve` needs.
-  **INTO THE RUINS** (2026-09-12, the arc's session 2): `RUIN_TEMPLATES`,
-  eight authored jobs appended to EVERY culture's table, and `_ruin_place`
+  **INTO THE RUINS** (2026-09-12, the arc's session 2; reworked at the
+  seams 2026-09-13): `RUIN_TEMPLATES`, eight authored jobs OFFERED to
+  every board and carried on NO culture's table, and `_ruin_place`
   behind their eight `QUEST_PLACE_REQUIREMENTS` rows -- `area_any` is the
   ONE side word (`heaven-ruin` / `hell-ruin`), which is the whole of the
   "a Heaven job cannot land in Libera" rule, plus a new requirement flag
@@ -1698,6 +1699,27 @@ a pointer: what the file is, how it's run, where its docs are.
   three readers that can meet an authored roster (`notice_contest`,
   `foes_preferred_field`, `roster_kinds_line`) go through
   `sites.foe_spec` instead of `FOES`.
+  **The three seams the 2026-09-13 review found, all in this file.**
+  (1) The eight were `TEMPLATES[culture].extend(...)`-ed onto all eleven
+  tables, and a culture's table is exactly what `wild_pool` unions: every
+  land's wilderness widened to one identical 23-kind pool and a dragon
+  could come down a Phyrascian road. They are out of `TEMPLATES` now and
+  `_post_quest` appends `ruin_templates(world)` where it appends the epics
+  -- offered at the board, invisible to the wilderness. `wild_pool` also
+  sorts by (level, NAME): the level-tie order used to be set-iteration
+  order, i.e. string-hash order, i.e. different every process.
+  (2) `RUIN_TARGET_DAYS` = 6 and a `radius` field on the place
+  requirement, read by `requirement_radius` inside both
+  `_select_quest_area` and `place_reachable` (a caller's `radius=None`
+  still wins -- that is a forced family lifting the rule). At the ordinary
+  3 the family was unpostable in most worlds; see benchlog 2026-09-13 and
+  `bench_worldgen.py --only ruins`.
+  (3) `ruin_templates(world)` drops a side whose gate record carries a
+  non-None `sealed_day`, off `template_ruin_side` (the requirement's own
+  side word). Also here: `template_band` honors an optional `min_level`
+  (`EPIC_BAND_FLOOR`, the bottom of the drake band) so a row the design
+  calls EPIC is banded like one -- the two gate cities' capital rows both
+  shipped posting at L2.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
@@ -2283,6 +2305,8 @@ python econmap.py routes 7            # one built world's trade network
 python bench_worldgen.py              # the five worldgen sweeps (100 seeds)
 python bench_worldgen.py --seeds 500  # ...at the pins
 python bench_worldgen.py --only gates # where the four gate sites land
+python bench_worldgen.py --only ruins # ...and whether the eight ruin jobs
+                                      # can be posted at all
 python session.py tile [COORD]        # the DM's page behind one Tile
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -2401,7 +2425,10 @@ mechanic *does* and *why* is rules.md's job.
   `quests.route_days`, `build_delivery_quest`, `session._cast_teleport`
   and `cmd_take`'s hell-task road estimate — now calls `places.path_days`.
   So do the two LOCAL QUEST GEOGRAPHY radii (2026-08-15): `QUEST_RUMOR_DAYS`
-  and `ORDINARY_TARGET_DAYS`, both 3, both in `quests.py`.
+  and `ORDINARY_TARGET_DAYS`, both 3, both in `quests.py` — and, since
+  2026-09-13, `RUIN_TARGET_DAYS` = 6, the one family that raises the
+  ordinary target radius (it declares `radius` on its place requirement;
+  `requirement_radius` is the single reader).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -2719,7 +2746,10 @@ mechanic *does* and *why* is rules.md's job.
   `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
   Sites as persistent world IDs, `QUEST_PLACE_REQUIREMENTS` routing;
   `wild_pool`
-  (what roams a land = the union of its country's template pools),
+  (what roams a land = the union of its CULTURE's template pools, ordered
+  by level then name — so anything put on a table also goes on that land's
+  roads, which is why the epics and the gate ruins' eight are drawn at the
+  board instead),
   `roll_wild_level` (the road's party-independent geometric level table),
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
   `position` (`land`, `tile`, `area`, optional `site`/`room`), `current_area` /
@@ -2945,7 +2975,11 @@ mechanic *does* and *why* is rules.md's job.
   `GATE_TAGS` as well as `TRADE_TAGS`, so only the ruin Area wears
   `heaven-ruin` / `hell-ruin`. `quests.py` POSTS THE WORK:
   `RUIN_TEMPLATES`, `_ruin_place`, the `strict` flag, `place_reachable`,
-  the widened natural domain and the ruin-Site reuse ban (see Files).
+  the widened natural domain and the ruin-Site reuse ban — and, since the
+  2026-09-13 review, `ruin_templates(world)` (offered at the board, on no
+  culture's table, minus a sealed side), `RUIN_TARGET_DAYS` = 6 and
+  `requirement_radius` (see Files). `bench_worldgen.py --only ruins`
+  measures whether the family can be posted at all.
   `session.py` PLAYS IT: `ruin_boss_bar` (the spawn hook — a bar cannot
   ride a catalog row the way the warden blade does, because it is built
   off the world seed), `cmd_room` passing both it and the quest's own
@@ -3035,7 +3069,13 @@ mechanic *does* and *why* is rules.md's job.
   record. `quests.py` / `people.py` / `conquest.py` GIVE THEM IDENTITY:
   `TEMPLATES["heaven"]` and `TEMPLATES["hell"]` (four rows each, the EPIC
   one capital-only by construction because the culture has exactly one
-  land and that land has exactly one board), their eight
+  land and that land has exactly one board — and since 2026-09-13 banded
+  like one too: `min_level=EPIC_BAND_FLOOR` plus pools that start high,
+  `LADDER_POOL[4:]` and `GIANTKIN_POOL + DRAKE_POOL`, after the review
+  found both posting at L2 with a wolf roster. Concordia's third row is
+  `The Child off the Register`, renamed off the removal card's `Bring the
+  Child Home` so the board's by-title preference cannot conflate them),
+  their eight
   `QUEST_PLACE_REQUIREMENTS` rows (none strict — the work lands in the
   human countryside inside the ordinary three-day radius),
   `RULER_TITLES` and `DEFENDER_ROLES` rows, `people.NAMES` pools of 25+25

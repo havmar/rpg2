@@ -17,8 +17,9 @@ order:
      materialized, within QUEST_RUMOR_DAYS of the party's Tile), the
      grouped readout, and the refresh scope: a board four days off is
      neither shown nor moved, and `board all` observes without widening it.
-  D. **The ordinary target radius** -- every generated target within three
-     path days across a seed sweep, tag compatibility never traded for the
+  D. **The ordinary target radius** -- every generated target within its
+     own family's reach across a seed sweep (three path days, or the gate
+     ruins' six and nobody else's), tag compatibility never traded for the
      radius, the origin Tile's countryside as the declared fallback, the
      stable candidate order, and `radius=None` reaching past all of it.
   E. **The path-priced clock** -- the ordered route out and home, over
@@ -54,6 +55,17 @@ import worldsim
 
 def _world(seed: int = 27) -> dict:
     return quests.generate_world(seed=seed)
+
+
+def _target_radius(quest: dict) -> int:
+    """How far THIS job's target may sit from the board that posted it: the
+    ordinary three days, unless the job's family names its own radius.
+
+    One family does (2026-09-13): the eight gate-ruin jobs reach six,
+    because there are exactly two pieces of ground in the world that honor
+    them and at three days most boards could not post one at all."""
+    return quests.requirement_radius(quest.get("place") or {},
+                                     quests.ORDINARY_TARGET_DAYS)
 
 
 def _hero(name: str = "PC", level: int = 3) -> rpg.Entity:
@@ -506,7 +518,7 @@ class TheRumorRadius(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 
 class TheTargetRadius(unittest.TestCase):
-    def test_no_generated_target_is_more_than_three_days_out(self) -> None:
+    def test_no_generated_target_is_further_out_than_its_family_reaches(self):
         for seed in range(12):
             world = _world(seed)
             for quest in world["quests"].values():
@@ -516,8 +528,23 @@ class TheTargetRadius(unittest.TestCase):
                 target = world["areas"][quest["target_area"]]
                 self.assertLessEqual(
                     places.path_days(origin["tile"], target["tile"]),
-                    quests.ORDINARY_TARGET_DAYS,
+                    _target_radius(quest),
                     f"{seed}/{quest['id']} {quest['name']}")
+
+    def test_only_the_ruin_family_reaches_past_the_ordinary_three(self):
+        """The wider radius is ONE family's, not a loosening: every other
+        generated job still stands within three days of its board."""
+        wider = set()
+        for seed in range(12):
+            world = _world(seed)
+            for quest in world["quests"].values():
+                if quest.get("kind") == "delivery" or "target_area" not in quest:
+                    continue
+                if _target_radius(quest) > quests.ORDINARY_TARGET_DAYS:
+                    wider.add(quest["name"])
+        self.assertTrue(wider, "no ruin job posted in twelve worlds")
+        self.assertLessEqual(wider,
+                             {t["title"] for t in quests.RUIN_TEMPLATES})
 
     def test_the_refilled_board_keeps_the_radius(self) -> None:
         world = _world(4)
@@ -531,7 +558,7 @@ class TheTargetRadius(unittest.TestCase):
             target = world["areas"][quest["target_area"]]
             self.assertLessEqual(
                 places.path_days(origin["tile"], target["tile"]),
-                quests.ORDINARY_TARGET_DAYS, quest["id"])
+                _target_radius(quest), quest["id"])
 
     def test_compatibility_is_not_traded_for_the_radius(self) -> None:
         """When nothing compatible stands within reach the job falls back
@@ -761,7 +788,7 @@ class TheOpeningQuest(unittest.TestCase):
             target = world["areas"][quest["target_area"]]
             self.assertLessEqual(
                 places.path_days(start["tile"], target["tile"]),
-                quests.ORDINARY_TARGET_DAYS, seed)
+                _target_radius(quest), seed)
             self.assertTrue(quest["sites"], seed)
             for site_id in quest["sites"]:
                 self.assertIn(site_id, world["sites"], seed)

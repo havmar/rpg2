@@ -48,7 +48,8 @@ import rpg
 from rpg import LEVEL_CAP
 from sites import FOES, make_foe, run_site
 from bench_bestiary import reference_hero
-from quests import (TEMPLATES, EPIC_TEMPLATES, template_band, build_room,
+from quests import (TEMPLATES, EPIC_TEMPLATES, RUIN_TEMPLATES,
+                    template_band, build_room,
                     build_site_rooms, room_budget, generate_world,
                     quest_to_sites, quest_xp_posted, xp_to_cap,
                     QUEST_ENCOUNTERS, QUEST_PAY_BANDS,
@@ -56,8 +57,14 @@ from quests import (TEMPLATES, EPIC_TEMPLATES, template_band, build_room,
                     refresh_settlement_board, refresh_deliveries,
                     quest_band, quest_days_left, quest_expired)
 
+# Every row a board can DRAW, each counted once. The eight ruin jobs are
+# not on any culture's table (2026-09-13 -- a table is also what feeds
+# `wild_pool`, and board work is not wilderness), so they are added here by
+# name; before that they were on all eleven tables and counted eleven times
+# apiece, which quietly made the gate ruins' pools the majority of this
+# bench's mid-band draw.
 ALL_TEMPLATES = [t for table in TEMPLATES.values() for t in table]
-ALL_TEMPLATES += EPIC_TEMPLATES
+ALL_TEMPLATES += EPIC_TEMPLATES + RUIN_TEMPLATES
 
 
 def pools_for(level: int) -> list[tuple[str, ...]]:

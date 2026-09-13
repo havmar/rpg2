@@ -28,9 +28,13 @@ Four sweeps, in the order the arcs built them:
             sites land: the country histogram, the terrain preference the
             weighted draw is supposed to show, the pairwise separation and
             the distance to the nearest capital.
+  RUINS     (2026-09-13, the gates review) whether the eight ruin jobs can
+            actually be POSTED: how many worlds seat a settlement close
+            enough to a ruin to carry its work, and how many such boards
+            there are, across a range of target radii.
 
 Run:  python bench_worldgen.py [--seeds N]
-                               [--only harvest|census|trade|wars|gates]
+                               [--only harvest|census|trade|wars|gates|ruins]
 
 100 seeds is the default and takes about twenty seconds.  The arc's PINS
 were measured at 500; re-measure with `--seeds 500` after touching any
@@ -45,6 +49,7 @@ from collections import Counter
 
 import conquest
 import places
+import quests
 import worldsim
 
 
@@ -313,11 +318,57 @@ def sweep_gates(seeds: int) -> None:
           f"create_geography raises)")
 
 
+def sweep_ruins(seeds: int) -> None:
+    """CAN THE RUIN JOBS BE POSTED AT ALL? (2026-09-13, the gates review.)
+
+    The eight ruin jobs are `strict`: a board that has no reachable ruin
+    Area never draws one, and there are exactly TWO such Areas in the
+    world, both barred from capitals and their ring and both drawn by the
+    weighted terrain toward slow country. So the family's reach is not a
+    taste question -- under it the eight are simply absent from a majority
+    of campaigns, and section 7's "increased activity around the ruins"
+    never happens.
+
+    The table runs the radius out one day at a time so the lever can be
+    seen rather than argued about. The line marked `<--` is the one in
+    force (`quests.RUIN_TARGET_DAYS`). The count is SETTLEMENTS that could
+    post the work, not boards standing open on day 0: an inactive board
+    goes on filling later in the campaign, and this measures the ground."""
+    print(f"\n--- THE RUIN JOBS' REACH ({seeds} worlds) ---")
+    print(f"  {'radius':<8}{'Candor: worlds':>16}{'boards':>9}"
+          f"{'Libera: worlds':>18}{'boards':>9}")
+    reach = {side: {} for side in ("heaven", "hell")}
+    for _seed, world in worlds(seeds):
+        seats = quests.settlements(world)
+        for side in reach:
+            requirement = {k: v for k, v in quests._ruin_place(side).items()
+                           if k != "radius"}
+            for radius in RUIN_RADII:
+                n = sum(1 for seat in seats
+                        if quests.place_reachable(world, seat["key"],
+                                                  requirement, radius))
+                reach[side].setdefault(radius, []).append(n)
+    for radius in RUIN_RADII:
+        cells = []
+        for side in ("heaven", "hell"):
+            counts = reach[side][radius]
+            cells.append(f"{sum(1 for n in counts if n)}/{seeds}")
+            cells.append(f"{sum(counts) / len(counts):.2f}")
+        mark = "  <--" if radius == quests.RUIN_TARGET_DAYS else ""
+        print(f"  {radius:<8}{cells[0]:>16}{cells[1]:>9}"
+              f"{cells[2]:>18}{cells[3]:>9}{mark}")
+    print(f"  (ORDINARY_TARGET_DAYS is {quests.ORDINARY_TARGET_DAYS}; every "
+          f"other family posts at that radius)")
+
+
+RUIN_RADII = (3, 4, 5, 6, 7)    # the lever, one day at a time
+
 WAR_DAYS = 365      # a campaign year: long enough for every scar to have
                     # been laid and expired several times over
 
 SWEEPS = {"harvest": sweep_harvest, "census": sweep_census,
-          "trade": sweep_trade, "wars": sweep_wars, "gates": sweep_gates}
+          "trade": sweep_trade, "wars": sweep_wars, "gates": sweep_gates,
+          "ruins": sweep_ruins}
 
 
 def main() -> None:
@@ -331,7 +382,8 @@ def main() -> None:
             "--seeds wants at least one world")   # ZeroDivisionError three
                                                   # frames down
     chosen = ([args.only] if args.only
-              else ["harvest", "census", "trade", "wars", "gates"])
+              else ["harvest", "census", "trade", "wars", "gates",
+                    "ruins"])
     started = time.time()
     for name in chosen:
         SWEEPS[name](args.seeds)

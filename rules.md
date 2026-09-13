@@ -2714,7 +2714,12 @@ anchors the formulas were fitted to.
   set is assembled in Tile/Area order before the quest's rng picks from it,
   so placement is deterministic off the seed. The forced families (story
   waves, hell's assignments, deliveries, the DM's `forge`) are placed by
-  their own content and may lift the radius outright.
+  their own content and may lift the radius outright. Since 2026-09-13 a
+  family may also name **its own radius** on its place requirement, which
+  raises the ordinary three for that family alone; exactly one does — the
+  gate ruins' eight jobs reach six days, for the reason the Heaven & Hell
+  add-on gives. Lifting the radius outright still wins over a family's
+  number: a forced job places itself by its content either way.
 - **Local content remains deliberately compact:** the system provides a
   direct premise, a persistent destination, concrete Room roles and contents,
   and the fights. Local quests are formulaic pieces (a culture × themed foe
@@ -6114,12 +6119,19 @@ bearing in the vine pits; Saturna's Master of Hounds wanting the kennel
 book; a man from Saturna whose year is written in the old counting house
 and can be burned there.
 
-Three rules shape where they appear:
+Five rules shape where they appear:
 
 - **Only boards near a ruin post them.** A job's trouble sits within
-  three days of the board that posts it, and there are exactly two ruins
-  in the world, so the handful of settlements around Candor and Libera
-  carry this work and nobody else does.
+  **six days'** road of the board that posts it, and there are exactly
+  two ruins in the world, so the handful of settlements around Candor and
+  Libera carry this work and nobody else does.
+- **Six days, not the ordinary three** (2026-09-13). This family is the
+  one exception to the ordinary target radius, and it is not a taste
+  call: the two ruins cannot move, they are barred from capitals and
+  their ring, and the weighted draw puts them in slow country, so at
+  three days a settlement able to post a Candor job existed in 38% of
+  worlds and a Libera job in 27% -- in most campaigns these eight simply
+  did not exist. At six it is 90% and 77% (benchlog 2026-09-13).
 - **A Heaven job can only land in Candor and a Hell job only in Libera.**
   The ruin Area wears its own side's word, and each job asks for that
   word by name.
@@ -6127,6 +6139,17 @@ Three rules shape where they appear:
   Sites belong to `delve`; a board job builds its own place inside the
   ruin under the name the job gives it, and may reuse what an earlier one
   left. The two systems never write to the same room.
+- **A sealed ruin stops paying for work** (2026-09-13). When the deepest
+  Site's boss is dead the gate is sealed and the day is written down;
+  nothing comes out of that city afterwards, so no board posts its four
+  again. The other side's four go on being posted: two gates, two clocks.
+
+These eight are the only quest family that is NOT on a culture's quest
+table. A table is also what a land's WILDERNESS is drawn from, and the
+gate ruins' rosters -- the giant-kin, the drakes, the marble undead --
+have no business on an ordinary country road a fortnight from any ruin.
+Boards draw the eight the way a capital draws the epics: offered at the
+posting, never carried by the land.
 
 ---
 
@@ -6302,20 +6325,30 @@ to heal you.
 
 The city is its country's capital and its only board, so it posts the full
 five ordinary slots over the whole ladder, its own culture's quest table
-plus the country-agnostic epics, and — like every board within three days
+plus the country-agnostic epics, and — like every board within six days
 of a ruin — the eight ruin jobs. Its own table is four rows a side, and
 every one of them lands **in the human countryside within three days'
 road**: a one-tile state's work is what it asks the neighbours to do,
 which is how a gate city is felt long before the player walks into it.
 
-- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *Bring the
-  Child Home* — the mother whose child went onto the register — and, as
-  its epic, *The Prefect's Levy*.
+- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *The Child
+  off the Register* — the mother whose child went onto the register — and,
+  as its epic, *The Prefect's Levy*.
 - **Saturna** posts *Bring the Wine*, *Guard the Feast*, *Break the
   Debt-House* and, as its epic, *The Hunt of Misrule*.
 
 The two epics are capital-only by construction rather than by a flag:
-there is no second board in either country to post them at.
+there is no second board in either country to post them at. They are also
+**banded like epics** (2026-09-13): both shipped on pools that reached
+down to a cutthroat and a wolf, so a levy against a raiders' hold and a
+once-a-year hunt for a horned giant were posting at level 2. A template
+may now raise its own floor (`min_level`), and these two stand on the same
+floor the country-agnostic epics do — the bottom of the drake band.
+
+The city's own *Child off the Register* is deliberately NOT called *Bring
+the Child Home*. That title belongs to the job the removal card posts, and
+the board prefers a template it is not already showing **by title**: two
+rows under one name would have quietly shadowed each other.
 
 ## On the map
 
