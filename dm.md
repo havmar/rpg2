@@ -750,7 +750,11 @@ Hell add-on is the setting; this is how it plays at the table.
   `delve SITE` opens one. There is no giver, no board slot and no turn-in
   -- the party walks in, fights the rooms, and the field pay lands when the
   last one falls. A cleared place refills thirty days later; the deepest
-  one, once what holds it is dead, never does.
+  one, once what holds it is dead, never does. A ruin is a FULL PARTY'S
+  work: the bench targets are duo-baseline and a Site stacks three rooms
+  with no town in between, so a pair is at the edge everywhere in one -- a
+  two-person party wiped in THE CHOIR HALL at level 5, and a two-person
+  level-20 party lost the gate plaza's last room.
 - **Narrate a ruin as a dead city, not as a cave.** Candor is white stone,
   glass, geometry and lamps that still burn; the things in it are MADE --
   marble that walks, a servant with a broken arm still carrying. Libera is

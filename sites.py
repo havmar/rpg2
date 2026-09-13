@@ -549,7 +549,8 @@ def make_foe(kind: str, n: int, rng: random.Random,
     world seed, so a boss built without one would be a boss holding whatever
     the common table rolled, which is a bug and not a default."""
     spec = FOES.get(kind)
-    if spec is None:
+    boss = spec is None
+    if boss:
         spec = BOSSES[kind]
         if weapon is None:
             raise ValueError(f"{kind} is a boss: it fights with its own "
@@ -567,7 +568,13 @@ def make_foe(kind: str, n: int, rng: random.Random,
     items = {}
     if weapon.ammo in AMMO_CAPS:
         items[weapon.ammo] = FOE_AMMO   # a spawned shooter comes loaded
-    e = Entity(name=f"{display or spec.display} {n}", dex=spec.dex, str_=spec.str_,
+    # A ONE-OFF IS NOT COUNTED (2026-09-13): there is one Zohariel, and
+    # "Zohariel the Sentinel 10" read like the tenth of them. A boss wears
+    # its authored name bare -- which is also what `_named_dead` looks for
+    # (a name with no number is somebody the fiction bothered to cast).
+    name = display or spec.display
+    e = Entity(name=name if boss else f"{name} {n}",
+               dex=spec.dex, str_=spec.str_,
                sta=spec.sta, max_hp=spec.hp, training=spec.training,
                undead=spec.undead,
                pain=spec.pain, tireless=spec.tireless,
