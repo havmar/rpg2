@@ -1,0 +1,59 @@
+=== The Restless Crypt ===
+the village graveyard (L5),
+room 1/2: graveyard
+2x Skeleton -- rusted blade
+DEX 4  STR 2  HP 5/5
+undead, tireless, relentless
+2x Ghoul -- grave claws
+DEX 5  STR 3  HP 8/8
+undead, tireless, relentless
+Round 1:
+Varro uses First Blood!
+Skeleton 1 takes 1 dmg.
+The lines meet -- steel range.
+Nerva's ice bolt overwhelms Skeleton 1,
+deals 6 dmg!!! [5 Power left]
+Skeleton 1 is SLAIN.
+Round 2:
+Nerva's ice bolt
+outmaneuvers Skeleton 2, deals 4 dmg!!
+[4 Power left]
+Skeleton 2 is rimed with frost.
+Varro outmaneuvers Skeleton 2,
+deals 6 dmg!!! SLAIN.
+Skeleton 2 strikes as they fall:
+Varro parries.
+Ghoul 3 attacks Varro, parried.
+Ghoul 4 slips through the press.
+Round 3:
+Nerva's ice bolt is warded off.
+Varro overwhelms Ghoul 3, deals 6 dmg!!!
+Ghoul 3 (2/8) attacks Varro, parried.
+Ghoul 4 attacks Nerva, parried.
+Round 4:
+Nerva's ice bolt overwhelms Ghoul 3,
+deals 6 dmg!!! [2 Power left]
+Ghoul 3 is SLAIN.
+Ghoul 3 strikes as they fall:
+Varro parries.
+Varro edges past Ghoul 4, deals 6 dmg!!!
+Ghoul 4 (2/8) attacks Nerva, parried.
+Round 5:
+!! Nerva is Winded.
+Nerva's ice bolt overwhelms Ghoul 4,
+deals 4 dmg!! [1 Power left]
+Ghoul 4 falls.
+Ghoul 4 strikes as they fall:
+Nerva parries.
+The party catches its breath (+1 STA)
+Nerva +84 XP (encounter) [84/500]
+Varro +84 XP (encounter) [84/500]
+
+-- the party --
+Nerva: Unhurt STA 4/8 Power 1/6
+  (healing x1, stamina x1)
+Varro: Unhurt STA 6/8 Power 3/5
+  (healing x1, stamina x1)
+Purse 115s; day 1.
+Ahead: 1 fight(s) at the village graveyard; the work done pays 170 XP in the field, and the turn-in pays 191s, 97 XP at the giver.
+  (due day 7 -- 6 days left; quick pay, x1.15)

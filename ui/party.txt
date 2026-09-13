@@ -1,13 +1,14 @@
 RPG2 PARTY SHEET -- day 1, at Byzantium
-  > Venice > Salicetum
+  > Venice > Venice > the village
+  graveyard > graveyard
 purse: 115s
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Nerva -- byzantium m, age 32
-  L5  training 2  XP 0/500  points 0
+  L5  training 2  XP 84/500  points 0
   DEX 5  STR 3  MIND 6  CHA 4
-  HP 14/14  STA 8/8  Power 6/6
+  HP 14/14  STA 4/8  Power 1/6
   masterwork wooden staff | healingx1,
     staminax1
   spells: ice 1
@@ -15,9 +16,9 @@ party: 1/1 companion slot(s) filled (CHA
   speaks: Latin, Norse
 
 (companion) Varro -- byzantium m, age 17
-  L5  training 2  XP 0/500  points 0
+  L5  training 2  XP 84/500  points 0
   DEX 4  STR 6  MIND 5  CHA 5
-  HP 12/12  STA 8/8  Power 5/5
+  HP 12/12  STA 6/8  Power 3/5
   zweihander | healingx1, staminax1
   abilities: first_blood
   pools bought: hp +2, power +2, sta +2
@@ -26,6 +27,10 @@ party: 1/1 companion slot(s) filled (CHA
   interest: animals; dress:
     professional; looks: weathered
 
+active quest: [q01] L5 The Restless
+  Crypt -- next: the village graveyard
+  (L5), room 2/2
+  due day 7 -- 6 days left
 THE PACT: assignment [q28] Blood on the
   Altar at Salicetum (grace to take it
   runs to day 11).
