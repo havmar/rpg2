@@ -194,7 +194,7 @@ from places import (
     tile_id as tile_id_of, tile_label,
     MAP_GLYPH_LEGEND, MAP_MARK_LEGEND, MAP_GATE_LEGEND,
     gate_line, gate_here, ruin_area, ruin_sites, ruin_site_state,
-    refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS,
+    refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS, CITY_STATES,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -1663,6 +1663,18 @@ def recruit_options(cap: int, settlement: dict) -> int:
     return min(cap, RECRUIT_OPTIONS.get(settlement_tier(settlement), cap))
 
 
+def recruit_homeland(world: dict, land: str) -> str:
+    """Where a face hired at this counter was BORN. Nobody is born in a gate
+    city (people.HUMAN_HOMELANDS -- Concordia and Saturna are 27 years old
+    and their people came through a gate), so the faces in a gate city's
+    tavern are the HUMANS of the city: born in the land the city was cut
+    out of, the converts and the debtors the packets are about. Everywhere
+    else a recruit is local."""
+    if land in CITY_STATES:
+        return world["gates"][land]["cut_from"]
+    return land
+
+
 def roll_recruits(state: dict) -> None:
     """Roll a settlement day's recruit candidates: as many OPTIONS as
     the PC's CHA capacity (three choices even if only one slot is free --
@@ -1681,15 +1693,16 @@ def roll_recruits(state: dict) -> None:
         return
     cap = recruit_options(cap, here)
     used = {h.name for h in party}
+    born = recruit_homeland(state["world"], here["land"])
     options = []
     for _ in range(cap):
         level = max(1, pc.level + rng.randint(-1, 1))
         if rng.random() < PAIR_CHANCE:
             kind, members = make_pair(rng, level, used_names=used,
-                                      homeland=here["land"])
+                                      homeland=born)
         else:
             kind, members = None, [make_character(rng, level,
-                                                  homeland=here["land"],
+                                                  homeland=born,
                                                   used_names=used)]
         options.append({"kind": kind,
                         "members": [_entity_to_dict(m) for m in members]})
