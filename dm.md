@@ -389,6 +389,11 @@ table:
 | Umaia | Africa, the Levant and southern Iberia | Umaian | desert behind, a green shore, the great river's granary |
 | Tergal | the Pontic steppe | Tergal | herd roads, clans, one high chief |
 
+- **Eleven lands, nine countries** (2026-09-12). The table above is the
+  painted world and it is what "a country" means for names, homelands and
+  tongues. Two more lands stand on the map: Concordia and Saturna, the
+  one-tile gate city states (below, "The gates"). They have crowns, lore
+  pages, prices and boards like anybody else, and nobody is from one.
 - **A country is names and identity; a CULTURE is content.** Phyrascia and
   Teutonia draw the same world cards and the same settlement shapes, and
   share nothing else — not a name, not a crown's title, not a tongue. When
@@ -397,7 +402,8 @@ table:
 - **The crown has a different name in each**: king in Phyrascia and
   Seraptania, emperor in Teutonia and Byzantium, grand prince in
   Vellisclavia, sea-king in Thule, prince in Andalusia, sultan in Umaia,
-  high chief in Tergal. The script prints it; use it.
+  high chief in Tergal -- and prefect in Concordia, lord (or lady) of
+  misrule in Saturna. The script prints it; use it.
 - **Nine capitals**: London, Paris, Prague, Stockholm, Moscow,
   Constantinople, Toledo, Cairo, Kyiv. The four great cities of the age
   are Paris, Venice, Constantinople and Cairo.
@@ -723,6 +729,224 @@ while other people are fighting over it.
   of the weather -- one line when the party crosses a mark, and silence
   otherwise.
 
+### The gates -- Heaven and Hell (2026-09-12, the gates arc)
+
+**Two foreign worlds have doors into this one.** Four sites are on every
+map from day one, rolled at worldgen and listed on the map legend under
+GATES: two DEAD gate cities a thousand years abandoned (Heaven's **Candor**
+drawn `R`, Hell's **Libera**) and two LIVE ones twenty-seven years old
+(Heaven's **Concordia** drawn `G`, Hell's **Saturna**). rules.md's Heaven &
+Hell add-on is the setting; this is how it plays at the table.
+
+- **Neither power is good and neither is evil, and the table should feel
+  that.** Heaven heals the village, walls it, feeds it, shuts the tavern
+  and takes the strange child away. Hell hangs the lord, burns the debt
+  book, throws a feast every week, leaves the fields untended, and somebody
+  owes somebody a year. Play each one doing its virtue and its vice in the
+  same scene and never editorialize about which is worse.
+- **The two ruins are DUNGEONS and they are the arc's playable half.**
+  Stand on the ruin's tile, `go` into it (a free step, same Tile), and
+  `look` lists six named places with their levels: 2, 5, 8, 11, 14, 17.
+  `delve SITE` opens one. There is no giver, no board slot and no turn-in
+  -- the party walks in, fights the rooms, and the field pay lands when the
+  last one falls. A cleared place refills thirty days later; the deepest
+  one, once what holds it is dead, never does.
+- **Narrate a ruin as a dead city, not as a cave.** Candor is white stone,
+  glass, geometry and lamps that still burn; the things in it are MADE --
+  marble that walks, a servant with a broken arm still carrying. Libera is
+  a feast that never ended: the table still laid, kennels, cages, a vine
+  pit still bearing. Its things are BRED. The party's first scene in either
+  is the ruin itself, one or two concrete details, and then the fight.
+- **The ring is a real thing the player can feel.** Every tile within one
+  of a ruin carries `gate-ruin` and prints it on the Tile page. On that
+  ground the encounter chance is DOUBLED and most of what comes is out of
+  the ruin. Say so once when the party arrives -- something has been coming
+  down off the ruin all year, the shepherds have moved the flocks -- and
+  then let the dice carry it.
+- **The tongue is one language in two registers, and that is a table
+  rule.** Heaven speaks LATIN and every party member speaks Latin, so
+  Heaven is always understandable. Hell speaks the OLD TONGUE: a Latin
+  speaker follows it WITH DIFFICULTY -- gets the gist, misses the terms,
+  and a bargain's exact words are exactly what one misses. **Nothing in the
+  engine checks this.** It is yours to play: ask again, be misunderstood on
+  purpose, let a demon of rank switch to a deliberately bad Latin. Never
+  turn it into a soft-lock; it is texture and it is comedy as often as it
+  is menace.
+- **Names carry the mood** (writing.md's two rows). Heaven's people are
+  BOUND: every name ends in the suffix that means "of the Law" -- Zohariel,
+  Dinael, Tohara. Hell's are UNBOUND: a bare root, no suffix, and an
+  epithet EARNED rather than given -- Saar Nine-Debts, Lahav the Cup, Dror
+  Who Opened the Kennels. If you invent one at the table, keep the rule.
+- **Something is standing at the bottom of each ruin** (2026-09-12,
+  session 2). Candor's gate plaza is kept by **Zohariel the Sentinel**, a
+  stranded angel who never left its post; Libera's gate hollow by **Saar
+  the Old Host**, a stranded demon who kept the feast going alone. Both
+  are level 17 and 16 respectively, both are authored one-offs and not
+  monsters off a table, and neither has a hole in it. Introduce each ONCE,
+  in one or two lines, and then let the log do the fighting: the roster
+  block already prints what the party is up against.
+  - **Zohariel does not negotiate and does not spare.** It has been
+    counting the days and it will tell you the number if asked.
+  - **Saar robs you, laughs, and lets you crawl out** -- and if the fight
+    turns it will run out of its own hollow. A party that drove it off has
+    NOT finished: the hollow refills in thirty days with the Old Host
+    back in it. The ruin only goes quiet over a body.
+- **Each carries the bar Tom set across that gate.** `the Candor bar` and
+  `the Libera bar` are the two most famous weapons in the game, listed in
+  the armory from day one with their owner and their resting place, and
+  rumor about them is free. They are plain: heavy iron a man long, +3 STR,
+  no magic twist at all. When the sentinel falls the bar is lying there --
+  `give HERO the Candor bar` puts it in a hand. Let the moment be small:
+  the party is holding the thing that has held the gate shut.
+- **The ruin jobs are the board's half of this.** A settlement within
+  three days of a ruin can post work into it: looters on Candor's
+  terraces, a marble servant standing in a churchyard, the lamp in the
+  glass garden, Concordia's register -- hell hounds off the feast-hall,
+  the vine pits' vintage, Saturna's kennel book, a man's year written in
+  the old counting house. These are ORDINARY jobs with a giver and a
+  turn-in, unlike a `delve`, and they go to their own side's ruin. Play
+  the giver as a local with a local problem: nobody in these scenes is
+  thinking about the gate.
+- **Tom's stone** is a wayside shrine in the western and southern
+  countryside: an upright bar of grey stone, wax stubs, coins pressed
+  into the turf, a worn track and a beggar's bowl. Sell a burial or a
+  blessing at it like at any shrine. Whose Tom it is depends on who is
+  standing there -- Saint Tom to the Church, Tom the Smith to a
+  northerner passing through -- and the stone does not say.
+- **The Nephilim are the setting standing in your party** (2026-09-12,
+  session 3). Half of all player characters are half-blood, so assume the
+  PC is one until his sheet says otherwise -- the BLOOD row names the line
+  and the mark anyone in the room can see. Old-blood is the thousand-year
+  thinning of the stranded; sky-born and fire-born are twenty-seven years
+  old at most, the first generation of the Return. **The engine checks
+  nothing**: every reaction below is yours.
+  - **Play the reaction, not the label.** A Heaven warden asks a sky-born
+    for his register and is unfailingly polite about it. A demon greets a
+    fire-born as kin, is delighted, and charges him double. A bishop looks
+    twice at either and says nothing. A village that would take the party
+    in takes them in faster or not at all. Nobody explains what they are
+    doing.
+  - **The mark is what people see** -- the horns under the hair, the gold
+    in the eyes, the hand that is too warm -- so it is what a scene turns
+    on, never the word "Nephilim", which is the game's word and not the
+    world's. In the west it is a Church term; a northern farmer says the
+    grove touched him.
+  - **The Pruners' and the Hunger's cards are ABOUT people like the PC.**
+    When Heaven takes a strange child off the register or Hell buys a
+    year off a debtor, the party is watching something that could have
+    been done to one of them. Let that land once and do not press it.
+  - **An old-blood PC is Tom's people as far as both powers are
+    concerned**, whether or not it is true. That is the hook and it stays
+    unanswered.
+  - **A fire-born follows the Old Tongue.** He is the party's ear at a
+    Hell table -- let him catch the terms the others miss, and let the
+    demons notice him doing it.
+- **The two LIVE cities are countries** (2026-09-12, session 4), of one
+  tile each, cut out of whichever of the nine the roll put them in. `world`
+  lists eleven lands, `lore concordia` and `lore saturna` are pages like
+  any other, and the map legend's GATES group says which country each city
+  was cut out of. The tile is theirs; the FIELDS on it are still the
+  neighbours' fields, farmed by the same people, and the city's work is
+  posted to them.
+  - **Entering is ordinary.** `travel` to the tile and `go` into the city
+    like any settlement: it is known from day one, it has an inn, a forge,
+    a shop and an apothecary, and it posts five jobs over the whole
+    ladder. Nobody stops the party at the gate -- that would be a rule the
+    engine does not have. Play the WATCHING instead: in Concordia
+    everything the party does is written down somewhere, and in Saturna
+    everything the party accepts is owed.
+  - **Concordia** is white walls laid out square on whatever open ground
+    the roll gave it, with the gate standing open in the middle of them. Its counters: THE INFIRMARY
+    (the cure is cheap and the wardens ask who you are), THE MARKET OF
+    LAMPS, THE SCHOOL OF MEASURES, THE CHOIR, and THE PREFECTURE, where the
+    **Prefect** holds court. Healing x0.6, a bed x0.8, everything else
+    x1.2.
+  - **Saturna** is a wooden town round a hollow, smoke over it, a fire in
+    every street. Its counters: THE FEAST-HALL (a bed is a place at the
+    long table), THE KENNELS, THE FIRE SCHOOL, THE WILD MARKET and THE
+    DEBT-HOUSE, where a year of a life is written down. The **Lord of
+    Misrule** holds it for a year and a day. A bed x0.5, goods x0.9, the
+    healer x1.3 -- nobody here is in a hurry to fix you.
+  - **Their work goes out to the neighbours.** Concordia hires escorts for
+    its healers, lamp-thief hunters, and once a mother from a host village
+    asking for her child back off the register; the Prefect musters a levy
+    against a raiders' hold. Saturna wants its wine cart through, its feast
+    kept quiet, its debt-house burned by whoever the elder can hire, and
+    once a year it hunts something that hunts back. Play the giver as
+    somebody with a job to fill, not as a power making a move.
+  - **Nobody is BORN in either.** Every face behind a counter came through
+    the gate or walked in as a convert; no PC, companion or recruit is ever
+    from one. If the party asks where somebody is from, the answer is the
+    other side of the gate and it is said plainly.
+- **Both cities have a full deck now** (2026-09-12, session 5), and what
+  they do reaches the neighbours before the party ever walks in. Read the
+  news. Heaven's eight are administrative: the register goes up on the
+  Prefecture wall, a child comes off it, the infirmary opens to everybody
+  or the gate shuts against everybody, a bishop preaches, a marble servant
+  walks off with a crate. Hell's eight are appetite: the feast comes over
+  the wall, the debt-house collects, the free companies hang the Lord, the
+  kennels open, the wild market puts people in cages, the long table
+  elects. Play each as a thing that happened to a village, not as a move in
+  a war.
+  - **Four people are NAMED once and kept.** The child off the register,
+    the hermit in the hills who has been walled into one cell for longer
+    than the villages have existed, the debtor whose year is written in the
+    book, and the old woman of the fen who has run the same feast for forty
+    generations. The script rolls each name once and keeps it on the land;
+    use the name every time and never re-invent the person. All four are
+    from the HOST country and carry its names, which is the point: the
+    register is a list of village children.
+  - **Both sides split on every one of them, and neither side is the good
+    one.** The Pruners want the hermit brought in and the Gardeners want
+    the hermit left alone; the Hunger wants the old woman and the Feast
+    wants her where she is. The job the board posts is one side hiring the
+    party. Say who is paying and let the player weigh it.
+  - **The counters are open.** In Concordia, `service choir` buys a sung
+    rite of order that steadies the whole party, and `service measures`
+    buys a term at the School — the ice school's first diagrams to anybody
+    with the gift, and they write down who came. In Saturna, `service
+    feast` buys a place at the long table (the cheapest good night in the
+    game) and `service fire` a term at the Fire School, the same teaching
+    with nothing written down. Both schools are cheaper than any human
+    door. Play the difference: Heaven charges you and files you; Hell
+    charges you less and you owe something nobody has named yet.
+  - **The host country wears the gate all campaign.** Whichever of the nine
+    the roll cut Concordia out of has a cheaper healer than it should, and
+    Saturna's host a cheaper bed. Both host countries carry a standing fact
+    on their lore page — *Concordia stands on ground that was ours
+    twenty-seven years ago* — and both ruin-keeping countries carry theirs.
+    Read `lore` for the country the party is in before framing the first
+    scene there; the gate may be the thing the locals will not shut up
+    about.
+  - **The church argues about it.** The synod that already argues about the
+    death-face now also argues about the Return, and which rite welcomes it
+    is a matter of geography: the rite that has Concordia on its own ground
+    says the god's country has come back, and the other calls it an
+    invasion wearing the god's face. Where Hell landed in a Sun-communion
+    country, a bishop preaches a crusade against the feast town and the men
+    walking the gate road with staves are not pilgrims. None of it splits
+    the church and none of it becomes a war.
+  - **1027 is the only date the game prints**, and it prints on the lore
+    page. If the party asks what year it is, that is the answer, and the
+    answer is the Church's count from the day Tom shut the gates. Every
+    culture keeps its own Tom and they disagree; the lore page of the
+    country the party is standing in says which one is told there.
+- **A party with no blood in it** (the other half of the campaigns). The
+  Nephilim material is not a requirement for the arc to play. A fully human
+  party walks into the same scenes from outside them, and that is a
+  different and equally good game: nobody in Concordia is unfailingly
+  polite to them, nobody in Saturna greets them as kin and charges double,
+  and nothing that happens to the child on the register could have happened
+  to them. Play them as WITNESSES with a free hand. They are the only
+  people in the scene neither power is measuring, which makes them the ones
+  both sides will hire, and it means the choice about the child or the
+  hermit or the old woman is made on what they think is right rather than
+  on what they are. Do not compensate by inventing a half-blood connection.
+  The scene is already about somebody.
+- **Do not promise the endgame.** What one would DO to a live gate is not
+  designed. The party can reach the bottom, take the bar, and the ruin
+  goes quiet. Say nothing about what comes next.
+
 ### The sky (2026-08-08, the weather)
 
 Every land rolls a sky every day. Unlike the wealth band, the weather has
@@ -853,6 +1077,13 @@ direct mechanical effects.
   proficiency and moves are all on his menu (a non-wizard can never go the
   other way; to him a spellbook is just diagrams). Let the player build in
   either direction and narrate the magic as his, not as a class.
+- **He is probably a half-blood** (2026-09-12, the Nephilim). `new` rolls
+  a d6 and half of all PCs come out old-blood, sky-born or fire-born; his
+  sheet's BLOOD row says which, and what the world does about it is "The
+  gates" above. Narrate the MARK, never the mechanics: he is taller than
+  the door, or his eyes catch the light, or there are small horns under
+  the hair and his hand is warm. Do not make it his personality -- the
+  player owns who the PC is -- and do not let a scene forget it either.
 - **If the PC dies, the game is over unless defeat mercy fires** -- even if
   a companion still stands. Relentless foes, or a second defeat at the same
   character level, give no mercy (`session.py` prints the GAME OVER line).

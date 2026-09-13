@@ -558,7 +558,8 @@ class TheMapPage(unittest.TestCase):
 
     def test_an_unknown_ordinary_settlement_never_shows(self) -> None:
         hidden = next(slot for slot in self.world["settlement_slots"].values()
-                      if not slot["known"])
+                      if not slot["known"]
+                      and places.gate_here(self.world, slot["tile"]) is None)
         tile = self.world["tiles"][hidden["tile"]]
         if not places.known_slots(self.world, tile):
             self.assertEqual(places.map_glyph(self.world, tile),
@@ -570,7 +571,8 @@ class TheMapPage(unittest.TestCase):
         drawn = [line[3:] for line in places.map_lines(self.world)[2:]]
         for authored, shown in zip(rows, drawn):
             for glyph, cell in zip(authored, shown):
-                self.assertIn(cell, (glyph, "C", "T", "v", "@", "!"))
+                self.assertIn(cell, (glyph, "C", "T", "v", "@", "!",
+                                     "R", "G"))
 
     def test_every_page_line_is_ascii_and_fits_forty_columns(self) -> None:
         text = session._wrap_block("\n".join(

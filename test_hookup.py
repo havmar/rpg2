@@ -528,7 +528,14 @@ class TheTileMenu(unittest.TestCase):
 
     def test_the_granary_the_pithead_and_the_crossroads(self) -> None:
         world = self.world
-        self.assertEqual(places.tile_terms(world, NILE), {"lodging": 0.90})
+        # Seed 1 put CONCORDIA on the Nile granary (2026-09-12): a gate
+        # city's own counter is a fourth static row and it multiplies over
+        # the ground's, so the granary's cheap bed is 0.90 x 0.80 here and
+        # the city's healer and shelf ride beside it.
+        nile = places.tile_terms(world, NILE)
+        self.assertAlmostEqual(nile["lodging"], 0.90 * 0.80)
+        self.assertAlmostEqual(nile["healer"], 0.60)
+        self.assertAlmostEqual(nile["goods"], 1.20)
         crossroads = places.tile_terms(world, PARIS)
         self.assertEqual(crossroads, {"goods": 0.95, "lodging": 1.10})
         mine = places.tile_terms(world, GOSLAR)
@@ -557,6 +564,11 @@ class TheTileMenu(unittest.TestCase):
         world = quests.generate_world(1)
         paris = _settlement(world, "Paris")
         state = _standing_in(world, paris)
+        # `local_term` rolls the world to the party's day before it quotes,
+        # so the LAND's half has to be read on the same day or this test
+        # compares a day-0 land against a day-3 counter (found 2026-09-12,
+        # when a card added to Seraptania's deck moved its day-3 draw).
+        worldsim.roll_world(world, state["clock"].day)
         land = worldsim.term(world, paris["land"], "lodging")
         self.assertAlmostEqual(session.local_term(state, "lodging"),
                                land * 1.10)
@@ -626,12 +638,19 @@ class TheMinersLeague(unittest.TestCase):
                          {"steel": 0.85})
 
     def test_six_cards_reach_every_land(self) -> None:
+        """Every land with PITS in it, which is the nine (2026-09-12): the
+        two one-tile gate city states have no mine and no countryside of
+        their own, so the League is scoped to the human countries rather
+        than to ANY_LAND."""
         for key in self.KEYS:
             card = self._card(key)
-            self.assertEqual(card["land"], (worldsim.ANY_LAND,))
-            for polity in places.COUNTRIES:
+            self.assertEqual(set(card["land"]), set(places.HUMAN_COUNTRIES))
+            for polity in places.HUMAN_COUNTRIES:
                 self.assertTrue(worldsim.in_land(card, polity),
                                 (key, polity))
+            for polity in places.CITY_STATES:
+                self.assertFalse(worldsim.in_land(card, polity),
+                                 (key, polity))
 
     def test_the_scrub_left_no_dwarf_behind(self) -> None:
         gone = re.compile(r"\b(dwarf|dwarves|dwarven|clan|clans|thane|"
@@ -663,15 +682,19 @@ class TheMinersLeague(unittest.TestCase):
 
     def test_the_knockers_came_back_word_for_word(self) -> None:
         knockers = next(f for f in worldsim.FACTS if f["key"] == "knockers")
-        self.assertEqual(knockers["land"], (worldsim.ANY_LAND,))
+        # Every land with PITS in it, which is the nine (2026-09-12): the
+        # belief follows the pits, and a one-tile gate city has none.
+        self.assertEqual(set(knockers["land"]), set(places.HUMAN_COUNTRIES))
         self.assertEqual(
             knockers["line"],
             "The mine-spirits knock before a collapse and are paid for it: "
             "the last bite of every meal, left at the working face. "
             "Whistling underground is forbidden. Skeptics exist; they are "
             "assigned the unluckiest shifts.")
-        for polity in places.COUNTRIES:
+        for polity in places.HUMAN_COUNTRIES:
             self.assertIn(knockers, worldsim.FACTS_BY_LAND[polity])
+        for polity in places.CITY_STATES:
+            self.assertNotIn(knockers, worldsim.FACTS_BY_LAND[polity])
 
     def test_every_land_has_a_league_fact_naming_its_own_mines(self
                                                                ) -> None:

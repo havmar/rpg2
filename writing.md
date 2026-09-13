@@ -286,6 +286,33 @@ invented sounds, not claims about any real language.** ASCII only.
 | Umaia | Arabic construct pairs: Bir-, Wadi-, Ras-, Ain-, Dar-, Kefr-, Al- | Bir Hakla, Ain Zafra, Dar Aziza | Arabic | Harun, Yusuf, Zaynab, Layla |
 | Tergal | steppe and clan words, often hyphenated: -gal, -khar, -run, -tai | Ulus-Gal, Kharuk, Aradun, Ukhta | short, hard, guttural | Gruk, Marok, Baggi, Kansif |
 
+**Two more rows, and they are not countries** (2026-09-12, the gates arc):
+Heaven and Hell are foreign worlds, and their people, works and places name
+themselves out of one language family of their own.
+
+| power | place sound | example places | person sound | example people |
+|---|---|---|---|---|
+| Heaven | Latin abstractions of order and light: Concordia, Claritas, Candor; districts and works take -arium, -orium | Concordia, Candor, Lucidarium, Ordinatorium, Claritas, Serenitas, Mensura, Puritas, Candelabrum, Speculum | Hebrew-shaped, ending -el or -iel, roots meaning light, law, measure, truth | Oriel, Zohariel, Dinael, Emetiel; Orah, Zohara, Tohara, Noga |
+| Hell | older Italic, the shapes under Latin: -a, -os, -om, kept hard; roots of feast, free, wild, wine, wolf, night | Saturna, Libera, Ferwos, Silwa, Noktia, Winom, Lupos, Fawnos, Dwenos, Kaldom | Hebrew-shaped, NO -el ever, a bare root and a hard ending, and at the table an epithet after it | Lahav, Saar, Dror, Resheph, Zaam; Simcha, Taava, Dama, Chaga |
+
+The person-name rule is the mood carrier and it is worth getting right.
+Heaven's names are BOUND: every one ends in the suffix that means "of the
+Law". Hell's names are UNBOUND: no suffix, and a demon of any standing
+carries an epithet EARNED, not given -- Saar Nine-Debts, Lahav the Cup,
+Dror Who Opened the Kennels. The epithet is Hell's answer to Heaven's rank.
+The Hell reskins already in the game (Chain-Devil, Spite-Imp, Pit Bully)
+are in this register and stay. Neither row is a country's: nobody is BORN
+in Concordia or Saturna on the birth roll, and these names belong to the
+people of the two gates and to the works they left behind.
+
+**One tongue, two registers.** Both powers speak one language. Heaven's
+high register IS the church's Latin -- the church's Latin came from it --
+so a Latin speaker understands an angel and every party member speaks
+Latin. Hell speaks the OLD TONGUE, the older register, rougher, and on the
+SPEAKS line it is exactly that: `Old Tongue`. A Latin speaker follows it
+with difficulty; dm.md's table rule says how that plays and nothing in the
+engine checks it. Demons of rank also speak Latin, badly and on purpose.
+
 Two things the table does not cover:
 
 - **The towns already have real names** (2026-08-22). Every tile that can

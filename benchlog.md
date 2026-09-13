@@ -3028,3 +3028,398 @@ odds are exact and unmoved.
 change; nothing else was touched. `WOUND_TIER_SEVERITY` (3 / 4) and
 `WOUND_SEVERITY_MAX` (8) are recorded in develop.md's tuning section as the
 feel pair with their fit above.
+
+---
+
+## 2026-09-12 — THE GATES: where the four sites land (the gates arc's session 1)
+
+`python bench_worldgen.py --seeds 200 --only gates`, the new fifth sweep.
+The placement RULE is not measured here — `places._validate_gates` raises
+inside every `create_geography`, so a world that breaks a clause never
+reaches the bench. What the sweep is for is the half the rule deliberately
+leaves loose: the WEIGHTED terrain preference, which is a thumb on the
+scale and never a filter, and the country histogram that falls out of it.
+
+```
+--- THE GATES (200 worlds) ---
+  Candor     heaven  ruin  preferred ground 69%  (83 distinct tiles)
+    terrain: hills 42%, plains 30%, hills/wooded 14%, mountains/wooded 12%
+    lands:   byzantium 44%, umaia 39%, seraptania 10%, andalusia 7%
+  Libera     hell    ruin  preferred ground 76%  (76 distinct tiles)
+    terrain: plains/deep forest 46%, plains 18%, hills/wooded 16%,
+             hills/deep forest 10%
+    lands:   vellisclavia 39%, thule 26%, teutonia 14%, tergal 14%,
+             phyrascia 6%
+  Concordia  heaven  city  preferred ground 68%  (95 distinct tiles)
+    terrain: plains 81%, hills 12%, mountains/wooded 3%, hills/wooded 3%
+    lands:   umaia 52%, byzantium 30%, seraptania 15%, andalusia 2%
+  Saturna    hell    city  preferred ground 76%  (92 distinct tiles)
+    terrain: plains 38%, plains/deep forest 30%, hills/wooded 14%,
+             mountains/wooded 10%
+    lands:   vellisclavia 38%, thule 30%, teutonia 12%, tergal 10%,
+             phyrascia 9%
+  pairwise separation (>= 4)         mean 11.8 (min 4.0, max 29.0)
+  distance to nearest capital (>= 2) mean 3.5 (min 2.0, max 9.0)
+```
+
+**Read.** The weight is doing exactly the job it was specified to do and no
+more. Each site lands on its preferred ground in about seven worlds in ten
+(68-76%), which is "most worlds, never all" — the sentence gates.md's
+section 5 argued for, and the reason it is a weighted draw over the whole
+eligible set rather than a hard filter: a hard filter over a set this small
+would make the map predictable, and the player would learn where to look.
+Each site uses 76-95 DISTINCT tiles over 200 worlds, so the placement is
+genuinely per-campaign; nothing is pinned in practice.
+
+Two numbers worth writing down because they will be argued about later:
+
+- **Candor's plains 30%** is the loosest of the four. `×4` on mountain or
+  hills is not enough to dominate a southern set whose eligible tiles are
+  mostly plains, and a white ruin on a southern plain is not wrong — it
+  just is not the Alps. If the picture wants to be tighter, the weight is
+  the dial, not the rule.
+- **Umaia takes 39% of Candor and 52% of Concordia.** It is the largest
+  member of the southern set by eligible-tile count and the draw is
+  uniform-before-weights, so this is arithmetic rather than a bug. It does
+  mean that the most common world puts Heaven's colony in the south-east.
+  Nothing downstream reads the keeper or the donor yet; session 4 is where
+  that starts to matter, and if the spread wants flattening the place to do
+  it is a per-land normalization inside `gate_candidates`.
+
+`min separation 4` and `min capital gap 2` are the two hard clauses showing
+they bind: the four-tile rule is reached in some worlds (so it is a real
+constraint, not slack), and no site ever sits on or beside a capital.
+
+The other four sweeps were not re-run: this session touched no constant in
+places.py's harvest, census or trade halves, and the gate layer consumes
+its own derived child seed (`stable_seed(seed, "world", "gates", 0)`), so
+no other layer's stream moved. Test suite: **1114 OK** (1062 before, +52 in
+the new `test_gates.py`).
+
+---
+
+## 2026-09-12 (B) — THE TWO SENTINELS: annotating the bosses (the gates arc's session 2)
+
+`python bench_bestiary.py --bosses --trials 1500` — the new pass, the same
+three columns and the same reference duo every catalog row is measured
+against, run over `sites.BOSSES` instead of `sites.FOES`. The calibration
+target is the bestiary's own: the at-level duo wins 55-75% of a single
+reference encounter, the -2 column visibly worse and the +2 column visibly
+safer. Each boss carries its bar (`sites.boss_bar`, world seed 1 — the
+bars' profile is authored clean, so that world stands for all of them).
+
+**As specced (gates.md section 9, both bodies the Legend row: DEX/STR/STA
+8, HP 20, pain 3, spell_ward 2, crowd_cap 3, drilled +3, 12 Power,
+tireless), 400 trials a column:**
+
+```
+--- Saar the Old Host (annotated level 16) ---
+party L       win%   fled%   wipe%  down%
+14           25.2%    8.8%   66.0%  78.8%
+16           29.0%    9.2%   61.8%  73.8% <- annotated
+18           54.0%    6.2%   39.8%  48.2%
+
+--- Zohariel the Sentinel (annotated level 17) ---
+15           61.5%    3.8%   34.8%  49.5%
+17           62.0%    1.5%   36.5%  49.2% <- annotated
+19           86.8%    0.2%   13.0%  24.5%
+```
+
+**Zohariel landed on target with nothing touched.** Saar was a level-19
+body wearing a 16: 29% win and 62% wipe. The two differences from Zohariel
+are the whole of it — the FUELED SWEEP (2 targets, 3 Power, 12 Power in the
+pool, which is the dragon's own sweep budget) and `inflicts="burn"` — on
+top of the shared amplifier both carry, the bar's **+3 STR on a STR-8
+body**. Effective STR 11 with a zweihander is above anything else in the
+game; the dragon fights at STR 9.
+
+**The levers came off in the contracted order (`hp`, `training`, `pain`).**
+
+| Saar | at-level win% |
+|---|---|
+| hp 20 (as specced) | 29.0 |
+| hp 16 | 36.0 |
+| hp 13 | 40.0 |
+| hp 11 | 44.5 |
+| hp 20, drilled +2 | 52.5 |
+| hp 20, drilled +1 | 72.2 |
+| hp 20, drilled +0 | 88.5 |
+| **hp 16, drilled +2 (shipped)** | **58.8** |
+
+**HP alone cannot do it** and the table says why: at 11 HP — under a
+wight's — the duo still only wins 45%, because the duo was not failing to
+cut through, it was WIPING. HP is the lever for "how long the kill takes";
+the drill is the lever for "how hard it hits back", and the drill is what
+was out of band. `pain` was never reached.
+
+**Shipped (1500 trials a column):**
+
+```
+--- Saar the Old Host (annotated level 16; hp 16, drilled +2) ---
+party L       win%   fled%   wipe%  stall%   down%
+14           52.4%    4.5%   43.1%    0.0%   53.4%
+16           58.8%    5.5%   35.7%    0.0%   45.3% <- annotated
+18           79.9%    3.3%   16.7%    0.0%   23.4%
+
+--- Zohariel the Sentinel (annotated level 17; the Legend row untouched) ---
+15           63.3%    2.7%   34.0%    0.0%   46.9%
+17           63.6%    1.6%   34.8%    0.0%   45.5% <- annotated
+19           86.3%    0.9%   12.9%    0.0%   23.1%
+```
+
+Both sit in the band, both +2 columns open up hard (80% and 86%), and
+neither stalls. **Saar's `fled%` is the row that is doing fiction work**:
+it takes spoils, so it can break and run out of its own gate hollow about
+one fight in twenty, which is exactly why the seal was moved onto a BODY —
+a hollow the party cleared without killing it refills in thirty days with
+the Old Host back in it.
+
+**The one soft spot, recorded rather than fixed:** the -2 columns barely
+separate (Zohariel 63.3 against 63.6). Two levels of reference hero buy
+almost nothing against a body whose blows cap out at the severity ceiling,
+which is the same shape every top-band row has (the warlord at 19 has no
++2 column at all). Read the +2 column as the gradient here, not the -2.
+
+**Nothing else was re-measured and nothing else moved.** The two bodies are
+not in `FOES`, so the 28-row catalog sweep is byte-identical; the bars come
+off their own string-seeded rng; `bench_worldgen.py --seeds 50 --only
+gates` reproduces the 2026-09-12 (A) placement picture unchanged, because
+the gate layer's own stream did not move. Test suite: **1147 OK** (1114
+before, +33 in `test_gates.py`).
+
+---
+
+## 2026-09-12 (C) — the Nephilim (the gates arc's session 3)
+
+An additive session with no combat surface at all, so the only things to
+measure were the two dice and the proof that nothing else moved.
+
+**The PC's d6** (`session.pc_blood`), sampled at the stream position a real
+`new --seed N` reaches it — the level roll and the world seed drawn first
+— over 6000 consecutive seeds:
+
+```
+human  49.3%    old  17.1%    sky  16.4%    fire  17.1%
+                              nephilim 50.7%   (design 50.0 / 16.67 each)
+```
+
+With `--level N` given the level roll is not drawn and the d6 sits one
+position earlier in the stream; the picture is the same (49.2% human,
+16.8 / 16.9 / 17.1). **Half of all player characters are Nephilim**, which
+is what this session was for.
+
+**The companion odds** (`people.roll_blood`, one `randrange(24)` behind all
+three bands), 240 000 draws:
+
+```
+human  83.29%   old  8.37%   sky  4.20%   fire  4.14%
+                             nephilim 16.71%
+design 83.33%        8.33%        4.17%        4.17%    16.67%
+```
+
+One hireable face in six is something other than human, and the old blood
+is twice as common as either young line — the thousand years of quiet
+descent against twenty-seven years of the Return.
+
+**Nothing else was re-measured, because nothing else could have moved.**
+The sims never import `people.py`, and `rpg.make_human`'s new `blood=`
+defaults to `""`, which is byte-identical behaviour: `python sites.py
+--seed 3` and `python bench_training.py` were both diffed against the
+previous commit's tree and came back IDENTICAL. The world layer, the
+gates' placement and the bestiary annotations are untouched by
+construction — no worldgen stream moved and no foe row changed.
+
+**One stream DID move, deliberately and visibly:** a played game's PC and
+companion now draw one extra number each at creation (the d6 and the
+companion roll), so `new --seed N` builds the same world and starts at the
+same level as before and rolls a different PAIR of heroes. That is a save
+break, not a balance change, and this project does not carry saves.
+
+Test suite: **1178 OK** (1147 before, +31 in `test_start.py`). Two
+pre-existing assertions were tightened rather than relaxed on the way: the
+tongue count is now "Latin plus the homeland's, plus the Old Tongue iff
+fire-born" instead of a flat 2 (`test_towns`), and the wealthy companion's
+joining gift now pins the wealthy+luxurious SUM instead of assuming a body
+can carry only one silver trait (`test_start`) — the second was a latent
+bug in the assertion that the new rng stream simply walked into.
+
+---
+
+## 2026-09-12 (D) — the gates arc's session 4: the two city states
+
+`python bench_worldgen.py` (100 seeds, 38s), measured against the SAME
+sweep run on the previous commit (`5e853a4`, in a scratch worktree) so the
+two columns below are both real numbers and not a memory. `--seeds 50
+--only gates` was run first as the quick check.
+
+**The census rng stream shifted**, because `roll_census` no longer draws
+an arrangement for the two ceded tiles — a gate city is SEATED, not
+rolled — so every world's settlement pattern is a different (equally
+legal) one than it was yesterday. That is a save break, not a balance
+change, and it is why the town/village rows move by a few tenths.
+
+**THE SETTLEMENT CENSUS** (100 worlds):
+
+```
+                              5e853a4          now
+  metropolis                      4.0          4.0
+  city                           19.6         21.7   (+2: the two cities)
+  town                          101.8        101.1
+  village                       403.1        399.5
+  hamlet                         90.9         90.7
+  total                         619.4        617.0
+  slots a land tile              1.97         1.97
+  empty tiles (of 314)             50           50
+  souls                     1,521,141    1,571,381   (+2 cities at 25k)
+  quiet rich country              38%          38%
+  free (chartered)               68.0         69.8   (+2, both free)
+  manors                         50.5         50.2
+```
+
+The two authored cities and their two charters are the whole of the
+structural move; everything else is the reshuffled stream. The two ceded
+tiles are subtracted from their donors' pinned biome and band censuses
+inside `_validate_countries`, so the authored picture still holds in every
+world or `create_geography` raises.
+
+**THE GATES** (100 worlds) — the placement rule did not change and the
+histogram is IDENTICAL to the previous commit's, line for line: Candor
+70% preferred ground over 65 distinct tiles (byzantium 44%, umaia 40%),
+Libera 73% over 58 (vellisclavia 46%, thule 24%), Concordia 63% over 65
+(umaia 47%, byzantium 34%), Saturna 74% over 63 (vellisclavia 39%, thule
+30%); pairwise separation mean 11.8 (min 4), capital gap mean 3.5 (min 2).
+That is the point of the check: the sweep now reads `cut_from` for the two
+live cities and the nine PAINTED capitals for the gap, and it gets the
+same numbers the takeover was built on top of. **Umaia is the host of
+Heaven in 47% of worlds and Vellisclavia the host of Hell in 39%** —
+session 1's note that `cut_from` would start to matter is now live.
+
+**THE ROLLED WARS** (100 worlds, campaign to day 365) — unmoved:
+3 wars a world, all six templates dealt at 60/51/51/50/47/41%, 2.00 crowns
+take the cross, Andalusia independent 52%, 6.0 countries at war, 47.0
+standing marks, scars 4.79 (was 4.78), occupations 5.83 (was 5.81), the
+two caps hold, siege rates village 50% / town 50% / city 45% unchanged.
+`new_war` now drops a theater cell a gate city has taken; over 100 worlds
+that never cost a war its settlements.
+
+**THE TRADE NETWORK** is a pure function of the census, so it moved
+exactly as much as the census did: routes 59.2 (was 59.0), land tiles on
+a road 115.2 (114.7), ports 26.4 (27.0), sea-lane tiles 25.6 (26.0),
+crossroads 32.3 (32.5), Falun unfed in 100/100. A gate city IS a market
+(its census seats a city), which is where the extra fifth of a route
+comes from.
+
+**THE LAST HARVEST** rolls on its own stream and did not move: coverage
+18.2% (was 18.3), 5.2 regions, region size 11.3, the drought guarantee
+holds in 100/100. The one number that wandered is *trouble within 5 days
+of the start* — **87%, from 91%** — which is the moved start draw, not a
+moved harvest: the nudge reads `world["party_tile"]`, and the census
+shift moved where some worlds open.
+
+**Sanity runs, all clean with eleven lands**: `worldsim.py --seed 1 --days
+60` (both city states roll a constitution, a standing tension, a ruler's
+sheet and all three tracks, and both post news — Concordia's register goes
+up on day 47, Saturna's feast spills on day 15), `quests.py --seed 1
+--demo` (Concordia posts THE PREFECT'S LEVY at L18 and Saturna GUARD THE
+FEAST at L5, cast out of their own name pools — Chokmiel the Prefect,
+Rina the Lord of Misrule), `rulers.py --seed 1 --count 8`, `econmap.py
+routes 7`, and a scratch playthrough that walked into both cities.
+
+Test suite: **1195 OK** (1178 before, +17 — fourteen in `test_gates`'s new
+`TheTakeover`, two in `test_places`, one in `test_worldsim`).
+
+---
+
+## 2026-09-12 (E) — the gates arc's session 5: the packets and the human side
+
+The arc's last session is CONTENT over machinery the world layer already
+had, so the sweeps that measure worldgen were expected not to move, and
+did not. What is new to measure is whether the authored content actually
+FIRES, and at what rate.
+
+**`python bench_worldgen.py` (100 seeds, 37s) is identical to 2026-09-12
+(D), line for line.** Census 4.0 / 21.7 / 101.1 / 399.5 / 90.7, total
+617.0, 1,571,381 souls, 69.8 free, 50.2 manors. Trade 59.2 routes, 115.2
+land tiles on a road, 26.4 ports, 25.6 sea-lane tiles, 32.3 crossroads,
+Falun unfed in 100/100. Wars 60/51/51/50/47/41%, 2.00 crowns take the
+cross, Andalusia independent 52%, 6.0 countries at war, 47.0 marks, scars
+4.79, occupations 5.83. Harvest coverage 18.2%, 5.2 regions, size 11.3,
+the drought guarantee 100/100, trouble within 5 days 87%. The gates
+histogram is also unchanged (Candor 70% preferred over 65 tiles, Libera
+73% over 58, Concordia 63% over 65, Saturna 74% over 63; separation mean
+11.8 min 4, capital gap mean 3.5 min 2). That is the expected result and
+it is the point of running it: this session touched the LAYER, not the
+ground, and `stamp_gates` and the crusade stamp consume no rng at all.
+The only stream that moved is the two city states' own decks (and the
+crusade host's, which gained one card), which bench_worldgen does not
+read.
+
+**Do the new cards fire? `worldsim.py`-equivalent sweep, 30 worlds x 60
+days, both city states:**
+
+```
+  11  hell/the-feast-spills        6  heaven/the-register
+   7  hell/the-kennels-open        6  heaven/the-cure-line
+   6  hell/the-election            6  heaven/the-sermon
+   4  hell/the-lord-hanged         5  heaven/the-lamp-thieves
+   4  hell/the-debt-book           5  heaven/the-gate-guarded
+   3  hell/the-cages               2  heaven/a-stranded-one
+   5  hell/a-stranded-one          1  heaven/the-removal
+   2  hell/the-horned-ones
+  30  hell/feast-fires            30  heaven/clear-sky
+  30  hell/the-wild-season        30  heaven/the-choir-season
+```
+
+Every crisis card of both packets fired at least twice over 30 worlds;
+the weather and season cards fire in every world, which is what a 0.4 and
+a 0.3 chance on an otherwise empty track means for a one-card deck. **Both
+chains complete**: `feast-spilled` 11 -> `the-debt-book` 4, `register-read`
+6 -> `the-removal` 1. The removal is the rarest thing in either packet at
+60 days because it needs the register to go up first and then a second
+crisis draw on a NORMAL-band city, which is the right shape for the card
+that takes a named child.
+
+**Over a longer horizon (20 worlds x 300 days)** every card the 60-day
+sweep left thin comes through: `the-debt-book` 16, `the-removal` 11,
+`the-servant-loose` 10, `the-horned-ones` 4. The two human-side cards are
+as rare as the card they sit beside: `communion/the-synod` 4,
+`communion/the-return-question` 1 (both ride the derived `schism-near`,
+which needs one of six states standing in Byzantium or Seraptania), and
+`western/the-preaching-crusade` 4 in 4 of 20 worlds — it needs Hell's host
+to be a Sun-communion land, which is 17 of 30 worlds, and then a draw.
+
+**Where the four gates land, as hosts and keepers** (the 30-world sweep,
+the number that now matters most because five standing states and four
+facts hang off it): Heaven's host is Umaia 18, Byzantium 6, Seraptania 5,
+Andalusia 1; Hell's is Vellisclavia 13, Thule 12, Teutonia 3, Phyrascia 1,
+Tergal 1. So **`pagan-host` stands in about 43% of worlds** (Thule or
+Tergal) and the crusade tension in about 57%.
+
+**Sanity runs, all clean:** `worldsim.py --seed 1/3/7/11 --days 60`;
+`bench_worldgen.py` full; `quests.py --seed 1 --demo` (Concordia posts THE
+PREFECT'S LEVY at L18 under Chokmiel the Prefect, Saturna GUARD THE FEAST
+at L5 under Rina the Lord of Misrule); `rulers.py --seed 1 --count 8` and
+`--lesser`. A scratch playthrough walked into Concordia with `gate-shut`
+standing: `service` printed both counters at the shut gate's prices (the
+choir's blessing 60s = 40 x 1.5, the school 156s = 120 x 1.3), `prices`
+showed the land's x1.30 shelf and x1.50 healer over the ground's own rows,
+and `world` printed *state: Heaven's gate city stands on this ground* on
+Byzantium with *derived: the cure has gone dear* under it.
+
+**The two gate crowns, after the `rulers` narrowing** (seeds 1-3): the
+Prefect came out traditionalist/ambitious/lavish, brilliant/zealot/lavish
+and welcoming/striking/bold, appointed every time; the Lord of Misrule
+sleepless/zealot/cultivated, delusions/merciful/zealot and
+tireless/spell-fearing/dull, acclaimed every time. Compare session 4's
+report: "crippled, zealot, cultivated, with a brother behind the throne".
+Six words out of a 357-word die is the whole of the change and the sheets
+read right now.
+
+Test suite: **1234 OK** (1195 before, +39 — thirty-six in `test_gates`'s
+six new classes, three in `test_worldsim`, where one stub clause became
+three). Two pre-existing tests were repaired rather than weakened:
+`test_hookup.test_the_shop_multiplies_the_land_by_the_ground` read a day-0
+land against a day-3 counter and now rolls the world first, and
+`test_places.test_the_world_layer_owes_every_country_a_deck` asks the
+reachability question of `_possible_relations()` because the only edges
+that reach a city state have a rolled end.

@@ -307,7 +307,12 @@ class TestWorldLayer(unittest.TestCase):
         a1 = self.world["armory"]
         a2 = quests.generate_world(1)["armory"]
         self.assertEqual(a1, a2)
-        self.assertEqual(len(a1), len(weapons.ARMORY_TIERS))
+        # The ten rolled pieces, plus the two Tom left (2026-09-12, the
+        # gates arc): fixed entries with fixed owners and resting places.
+        self.assertEqual(len(a1),
+                         len(weapons.ARMORY_TIERS) + len(weapons.GATE_BARS))
+        self.assertEqual([e["name"] for e in a1[len(weapons.ARMORY_TIERS):]],
+                         [spec["name"] for spec in weapons.GATE_BARS])
         tiers = [e["tier"] for e in a1]
         self.assertEqual(tiers.count("mythic"), 1)
         for e in a1:

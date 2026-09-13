@@ -24,8 +24,13 @@ Four sweeps, in the order the arcs built them:
             six templates the roll deals, how many crowns take the cross,
             where Andalusia's vassalage falls, how many countries end up at
             war, and what a campaign year leaves standing on the map.
+  GATES     (2026-09-12, the gates arc's session 1) where the four rolled
+            sites land: the country histogram, the terrain preference the
+            weighted draw is supposed to show, the pairwise separation and
+            the distance to the nearest capital.
 
-Run:  python bench_worldgen.py [--seeds N] [--only harvest|census|trade|wars]
+Run:  python bench_worldgen.py [--seeds N]
+                               [--only harvest|census|trade|wars|gates]
 
 100 seeds is the default and takes about twenty seconds.  The arc's PINS
 were measured at 500; re-measure with `--seeds 500` after touching any
@@ -243,11 +248,74 @@ def sweep_wars(seeds: int) -> None:
           f"{len(templates)} of 6 templates reached)")
 
 
+def sweep_gates(seeds: int) -> None:
+    """THE GATES (2026-09-12, the gates arc's session 1). The placement rule
+    is a hard contract -- `places._validate_gates` raises inside every
+    `create_geography` above, so this sweep is here to say out loud that it
+    held over N worlds, and to show the one thing the rule does NOT force:
+    the WEIGHTED terrain preference, which is a thumb on the scale and never
+    a filter. What the histogram should look like is the design's sentence:
+    Candor on hills or mountains in most worlds, Libera on marsh, deep
+    forest or hills in most, and neither of them always."""
+    print(f"\n--- THE GATES ({seeds} worlds) ---")
+    lands: dict[str, Counter] = {key: Counter() for key in places.GATE_KEYS}
+    terrain: dict[str, Counter] = {key: Counter() for key in places.GATE_KEYS}
+    preferred: dict[str, int] = {key: 0 for key in places.GATE_KEYS}
+    separations, capital_gaps = [], []
+    tiles_seen: dict[str, set] = {key: set() for key in places.GATE_KEYS}
+    # The NINE painted capitals: the no-capital clause is about them, and
+    # since 2026-09-12 a city state's own capital is its rolled tile.
+    capitals = [places.tile_row_column(tid)
+                for tid in places.HISTORICAL_CAPITAL_TILES.values()]
+    for _seed, world in worlds(seeds):
+        placed = []
+        for key in places.GATE_KEYS:
+            spec = places.GATE_BY_KEY[key]
+            record = world["gates"][key]
+            tile = world["tiles"][record["tile"]]
+            # A live city's tile flies its OWN flag after the takeover
+            # (2026-09-12, session 4), so the histogram counts the country
+            # it was cut out of -- which is what the eligibility rule says.
+            home = record.get("cut_from", tile["country"])
+            assert home in spec["lands"], key
+            lands[key][home] += 1
+            cover = "" if tile["cover"] == "open" else f"/{tile['cover']}"
+            terrain[key][tile["terrain"] + cover] += 1
+            if spec["weight"](world, tile) > 1.0:
+                preferred[key] += 1
+            tiles_seen[key].add(tile["id"])
+            placed.append(tile)
+            capital_gaps.append(min(
+                max(abs(tile["row"] - row), abs(tile["column"] - column))
+                for row, column in capitals))
+        for i, first in enumerate(placed):
+            for second in placed[i + 1:]:
+                separations.append(max(abs(first["row"] - second["row"]),
+                                       abs(first["column"]
+                                           - second["column"])))
+    for key in places.GATE_KEYS:
+        spec = places.GATE_BY_KEY[key]
+        rows = ", ".join(f"{word} {100 * n / seeds:.0f}%"
+                         for word, n in terrain[key].most_common(4))
+        print(f"  {spec['name']:<10} {spec['side']:<7} {spec['kind']:<5} "
+              f"preferred ground {100 * preferred[key] / seeds:.0f}%  "
+              f"({len(tiles_seen[key])} distinct tiles)")
+        print(f"    terrain: {rows}")
+        print(f"    lands:   " + ", ".join(
+            f"{land} {100 * n / seeds:.0f}%"
+            for land, n in lands[key].most_common()))
+    _stat("pairwise separation (>= 4)", separations, ".1f")
+    _stat("distance to nearest capital (>= 2)", capital_gaps, ".1f")
+    print(f"  (min separation {min(separations)}, min capital gap "
+          f"{min(capital_gaps)}; the rule holds in every world or "
+          f"create_geography raises)")
+
+
 WAR_DAYS = 365      # a campaign year: long enough for every scar to have
                     # been laid and expired several times over
 
 SWEEPS = {"harvest": sweep_harvest, "census": sweep_census,
-          "trade": sweep_trade, "wars": sweep_wars}
+          "trade": sweep_trade, "wars": sweep_wars, "gates": sweep_gates}
 
 
 def main() -> None:
@@ -261,7 +329,7 @@ def main() -> None:
             "--seeds wants at least one world")   # ZeroDivisionError three
                                                   # frames down
     chosen = ([args.only] if args.only
-              else ["harvest", "census", "trade", "wars"])
+              else ["harvest", "census", "trade", "wars", "gates"])
     started = time.time()
     for name in chosen:
         SWEEPS[name](args.seeds)

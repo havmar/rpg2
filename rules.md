@@ -3032,6 +3032,14 @@ whole of what a country is now:
 - **Nothing forks on either.** A homeland selects names and content
   routing; it never changes a statistic. All nine use one calibrated
   combat ladder.
+- **The table above is the painted world, and since 2026-09-12 it is not
+  the whole one.** Two more lands stand on it: Concordia and Saturna, the
+  two one-tile gate city states, each with a culture of its own and each
+  cut out of one of the nine wherever the gate roll put it. They are
+  countries in every way the machinery cares about; where "the nine" is
+  said below it means the nine the overlay PAINTS -- the answer keys, the
+  pinned censuses, the birth roll and the campaign's opening. The Heaven &
+  Hell add-on, part 4 is what they are.
 - The era anchor is **about 1500 without the age of exploration**: silk in
   from the east, spice through the southern entrepot, silver caravans from
   beyond the desert, the wool-cloth axis in the west. Higher technology is
@@ -3185,7 +3193,9 @@ materialize lazily.
   Seraptania 23, Teutonia 28, Thule 37, Vellisclavia 60, Byzantium 51,
   Andalusia 9, Umaia 68 and Tergal 25 Tiles (the Iberia split of
   2026-08-22 moved the peninsula's southern eight from Andalusia to
-  Umaia). A SEA Tile takes the country
+  Umaia), each MINUS the one tile a gate city took out of it since
+  2026-09-12 -- the census is the authored picture and the takeover is not
+  a repaint of it. A SEA Tile takes the country
   of the nearest land Tile, ties settled north-then-west; nothing about
   the water is painted. Coordinates and cardinal neighbors
   are stable IDs, and every Area ID is scoped beneath its Tile. The place
@@ -3752,6 +3762,12 @@ guarantees replace the pick's safety valves:
   *Traits — the companion layer* below), which retired the old
   no-relatives rule with it: there is no quirk to roll away. His sheet is
   his person line, his stats, his kit and his banked points.
+- **A d6 for his blood (2026-09-12)**: 1–3 nothing, 4 old, 5 sky, 6 fire,
+  so **half of all player characters are Nephilim** — and `new --blood
+  none|old|sky|fire` fixes it. It is the one thing on his sheet that is
+  neither a stat nor a possession, and it is the setting arriving in the
+  party rather than out in the world. The **Heaven & Hell add-on, part 3**
+  is the rule.
 
 **The long-time companion (2026-07-13 reframe of the starter ally).** One
 random companion at the PC's own level is generated WITH the PC and
@@ -3824,7 +3840,8 @@ doorstep, not a railroad.
   builds — the tank, the duelist, the leader — instead of point sums,
   which under independent rolls made "highest total wins" the only hiring
   logic. 9 is the old independent rolls' mean surplus (9.5) rounded down.
-- **Homeland**: one of the nine countries. It selects a human name pool,
+- **Homeland**: one of the nine PAINTED countries -- nobody is born in
+  either gate city state. It selects a human name pool,
   the tongues the person speaks (below)
   and supplies cultural context only; every homeland uses the same fixed stat
   floors, ceilings and trait tables.
@@ -3841,6 +3858,13 @@ doorstep, not a railroad.
   they are. There is **no engine gate**: nothing checks a tongue before a
   conversation. What a missing tongue costs is a table rule and lives in
   dm.md ("The tongues at the table").
+- **Blood (2026-09-12)**: a person is a plain human or one of the three
+  half-blood lines — old, sky, fire. Companions and recruits roll it at
+  long odds (old 1 in 12, sky and fire 1 in 24 each); the PC rolls a d6
+  and is a Nephilim half the time; dict NPCs never carry it. What it does
+  to a body — three stat floors, the fire-born's Power ceiling, the
+  sky-born's ward, the Old Tongue — and what it means are the **Heaven &
+  Hell add-on, part 3**.
 - **Sex**: random m/f (names come from homeland pools, `people.NAMES`
   — no epithets anywhere). A `nickname` schema slot exists, empty — no
   nickname system yet.
@@ -4140,6 +4164,11 @@ stays flat and concrete.
   State is one plain dict in the save (`karma`).
 
 ## The Hell Pact (2026-07-19, second slice — the dark-quests session)
+
+> **The setting authority is the Heaven & Hell add-on** (parts 1–5,
+> 2026-09-12). This section is the OLD frame and is kept exactly as it is,
+> because the pact carries the crime content and nothing in the gates arc
+> has to fit it; where the two disagree, the add-on wins.
 
 The frame, settled by the designer the same day the first slice shipped:
 **the PC is not a neutral adventurer but a low-ranking employee of
@@ -5732,3 +5761,688 @@ marks on a Tile's own page and on the DM's tile brief; the war's own people
 on the roads of a country at war. The DM's `world` page opens with the
 three wars — who is fighting, the heralds, what each holds, and where
 Andalusia's vassalage fell.
+
+---
+
+# Heaven & Hell — Add-on, part 1 (2026-09-12, the gates arc's session 1)
+
+Two foreign worlds have doors into this one, and the arc that builds them
+is THE GATES ARC. This add-on is the setting and the ground: what the two
+powers are, what came through and when, and the two dead cities a party
+can walk into at any level from day one. The city states, the two
+sentinels, the Nephilim and the two world-layer packets are the arc's
+later sessions and are not here yet.
+
+> **This add-on is the setting authority.** The Hell Pact section above
+> ("an evil god", "the gods of Light") is the OLD frame, kept as it is
+> because the pact carries the crime content and nothing here has to fit
+> it. Where the two disagree, this add-on wins. A later sitting decides
+> whether the pact is rewritten onto this setting or cut. The add-on runs
+> to **part 5** (2026-09-12): the setting and the ruins, the two sentinels
+> and the ruin jobs, the Nephilim, the two city states, and the two
+> world-layer packets with the human side's answer to them.
+
+## The timeline (three dates, and the game prints one of them)
+
+| when | what |
+|---|---|
+| 1027 years ago | **The Closing.** Tom bars both gates. The two gate cities, Candor and Libera, die within a generation. The people of either side caught on this side go native. |
+| 27 years ago | **The Return.** Two new gates open, in new places. Both powers come through and build. Each has had 27 years: a walled city, and a first generation of half-blood children now grown. |
+| now | Two young colonies, two old ruins, and new-blood half-bloods exactly the age of a level 1 character. |
+
+Nobody knows why the gates closed or why they reopened, and the game does
+not tell. The Church counts its years from the Closing, so this is **the
+year 1027** — the only date the game ever prints, and only on a lore page.
+
+## The two powers
+
+They are foreign worlds, not afterlives: two civilizations from beyond two
+doors, opposed to each other for longer than either remembers, each of
+which wants this world and each of which calls the other the enemy. The
+human words for them are **Heaven** and **Hell**, and the game uses those
+words without apology. **Neither is good. Neither is evil. Each holds
+both.**
+
+**Heaven — order, purity, conventional beauty.** A hierarchy that heals,
+walls, tidies, teaches, and takes the strange child away. White stone,
+glass, geometry, choirs, gold, lamps that do not burn. Its people are
+**angels**: tall, luminous, winged, beautiful the way a cathedral is
+beautiful, and they do not age. They bind with **law**, and their law
+applies to everyone equally, which is both its kindness and its cruelty.
+Their servants are **made** — marble servants, wardens, colossi: a
+construct is Heaven's technology, mundane to them and magical to us. Its
+virtue is protection, healing, honesty, beauty, the poor fed and the roads
+safe; its vice is contempt, coldness, the register, the removal, order at
+any price. Its inner axis is **THE GARDENERS against THE PRUNERS** — the
+Gardeners want humans raised up (schools, healers, clean water, the child
+with the gift taught), the Pruners want the world made pure (the register
+of the half-blood, the removal, the wild talent put out). Both are angels;
+both are Heaven. What Heaven does to a village under its hand: the well is
+clean, the granary is full, the wall is new, the tavern is shut, the
+strange child is gone.
+
+**Hell — freedom, wildness, appetite.** Free companies that cancel debts,
+hang the lord, hold a feast every week, open the cages and leave the fields
+untended. Fire, wine, horn, hoof, hound, night. Its people are **demons**:
+horned, handsome in a rough way, some goat-legged (**fauns** is the plain
+word for those), some tailed, all warm to the touch, and they do not age
+either. They bind with the **personal oath and the personal debt**: a
+bargain is sacred to Hell in a way no law is, which is why a demon keeps a
+promise it hates and breaks a statute without noticing. Their servants are
+**bred** — hounds, boars, drakes, things that hunt and things that
+regenerate. Its virtue is liberation, joy, courage, honesty of appetite,
+the debt torn up, the slave loosed; its vice is consumption, cruelty for
+the joke of it, the feast that eats its guests, envy. Its inner axis is
+**THE FEAST against THE HUNGER** — the Feast wants humans set loose (debts
+cancelled, serfs freed, cages opened), the Hunger wants humans consumed
+(appetite without limit, the bargain that takes a year of life, the village
+drunk into ruin and owned by the morning). What Hell does to a village
+under its hand: the lord is hanged, the debt book is burned, there is a
+feast every week, the fields are untended, and somebody owes somebody a
+year.
+
+## The pagan coding: both human religions came from the gates
+
+Both descend from the gate era, and neither knows it.
+
+- **The Sun communion is what the memory of Candor became.** The Church's
+  Latin is Heaven's tongue as humans learned it a thousand years ago and
+  kept in the schools; the Church's angels are Heaven's people remembered;
+  its cosmology — a heaven above, a hell below — is two cities remembered
+  as two directions. Saint Tom is its founding saint.
+- **The old gods of the north are what the memory of Libera became.**
+  Thule's grove, the horned figures on its stones, the feast-days that turn
+  the year upside down, Tergal's dark shaman and the practice: all of it is
+  Hell's first city remembered by people who no longer know what they are
+  remembering. Thule's old gods have a Tom too — a smith who forged the bar.
+- The returned powers know this and the human churches do not. Heaven
+  regards the Church as its own child gone strange; Hell regards the grove
+  as its own, gone quiet.
+
+**The stranded** are angels and demons caught on this side at the Closing.
+They do not age, so some are still alive, a thousand years native: a hermit
+in the hills who is an angel and has forgotten how to fly, an old woman in
+a fen village who has run the same feast for forty generations. They are
+few, named once and kept. Both returned powers count them as deserters or
+as saints depending on which faction is talking, and the old-blood
+half-blood lines descend from them.
+
+**Tom** is the mythical figure who closed both gates, and the name stays
+Tom. What the game asserts is only this: 1027 years ago a person called Tom
+barred both gates in the same season, and both cities died. Everything past
+that is a version — Saint Tom to the Sun communion, Tom the Smith to
+Thule's grove, Tom who sewed the sky shut to Tergal's shamans, a criminal
+to Heaven's Pruners, a mistake to its Gardeners, a hero to Hell's Feast, a
+thief to its Hunger. Whether Tom was human, half-blood, angel or demon, and
+whether Tom is alive, is deliberately open. The design keeps one hook:
+**only a half-blood could have touched both gates**, so both powers believe
+the old-blood lines are Tom's people, and act on it.
+
+**The tongue is one language in two registers.** Heaven speaks **Latin** —
+the church's Latin came from it, every party member speaks Latin, and
+Heaven is therefore never a soft-lock. Hell speaks the **Old Tongue**, the
+older register, rougher; it is `Old Tongue` on the SPEAKS line. A Latin
+speaker follows it with difficulty, dm.md's table rule says how that plays,
+and nothing in the engine checks it. Demons of rank also speak Latin, badly
+and on purpose. The name sounds for both are writing.md's two new rows.
+
+## The four sites, and where they roll
+
+Four sites are rolled at worldgen and stored on the world record: two ruins
+(Heaven's **Candor**, Hell's **Libera**) and two live gate cities (Heaven's
+**Concordia**, Hell's **Saturna**). **Hell is north, Heaven is south** —
+Heaven's two roll in Byzantium, Seraptania, Umaia or Andalusia, Hell's in
+Phyrascia, Teutonia, Thule, Vellisclavia or Tergal.
+
+A site's tile must be land in a country of its side's set; it is never a
+historical-city tile, never a capital, never adjacent to a capital, and
+never a marked mine tile; the four stand at least **four tiles apart** in
+Chebyshev distance, so no two ever share a neighbour ring; and a live
+city's tile must keep at least one land neighbour in the country it is cut
+out of. Over that eligible set the roll is **weighted, never filtered**:
+Candor prefers mountain or hills (a white city on high ground), Libera
+prefers marsh, deep forest or hills (the wild city), Concordia prefers a
+farmland plain, Saturna prefers wooded plains and hills or the taiga and
+continental north. About seven worlds in ten put each site on its preferred
+ground, which is the point of a weight: the map is never predictable and is
+usually right. An empty candidate set raises rather than inventing a site.
+
+**The ring.** Every land tile within one tile of a ruin carries the
+permanent state `gate-ruin`, and the same ring of `gate-city` stands around
+each live city. Both name their side, both are dated day 0, and neither
+expires. The map draws a ruin as **`R`** and a live city as **`G`**, in the
+settlement-glyph slot, and the legend lists all four under GATES with the
+coordinate and the side. The tile's own page leads with the site.
+
+**Session 1 builds the ruins only.** The two city tiles are rolled, ringed,
+tagged and drawn, and they are otherwise ordinary tiles of their countries:
+the tile takeover, the city's own census and its country are a later
+session's.
+
+## The ruins as dungeons
+
+A ruin is an Area of kind **`ruin`** — a third kind beside `settlement` and
+`natural` — standing on the tile beside its countryside and its
+settlements. People live beside ruins: the tile keeps its country, its
+census and its board. The ruin is known from day one (everybody has heard
+of the white ruin), `look` lists it under "Also on this Tile", and `go`
+walks to it for free, because a ruin and the fields around it are one map
+cell.
+
+Its **six Sites are authored and materialized at worldgen**, and the player
+reads them as a list of six named places with their levels — the ttrpg
+dungeon in this engine's shape:
+
+| # | Candor (Heaven) | Libera (Hell) | level |
+|---|---|---|---|
+| 1 | THE OUTER TERRACES | THE FALLEN FEAST-HALL | 2 |
+| 2 | THE CHOIR HALL | THE VINE PITS | 5 |
+| 3 | THE GLASS GARDEN | THE KENNELS | 8 |
+| 4 | THE MEASURING HOUSE | THE WILD MARKET | 11 |
+| 5 | THE PREFECTURE | THE HUNT LODGE | 14 |
+| 6 | THE GATE PLAZA | THE GATE HOLLOW | 17 |
+
+Levels 2/5/8/11/14/17 is the whole ladder in six steps, three apart, so a
+start at any level finds a site within two levels of it. Each site walks
+three authored rooms and the deepest walks four (the approach, the ring,
+the gate, and the bar Tom set across it). Rosters are built at worldgen off
+the ruin's own pool and are deterministic per seed; one body is placed by
+hand rather than by the pool — a stranded angel keeps the cells of Candor's
+Prefecture.
+
+**`delve SITE`** is the way in: a known Site of the ruin the party is
+standing in, opened without a giver. It forges a job on the spot over the
+Site's authored rooms, and the ordinary room walk, fights, encounter XP and
+loot follow. **Clearing pays the FIELD tranche of a job at that level and
+no turn-in**, because there is nobody down there to turn it in to; what
+else the ruin pays is what is lying in it. A cleared Site **refills after
+30 days** with a re-rolled roster over the same rooms — the ring feeds it.
+The **deepest Site never refills** once what holds it is dead: the bar is
+gone, the ruin's whole `gate-ruin` ring clears that day, and the ground
+goes quiet.
+
+## The foes of the gates
+
+The doctrine is unchanged: the display name is fiction, the stat row is
+mechanics, and balance never forks on a skin. Two skin tables dress the
+calibrated catalog, and the asymmetry is the setting's — **Heaven's things
+are MADE and Hell's are BRED**. Heaven reskins the undead and the giant-kin
+as constructs (Broken Servant, Hunting Servant, Marble Warden, Marble
+Porter, Marble Mender, Marble Colossus) and has no animals at all; Hell
+reskins the wolves, the beasts, the giant-kin and the drakes as its own
+(Hell Hound, Black Hound, Feast Boar, Pit Bear, Horned Brute, Ember Troll,
+Horned Giant, Ash Wyvern, Hell Drake, Hell Dragon) and has no undead. Both
+wear the humanoid ladder and the casters as their people — Convert, Warden,
+Sword Angel, Choir Captain, Angel of the Gate, Archangel against Reveler,
+Free Blade, Faun Blade, Horned Captain, Duke of the Feast, Prince of Hell —
+and both use the bandit rows for the humans who follow them.
+
+The one thing a gate skin does change is the **disposition**, and it uses
+the mercy class that already exists rather than a new rule. Heaven's people
+and Heaven's constructs are **relentless**: the Law does not spare. Hell's
+people **take spoils**: Hell robs you, laughs, and leaves you alive, which
+is on theme. Hell's animals keep their own rows' ferocity. One weapon
+belongs to a name rather than to a row: the Marble Warden carries the
+**warden blade**, the wight's barrow steel under Candor's own name and with
+its numbers unchanged.
+
+**The ring's own encounters.** A tile's states now have an encounter table
+of their own, and it OUTRANKS the country's: the ground under the party is
+more local than the country it belongs to. Inside a ruin's ring, six times
+in ten what the road or the day afield turns up is **something out of the
+ruin** — that side's ruin pool wearing that side's names. Inside a live
+city's ring, on roads only, about a third of the time it is **a patrol out
+of Concordia** or **revelers out of Saturna**. Neither touches the LEVEL:
+the party-independent danger curve is a contract, and the ring changes WHO,
+never how hard.
+
+**The danger ring.** A ruin's ring **doubles** the per-day encounter chance
+— on the road, on a day afield, and on a night camped. A gate city's ring
+carries no multiplier: a patrol on the road is a different road, not a more
+dangerous one. Again the level roll is untouched. The ring makes fights
+more frequent, not harder, and when a ruin's depth is cleared for good the
+doubling goes with the ring.
+
+---
+
+# Heaven & Hell — Add-on, part 2 (2026-09-12, the gates arc's session 2)
+
+Part 1 put the two dead cities on the map and opened them with `delve`.
+This part puts something at the bottom of each, gives it the relic it has
+held for a thousand years, and posts the work that sends ordinary people
+in after it.
+
+## Tom, as the setting knows him
+
+The mythical figure who closed both gates, and the only thing the game
+asserts is the one line part 1 already states: 1027 years ago a person
+called Tom barred both gates in the same season, and both cities died.
+Everything past that is a VERSION, and each people keeps its own:
+
+| who | their Tom |
+|---|---|
+| the Sun communion | Saint Tom, who shut out the enemy and founded the Church's year |
+| Thule's grove | Tom the Smith, who forged the bar |
+| Tergal's shamans | Tom who sewed the sky shut |
+| Heaven's Gardeners | a mistake, best not repeated |
+| Heaven's Pruners | a criminal who cut the world off from the Law |
+| Hell's Feast | a hero: he freed both worlds of each other |
+| Hell's Hunger | a thief who stole a thousand years of feasting |
+
+Whether Tom was human, half-blood, angel or demon, and whether Tom is
+alive, stays open. The one hook the design keeps: **only a half-blood
+could have touched both gates**, so both powers believe the old-blood
+lines are Tom's people and act on it.
+
+**Tom's stone** is where that belief touches the ground the party walks
+on: a wayside shrine in the western and southern countryside — an upright
+bar of grey stone with wax stubs and coins in the turf, on a worn track
+with a beggar's bowl beside it. It is an ordinary natural Site of the
+shrine kind, known when it is found, and a burial or a blessing is sold
+at it exactly as at any shrine. It is the Church's lands only: the north
+remembers Libera instead and keeps no stone.
+
+## The two sentinels
+
+rules.md's bestiary doctrine says the tier above the dragon is not a
+catalog row: demons, demigods and liches are **authored one-offs built on
+the Heroes table** — heroes on the wrong side, no mortal tradeoffs, Power
+fueling authored abilities. The gates arc builds the factory, small. A
+BOSS is a stat row in its own table beside the bestiary; no pool can draw
+one, no generator rolls one, and the bench's catalog sweep never sees
+one. A boss stands exactly where a Site's authored roster names it — today
+the fourth room of the deepest Site of each ruin, the room called **the
+bar**.
+
+Both bodies are the Legend row (DEX 8, STR 8, STA 8) read with **no
+mortal tradeoffs**: they barely feel pain, they never tire, three can
+press them at once, they are warded against the assassin arts, they are
+drilled like a champion, and they carry a champion's Power. A thousand
+years alone at a barred gate is the fiction; that row is what it costs.
+
+- **Zohariel the Sentinel** keeps Candor's gate plaza: a stranded angel
+  who never left its post, the Voice of Measure at rank 2, one target at
+  a time, **relentless** — the Law does not spare. Annotated **level 17**.
+- **Saar the Old Host** keeps Libera's gate hollow: a stranded demon who
+  kept the feast going alone, fire at rank 2, its hits leave the body
+  burning, and it sweeps two at a time on burnt Power like a drake. It
+  **takes spoils**: even at the bottom of the dead city the Old Host robs
+  you, laughs, and lets you crawl out — and it can break and run out of
+  its own hollow, which is why the ruin seals on a BODY and not on an
+  empty room. Annotated **level 16**.
+
+## The two bars
+
+Tom's bars are still across both gates, and each sentinel has been
+holding one. They are heavy arms — a bar across a gate is what a
+two-hander is — the heaviest plain steel the ladder can make: legendary,
+**+3 STR** and nothing else, no rider, no quirk. There is exactly one of
+each, the same piece in every world, and both are entered in the world's
+famous armory from day one, owned by the thing that holds them and
+resting at the bottom of its own dead city. Rumor is free: the player can
+hear of both on day one and has to go down seventeen levels of ruin for
+either.
+
+The sentinel actually fights with its bar, and the bar drops where it
+falls. That is the whole of what the arc says about them: **no quest
+hangs on either, and nothing says what one does to a LIVE gate.** That is
+the arc's endgame question and it stays open on purpose.
+
+**One-off steel on the ground.** A famous piece is not in the weapon
+catalog, so what the fallen leave is remembered by name until the next
+fight and handed over the ordinary way (`give HERO the Libera bar`).
+
+## The seal, corrected
+
+Part 1 said a cleared depth never refills. The rule is sharper than that:
+**the depth seals when the thing that held it is DEAD**, not when the
+room is empty. A party that drives the Old Host off has cleared a Site
+like any other — it refills in thirty days with the Old Host back in it.
+A party that leaves a body behind takes the ring with it: the ruin's
+whole `gate-ruin` ring clears that day, the ground goes quiet, and
+nothing comes out of the ruin any more.
+
+## Into the ruins — the work near a dead city
+
+Eight jobs go on **every culture's board**: four into Candor and four
+into Libera. Looters stripping the white stone; a marble servant that has
+walked out of Candor and is standing in a churchyard; a lamp still
+burning in the glass garden that a merchant will pay for; Concordia's
+archivist wanting the old register out of the measuring house. Hell
+hounds off the feast-hall taking sheep; the thousand-year vintage still
+bearing in the vine pits; Saturna's Master of Hounds wanting the kennel
+book; a man from Saturna whose year is written in the old counting house
+and can be burned there.
+
+Three rules shape where they appear:
+
+- **Only boards near a ruin post them.** A job's trouble sits within
+  three days of the board that posts it, and there are exactly two ruins
+  in the world, so the handful of settlements around Candor and Libera
+  carry this work and nobody else does.
+- **A Heaven job can only land in Candor and a Hell job only in Libera.**
+  The ruin Area wears its own side's word, and each job asks for that
+  word by name.
+- **A posted job never takes the dungeon apart.** The ruin's six authored
+  Sites belong to `delve`; a board job builds its own place inside the
+  ruin under the name the job gives it, and may reuse what an earlier one
+  left. The two systems never write to the same room.
+
+---
+
+# Heaven & Hell — Add-on, part 3 (2026-09-12, the gates arc's session 3)
+
+Part 1 put the two powers and their dead cities on the map; part 2 put a
+sentinel at the bottom of each. This part is about the people they left
+behind in the human line: **the Nephilim**, the half-bloods. It is the
+smallest of the three and the one the player meets first, because he is
+usually one of them.
+
+## Who they are
+
+Three lines, and they are not the same age.
+
+- **The old blood** descends from **the stranded** — the angels and demons
+  caught on this side at the Closing, who do not age and so are some of
+  them still alive, a thousand years native. A thousand years of quiet
+  descent is a lot of thinning: what is left is a knack, a look, and a
+  family story nobody tells straight. Both powers believe the old-blood
+  lines are **Tom's people** (only a half-blood could have touched both
+  gates) and act on that belief, which is the whole reason an old-blood
+  farmer's daughter is worth anything to anyone.
+- **The sky-born** and **the fire-born** are twenty-seven years old at
+  most: the first generation of the Return, the children of angels and
+  demons who came through the new gates and built. A sky-born of the
+  oldest cohort is **exactly the age of a level 1 character**.
+
+There is no fourth line and there is no ladder: a half-blood is a
+half-blood, and nothing in the game makes one more so.
+
+## What it does
+
+Blood is a per-character **fact**, not a trait: it is born, it is never
+rolled away, and the player character carries it while he carries no trait
+sketch at all. Mechanically it is three floors, one ceiling, and two
+fields — everything else about being a Nephilim happens at the table.
+
+| blood | the body | the other thing | the marker |
+|---|---|---|---|
+| **old-blood** | +1 MIND floor | — | eyes that catch the light / taller than the door |
+| **sky-born** | +1 DEX floor | warded: +2 to any possession's DC, and an assassin's opening lands as an ordinary exchange | gold in the eyes / the hair does not grey |
+| **fire-born** | +1 STR floor | +2 max Power; speaks the **Old Tongue** | small horns under the hair / warm to the touch |
+
+A **floor** is the same mechanism the "big" trait uses: the character
+starts one point further up and the fixed surplus budget is dealt on top,
+so a floor is worth about a flat +1 — and it can land somewhere else
+entirely when the stat is already at its ceiling, which is exactly how the
+budget has always behaved.
+
+**The old blood's floor is MIND because the gift is BORN.** The wild
+talents of this world — the child who lights the hearth without a flint,
+the Church's own chain of `talent-loose` news — are old blood without the
+word for it, and nobody on either side of the human religions knows that.
+
+**Fire's Power is the one ceiling raise in the game.** The natural human
+cap of 6 belongs to the DEX/STR frame; Power is a pool a career already
+buys, so the fire-born's range simply moves +2 at both ends (3–6 becomes
+5–8). Nothing in the 1–20 doctrine bends for it.
+
+**Nothing about blood is a gate.** No engine reader checks it before a
+price, a card, a quest or a conversation, and no world reaction is coded.
+How a warden, a demon or a bishop treats the party is dm.md's Nephilim
+paragraph, and the world layer's own answer to the half-bloods is the two
+packets' authority hooks.
+
+## Who has it
+
+- **The player character rolls a d6 at creation**: 1–3 nothing, 4 old, 5
+  sky, 6 fire. **Half of all player characters are Nephilim** — measured
+  50.7% over six thousand seeds — which is what "an important part of the
+  setting" has to mean at a table that plays one character. `new --blood
+  none|old|sky|fire` fixes it, beside `--level`.
+- **Companions and recruits** roll the world's real odds, and they are
+  long: old **1 in 12**, sky and fire **1 in 24** each, so one hireable
+  face in six is something other than human.
+- **Dict NPCs carry none.** The named Nephilim of a world — the child on
+  the register, the debtor whose year is written down — are the packets'
+  authority hooks, not the dice's.
+
+## What shows
+
+The sheet carries a **BLOOD** row: `BLOOD: fire-born (small horns under
+the hair)`, and nothing at all for the plain humans, who are most people.
+The marker is one of that line's two, fixed per character, so two
+fire-born on the same recruiting board do not read alike. A candidate's
+sheet prices the blood exactly the way it prices a dress trait — the
+hiring page shows everything, the way it shows a quest's level.
+
+A fire-born's SPEAKS row carries the **Old Tongue** behind Latin and his
+homeland's tongue. He grew up hearing it; it is still true that nothing in
+the engine checks a tongue (dm.md, "The tongues at the table").
+
+---
+
+# Heaven & Hell — Add-on, part 4 (2026-09-12, the gates arc's session 4)
+
+Parts 1-3 put two dead cities on the map, a sentinel at the bottom of each
+and the half-blood in the party. This part is the two LIVE gates: the
+colonies Heaven and Hell built when the doors reopened twenty-seven years
+ago. They are now countries — **the world is eleven lands, not nine** —
+and this is what that means at the table.
+
+## A country of one tile
+
+**Concordia** (Heaven's) and **Saturna** (Hell's) are states of exactly
+one map tile each, cut out of the country the roll put them in. The tile
+changes hands whole: it flies the city's flag, the country it came out of
+is a tile smaller, and the countryside on that tile belongs to the city
+state too. What does NOT change is the ground. Climate, terrain, last
+year's harvest, the goods the tile produces and the fields' own character
+are exactly what the donor's countryside was — a wall round a plain does
+not move the plain, so Concordia's fields are still Seraptanian fields (or
+Umaian, or whoever's) and are farmed by the same people.
+
+Everything else a country has, they have: a land record, a culture of
+their own, a tongue (Heaven speaks Latin, Saturna the Old Tongue), a
+capital, name pools, a crown's title, a garrison commander, a card packet,
+a lore page, a wealth band and a place in the relations table. Two things
+they deliberately do not have:
+
+- **Nobody is born in one.** The birth roll — the PC's, a companion's, a
+  recruit's — is the NINE. The people of the gate came through the gate.
+  What a city state's name pool is for is the faces behind its counters:
+  the smith in Concordia is an angel and is named like one.
+- **No campaign opens in one.** The start is drawn from the human world.
+  The gates are somewhere the party walks to.
+
+The standing wars are not rolled over either of them, and no conquest
+system touches them yet. Taking land is a later arc.
+
+## The two cities
+
+Each city state seats exactly one settlement and it is its capital: the
+city itself, authored, chartered free, and **known from day one** — the
+map has heard of Concordia the way it has heard of Paris. There is no
+second village, no hamlet, no reserve of district names. A one-tile state
+is its city and its fields.
+
+**Concordia** is white walls laid out square on whatever open ground the
+roll gave it, with the gate standing in the middle of them. Its places are THE GATE (the approach, the ring, the
+gate), THE PREFECTURE (the court, the cells, the archive), THE INFIRMARY,
+THE SCHOOL OF MEASURES, THE MARKET OF LAMPS and THE CHOIR, beside the
+ordinary doors any city keeps — an inn, a forge, a shop, an apothecary.
+Its crown is the **PREFECT**, and its wall is held by a **warden of the
+gate**.
+
+**Saturna** is a wooden town thrown up round a hollow, smoke over it and a
+fire in every street. Its places are THE GATE (the descent, the ring, the
+gate), THE FEAST-HALL (the long table, the kitchens, the cellar), THE
+KENNELS, THE FIRE SCHOOL, THE WILD MARKET and THE DEBT-HOUSE, beside the
+same ordinary doors. Its crown is the **LORD OF MISRULE** (or the LADY),
+elected at the long table for a year and a day, and its wall is held by
+the **master of hounds**.
+
+## What they charge
+
+Each city prices its own counter, and the multiplier stands over whatever
+the ground and the world layer are already doing:
+
+| | healer | lodging | goods |
+|---|---|---|---|
+| Concordia | x0.6 | x0.8 | x1.2 |
+| Saturna | x1.3 | x0.5 | x0.9 |
+
+Concordia sells the cure and a clean bed cheaply and everything else dear:
+the infirmary heals what the temples cannot and the city takes its price
+somewhere. Saturna's bed is a place at the feast, which is free in every
+way that matters and costs something else; nobody in Saturna is in a hurry
+to heal you.
+
+## What they pay for
+
+The city is its country's capital and its only board, so it posts the full
+five ordinary slots over the whole ladder, its own culture's quest table
+plus the country-agnostic epics, and — like every board within three days
+of a ruin — the eight ruin jobs. Its own table is four rows a side, and
+every one of them lands **in the human countryside within three days'
+road**: a one-tile state's work is what it asks the neighbours to do,
+which is how a gate city is felt long before the player walks into it.
+
+- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *Bring the
+  Child Home* — the mother whose child went onto the register — and, as
+  its epic, *The Prefect's Levy*.
+- **Saturna** posts *Bring the Wine*, *Guard the Feast*, *Break the
+  Debt-House* and, as its epic, *The Hunt of Misrule*.
+
+The two epics are capital-only by construction rather than by a flag:
+there is no second board in either country to post them at.
+
+## On the map
+
+Both cities are drawn `G` in the settlement slot and both are in the map
+legend's GATES group, which now names them for what they are — *Concordia
+R18C26 (Heaven, city state in Umaia)*. Their permanent `gate-city` ring
+still stands on the tile and its land neighbours, with its patrols on the
+road; the ring is not a danger multiplier (part 1) and never was.
+
+---
+
+# Heaven & Hell — Add-on, part 5 (2026-09-12, the gates arc's session 5)
+
+Parts 1–4 put two dead cities on the map, a sentinel at the bottom of each,
+the half-blood in the party and two foreign colonies on the map as
+countries. This part is the last: **what the two colonies DO, and what the
+nine make of them.** It is the arc's content half — the two world-layer
+packets whole, the standing facts the map stamps on whichever countries the
+gates landed in, and the human side's answer — and with it the arc is
+complete.
+
+## What the packets became
+
+Each city carries a full country packet: four constitutions, three
+tensions, six faction edges, six standing facts, two priced services,
+eight crisis cards, a weather card and a season card. The two are built as
+**opposites on purpose**. Heaven's trouble is administrative — a list is
+posted, a child is taken, the gate is shut, a bishop preaches, a made thing
+walks off. Hell's is appetite — the feast comes over the wall, a debt is
+collected, a lord is hanged, the kennels open, the market puts people in
+cages. Neither deck is the villain's and the table plays both.
+
+**The two chains** are the spine of each side. Heaven's: THE REGISTER IS
+READ leaves the list standing, and A CHILD IS TAKEN admits on it, clears
+it, and posts *Bring the Child Home*. Hell's: THE FEAST SPILLS OVER THE
+WALL leaves the feast out, and THE DEBT-HOUSE COLLECTS admits on it, clears
+it, and posts *The Year Owed*. Both run again from the top.
+
+**Four people the packets NAME and keep.** A card cannot read the party, so
+what the world does about half-bloods reaches the table as four people it
+names once and then keeps for the rest of the campaign: **the child off the
+register**, **the hermit in the hills** who turns out to be an angel a
+thousand years native, **the debtor who sold a year**, and **the old woman
+of the fen** who has run the same feast for forty generations. All four are
+people of the HOST country and carry the host's names: a half-blood on
+Concordia's list is a village child, which is exactly what makes the list
+frightening.
+
+**What the two cities sell.** Concordia: **the choir's blessing of order**
+(40s at the healer's counter, every companion steadier, once in five days)
+and **a term at the School of Measures** (120s, the ice school's first
+diagrams to anyone with the gift, and it writes down who came). Saturna:
+**a place at the long table** (25s at the bed's price, the party eats and
+drinks until morning, once in seven days) and **a term at the Fire School**
+(120s, the same teaching and nothing in writing). Both schools undercut
+every human teaching door in the game — the academy's 130s, the tower
+wizard's 150s — which is the era line arriving at a price: the technology
+is through the gates.
+
+## The five standing words
+
+Worldgen stamps five state words that are facts about WHERE the four gates
+landed, and nothing ever takes them off:
+
+| word | on | what it does |
+|---|---|---|
+| `hosts-heaven` | Concordia's donor country | the healer x0.9 — the cure leaks out |
+| `hosts-hell` | Saturna's donor country | a bed x0.9 — so does the feast |
+| `keeps-candor` | the country Candor stands in | colour, and the DM's page |
+| `keeps-libera` | the country Libera stands in | colour, and the DM's page |
+| `pagan-host` | Hell's host AND Saturna, when the host is Thule or Tergal | THE GROVE KNOWS ITS OWN admits on it |
+
+The two host words are the cheapest thing on the map that says a foreign
+power is HERE: the party feels it at a counter, every day, in a country it
+has not yet connected to the gate. `hosts-heaven` also puts **a lamp of
+Concordia** into the host's burglary and con tables for the whole campaign.
+
+Four standing FACTS go with them, on the same lands' lore pages: THE GATE
+CITY on each host (*Concordia stands on ground that was Byzantium's
+twenty-seven years ago*), THE WHITE RUIN on Candor's keeper and THE WILD
+RUIN on Libera's.
+
+## The four relations
+
+The world's relations table gains four edges that cannot be authored,
+because their ends are rolled. Two run OUT of the cities and two run INTO
+them:
+
+| from | what | to | when the source holds | the target wears |
+|---|---|---|---|---|
+| Concordia | the cure | its host | the gate is shut, a child was taken | `cure-dear` — the healer x1.3 |
+| Saturna | the feast | its host | the feast spilled, the cages are open | `feast-abroad` — a bed x0.7, revelers in the wilds |
+| the host | the bishops | Concordia | interdict, the pulpit is against the gate | `pulpit-against` — the shelf x1.2 |
+| the host | the hunt | Saturna | the hunt is up, the country is at war | `hounds-out` — hounds on the road |
+
+A power that lands on somebody's country is felt by the country and answers
+to it. Every derived word reaches a price or a road.
+
+## The human side
+
+- **The synod asks what came back.** One card in the two rites' decks, on
+  the same derived word the schism runs on. Which rite welcomes the Return
+  is not an opinion but an ADDRESS: the rite that has Concordia standing on
+  its own ground says the god's own country has come back and the saint's
+  work is finished; the other says it is an invasion wearing the god's
+  face. Like the synod itself, it does not split the church.
+- **Tom, one line a culture.** The western church keeps SAINT TOM AND THE
+  RETURN (he shut the door on hell, and the sermons have got careful); the
+  old rite keeps SAINT TOM OF THE TWO DOORS (he shut two, and the second
+  was not hell's); Thule keeps TOM THE SMITH (who worked one season and
+  then had nothing more to do); Tergal keeps TOM WHO SEWED THE SKY. They
+  disagree and none of them knows the others'.
+- **The crusade.** Where Hell's host is a Sun-communion land — Phyrascia,
+  Teutonia or Vellisclavia — that country gains a standing tension, the
+  bishops against the feast town, and one card: A CRUSADE IS PREACHED
+  AGAINST THE FEAST, with men on the gate road carrying staves who are not
+  pilgrims. It is a card and not a war. The standing wars are still not
+  rolled over the city states; taking land is a later arc.
+- **The two crowns read as an angel and a demon.** Both draw the same human
+  ruler vocabulary every other crown draws — a Prefect may be cruel,
+  cultivated, devout or a puppet — minus the six words about a decaying
+  mortal body, and neither accession is rolled: the Prefect **was sent
+  through the gate to hold this side of it** and the Lord of Misrule **was
+  carried round the hollow on the long table**.
+
+## The year
+
+**It is the year 1027**, by the Church's count from the Closing. It is the
+only date the game ever prints and it prints on the lore page of every
+land, as a standing fact, beside whatever else that land believes.

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import random
 import tempfile
 import unittest
@@ -39,6 +40,7 @@ import places
 import quests
 import rpg
 import session
+import sites
 import weapons
 
 
@@ -398,6 +400,288 @@ class TheOpeningGround(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
+# The Nephilim (2026-09-12, the gates arc's session 3)
+# --------------------------------------------------------------------------- #
+
+
+class ThePCsBlood(unittest.TestCase):
+    """The d6, the flag, and what a fixed word actually buys the PC."""
+
+    def test_the_d6_is_half_and_half(self):
+        """1-3 nothing, 4 old, 5 sky, 6 fire -- read off the roll table
+        itself, so the shape is pinned rather than sampled."""
+        rolled = [session.PC_BLOOD_ROLL.get(face, "") for face in range(1, 7)]
+        self.assertEqual(rolled, ["", "", "", "old", "sky", "fire"])
+        self.assertEqual(sum(1 for b in rolled if b), 3)
+
+    def test_the_roll_rides_the_run_seed_and_moves_with_it(self):
+        seen = set()
+        for seed in range(40):
+            rng = random.Random(seed)
+            args = session.build_parser().parse_args(["new"])
+            blood = session.pc_blood(args, rng)
+            self.assertEqual(blood, session.pc_blood(args,
+                                                     random.Random(seed)))
+            self.assertIn(blood, ("", *rpg.BLOOD_KINDS))
+            seen.add(blood)
+        self.assertEqual(seen, {"", "old", "sky", "fire"})
+
+    def test_about_half_of_rolled_pcs_are_nephilim(self):
+        rng = random.Random(0)
+        args = session.build_parser().parse_args(["new"])
+        blooded = sum(1 for _ in range(3000)
+                      if session.pc_blood(args, rng))
+        self.assertTrue(0.46 <= blooded / 3000 <= 0.54, blooded)
+
+    def test_the_flag_fixes_it_beside_the_level(self):
+        for word in rpg.BLOOD_KINDS:
+            state, _ = run_new("--seed", "3", "--level", "2",
+                               "--blood", word)
+            self.assertEqual(state["party"][0].blood, word)
+
+    def test_none_is_the_plain_human(self):
+        state, _ = run_new("--seed", "3", "--level", "2", "--blood", "none")
+        self.assertEqual(state["party"][0].blood, "")
+
+    def test_an_unknown_word_is_refused_by_the_parser(self):
+        with self.assertRaises(SystemExit):
+            with contextlib.redirect_stderr(io.StringIO()):
+                session.build_parser().parse_args(
+                    ["new", "--blood", "angelic"])
+
+    def test_the_flag_survives_the_capacity_and_wizard_rerolls(self):
+        """Blood is rolled ONCE, before the PC is rerolled for CHA -- and
+        the gift still lands on top of it."""
+        for seed in range(6):
+            state, _ = run_new("--seed", str(seed), "--level", "3",
+                               "--blood", "sky")
+            pc = state["party"][0]
+            self.assertEqual(pc.blood, "sky")
+            self.assertTrue(pc.is_wizard)
+            self.assertGreaterEqual(rpg.party_capacity(pc.cha), 1)
+
+
+class WhatTheBloodDoes(unittest.TestCase):
+    """Three floors, one ceiling and two fields -- and nothing else."""
+
+    def _pair(self, seed: int, blood: str) -> tuple[rpg.Entity, rpg.Entity]:
+        plain = people.make_character(random.Random(seed), 1,
+                                      homeland="byzantium", blood="",
+                                      with_traits=False)
+        blooded = people.make_character(random.Random(seed), 1,
+                                        homeland="byzantium", blood=blood,
+                                        with_traits=False)
+        return plain, blooded
+
+    def test_the_old_blood_raises_the_mind_floor(self):
+        for seed in range(12):
+            plain, old = self._pair(seed, "old")
+            self.assertGreaterEqual(old.mind, 4)
+            self.assertEqual(old.blood, "old")
+            self.assertEqual(old.spell_ward, 0)
+
+    def test_the_sky_born_raises_the_dex_floor_and_is_warded(self):
+        for seed in range(12):
+            plain, sky = self._pair(seed, "sky")
+            self.assertGreaterEqual(sky.dex, 4)
+            self.assertEqual(sky.spell_ward, 1)
+
+    def test_a_ward_of_one_is_two_more_dc_on_a_possession(self):
+        """The Law in the blood, read where possession actually reads it
+        (rpg._cast_opener's dc_extra = training + 2 x ward)."""
+        sky = people.make_character(random.Random(5), 1, blood="sky",
+                                    with_traits=False)
+        plain = people.make_character(random.Random(5), 1, blood="",
+                                      with_traits=False)
+        self.assertEqual(sky.training + 2 * sky.spell_ward,
+                         plain.training + 2 * plain.spell_ward + 2)
+
+    def test_the_fire_born_raises_str_and_carries_two_more_power(self):
+        for seed in range(12):
+            plain, fire = self._pair(seed, "fire")
+            self.assertGreaterEqual(fire.str_, 4)
+            # The Power RANGE moves +2 at both ends: the floor is the
+            # guarantee and the ceiling is above the natural human cap.
+            self.assertGreaterEqual(fire.power - (fire.weapon.power_bonus
+                                                  if fire.weapon else 0),
+                                    rpg.HERO_POWER_RANGE[0] + 2)
+            self.assertLessEqual(fire.power - (fire.weapon.power_bonus
+                                               if fire.weapon else 0),
+                                 rpg.HERO_POWER_RANGE[1] + 2)
+
+    def test_the_fire_born_speaks_the_old_tongue(self):
+        for seed in range(12):
+            fire = people.make_character(random.Random(seed), 1,
+                                         blood="fire")
+            self.assertEqual(fire.tongues[-1], rpg.OLD_TONGUE)
+            self.assertEqual(fire.tongues[0], people.LATIN)
+            self.assertEqual(len(fire.tongues), 3)
+
+    def test_nobody_else_speaks_it_or_is_warded(self):
+        rng = random.Random(4)
+        for _ in range(120):
+            e = people.make_character(rng, 1)
+            if e.blood != "fire":
+                self.assertNotIn(rpg.OLD_TONGUE, e.tongues)
+            if e.blood != "sky":
+                self.assertEqual(e.spell_ward, 0)
+
+    def test_an_unknown_blood_raises(self):
+        with self.assertRaises(ValueError):
+            rpg.make_human(random.Random(1), "Nobody", blood="angelic")
+
+    def test_a_plain_human_is_untouched(self):
+        """The default is the character the game always rolled: same
+        stream, same body."""
+        for seed in range(8):
+            a = rpg.make_human(random.Random(seed), "Brand")
+            b = rpg.make_human(random.Random(seed), "Brand", blood="")
+            self.assertEqual((a.dex, a.str_, a.mind, a.power, a.spell_ward,
+                              a.tongues, a.blood),
+                             (b.dex, b.str_, b.mind, b.power, b.spell_ward,
+                              b.tongues, b.blood))
+            self.assertEqual(a.blood, "")
+
+
+class TheBloodOnTheSheet(unittest.TestCase):
+    def test_the_sheet_line_is_the_word_and_the_marker(self):
+        e = people.make_character(random.Random(2), 1, blood="fire",
+                                  with_traits=False)
+        line = people.blood_line(e)
+        self.assertTrue(line.startswith("BLOOD: fire-born ("), line)
+        self.assertTrue(line.endswith(")"), line)
+        self.assertIn(people.blood_mark(e), people.BLOOD_MARKS["fire"])
+        self.assertTrue(line.isascii(), line)
+
+    def test_the_marker_is_stable_for_a_body(self):
+        e = people.make_character(random.Random(2), 1, blood="old")
+        self.assertEqual(people.blood_mark(e), people.blood_mark(e))
+        back = session._entity_from_dict(
+            json.loads(json.dumps(session._entity_to_dict(e))))
+        self.assertEqual(people.blood_line(back), people.blood_line(e))
+
+    def test_both_markers_of_a_line_are_reached(self):
+        rng = random.Random(1)
+        seen = {kind: set() for kind in rpg.BLOOD_KINDS}
+        for _ in range(60):
+            for kind in rpg.BLOOD_KINDS:
+                e = people.make_character(rng, 1, blood=kind)
+                seen[kind].add(people.blood_mark(e))
+        for kind in rpg.BLOOD_KINDS:
+            self.assertEqual(seen[kind], set(people.BLOOD_MARKS[kind]), kind)
+
+    def test_a_plain_human_says_nothing(self):
+        e = people.make_character(random.Random(2), 1, blood="")
+        self.assertEqual(people.blood_line(e), "")
+        self.assertNotIn("BLOOD", people.person_line(e))
+        self.assertFalse(any("BLOOD" in ln
+                             for ln in people.character_sheet(e)))
+
+    def test_the_person_line_and_the_sheet_both_carry_it(self):
+        e = people.make_character(random.Random(2), 1, blood="sky")
+        self.assertIn(people.blood_line(e), people.person_line(e))
+        self.assertTrue(any(people.blood_line(e) in ln
+                            for ln in people.character_sheet(e)))
+
+    def test_the_sheet_prices_the_blood_like_a_trait(self):
+        for kind in rpg.BLOOD_KINDS:
+            word = people.BLOOD_WORDS[kind]
+            self.assertIn(word, people.TRAIT_NOTES)
+            e = people.make_character(random.Random(6), 1, blood=kind,
+                                      with_traits=False)
+            notes = [ln for ln in people.character_sheet(e)
+                     if ln.strip().startswith("notes:")]
+            self.assertEqual(len(notes), 1, kind)
+            self.assertIn(people.TRAIT_NOTES[word], notes[0])
+
+    def test_the_party_board_prints_the_row(self):
+        state, out = run_new("--seed", "4", "--level", "2",
+                             "--blood", "fire")
+        pc = state["party"][0]
+        block = session.hero_block_lines(state["party"], pc)
+        rows = [ln for ln in block if ln.strip().startswith("BLOOD:")]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].strip(), people.blood_line(pc))
+        sheet = session._wrap_block(
+            "\n".join(session.party_sheet_lines(state))).split("\n")
+        self.assertTrue(any("BLOOD: fire-born" in ln for ln in sheet))
+        for line in sheet:
+            self.assertLessEqual(len(line), session.WRAP_WIDTH, line)
+            self.assertTrue(line.isascii(), line)
+        self.assertIn("BLOOD: fire-born", out)
+
+    def test_the_board_still_prints_the_companion_sketch(self):
+        """The blood row is its own line; the trait sketch did not move."""
+        state, _ = run_new("--seed", "4", "--level", "2")
+        ally = state["party"][1]
+        block = session.hero_block_lines(state["party"], ally)
+        self.assertTrue(any("; ".join(people.trait_bits(ally)) in ln
+                            for ln in block))
+
+
+class TheCompanionOdds(unittest.TestCase):
+    def test_the_long_odds_are_one_in_twelve_and_two_in_twentyfour(self):
+        rng = random.Random(11)
+        draws = 24000
+        counts = {"": 0, "old": 0, "sky": 0, "fire": 0}
+        for _ in range(draws):
+            counts[people.roll_blood(rng)] += 1
+        self.assertAlmostEqual(counts["old"] / draws, 1 / 12, delta=0.006)
+        self.assertAlmostEqual(counts["sky"] / draws, 1 / 24, delta=0.006)
+        self.assertAlmostEqual(counts["fire"] / draws, 1 / 24, delta=0.006)
+        self.assertAlmostEqual(counts[""] / draws, 5 / 6, delta=0.01)
+
+    def test_a_generated_companion_rolls_them(self):
+        rng = random.Random(3)
+        seen = set()
+        for _ in range(400):
+            seen.add(people.make_character(rng, 2).blood)
+        self.assertEqual(seen, {"", "old", "sky", "fire"})
+
+    def test_a_recruit_pair_rolls_them_too(self):
+        rng = random.Random(9)
+        for _ in range(40):
+            _, pair = people.make_pair(rng, 2)
+            for member in pair:
+                self.assertIn(member.blood, ("", *rpg.BLOOD_KINDS))
+
+    def test_the_long_time_companion_is_usually_human(self):
+        blooded = 0
+        for seed in range(20):
+            state, _ = run_new("--seed", str(seed), "--level", "1")
+            if state["party"][1].blood:
+                blooded += 1
+        self.assertLess(blooded, 8, blooded)
+
+    def test_a_dict_npc_carries_none(self):
+        rng = random.Random(2)
+        for _ in range(20):
+            npc = people.make_npc(rng, "teutonia", "reeve")
+            self.assertNotIn("blood", npc)
+
+    def test_a_sim_body_carries_none(self):
+        for e in rpg.make_party(random.Random(5)):
+            self.assertEqual(e.blood, "")
+            self.assertEqual(e.tongues, [])
+        self.assertEqual(
+            sites.make_foe("cutthroat", 1, random.Random(1)).blood, "")
+
+    def test_the_blood_rides_the_save(self):
+        for kind in ("", *rpg.BLOOD_KINDS):
+            e = people.make_character(random.Random(7), 3, blood=kind)
+            back = session._entity_from_dict(
+                json.loads(json.dumps(session._entity_to_dict(e))))
+            self.assertEqual(back.blood, kind)
+            self.assertEqual(back.tongues, e.tongues)
+            self.assertEqual(back.spell_ward, e.spell_ward)
+
+    def test_a_started_game_keeps_it_over_the_save(self):
+        state, _ = run_new("--seed", "8", "--level", "4", "--blood", "old")
+        self.assertEqual(state["party"][0].blood, "old")
+        self.assertEqual(state["party"][0].mind >= 4, True)
+
+
+# --------------------------------------------------------------------------- #
 # Spec B -- the trait rollback
 # --------------------------------------------------------------------------- #
 
@@ -483,8 +767,14 @@ class TheTraitRollback(unittest.TestCase):
             if rpg.has_trait(e, "armored"):
                 self.assertEqual(e.def_bonus, people.ARMORED_DEF_BONUS)
             if rpg.has_trait(e, "wealthy"):
-                self.assertEqual(people.joining_silver(e),
-                                 people.TRAIT_SILVER["wealthy"])
+                # The gift is the SUM of the silver traits held: a wealthy
+                # character who also dresses luxuriously brings both
+                # (they sit in different trait categories, so one body
+                # can carry the pair).
+                expected = people.TRAIT_SILVER["wealthy"]
+                if rpg.has_trait(e, "luxurious"):
+                    expected += people.TRAIT_SILVER["luxurious"]
+                self.assertEqual(people.joining_silver(e), expected)
 
     def test_a_trait_less_roll_takes_no_trait_shifts(self):
         rng = random.Random(1)

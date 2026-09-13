@@ -27,6 +27,11 @@ The design (2026-07-11, designer-vetted):
   they earn their keep. On a dict NPC or on the PC they were unbacked
   flavor the DM had to perform, so neither rolls them any more:
   `make_npc` casts a face without a sketch and the PC's sheet is his stats.
+- **Blood is a fact, not a trait** (2026-09-12, the gates arc): a person is
+  a plain human or one of the three half-blood lines (`Entity.blood`). It is
+  rolled here for companions and recruits at long odds, fixed by `cmd_new`
+  for the PC, never rolled for a dict NPC, and it prints as the sheet's
+  BLOOD row. What it does to a body is rpg.make_human's.
 - **Pairs**: a quarter of recruit options are a bonded pair (parent/child,
   couple, mentor/mentee, old friends) -- one option slot, TWO heads against
   the CHA capacity, joining and leaving together.
@@ -40,16 +45,24 @@ Run:  python people.py [--seed N] [--level L]   -> print a sample of
 from __future__ import annotations
 
 import argparse
+import hashlib
 import random
 
 import rpg
 from rpg import Entity, MEDS_INTERVAL_DAYS, MEDS_PRICE
-from places import LAND_SPECS
+from places import CITY_STATES, LAND_SPECS
 from quests import HOMELANDS
 
 # --------------------------------------------------------------------------- #
-# Homelands (the nine countries; quests.HOMELANDS is the source of truth)
+# Homelands (quests.HOMELANDS is the source of truth: every land on the map)
 # --------------------------------------------------------------------------- #
+# WHERE A PERSON CAN BE BORN (2026-09-12, the gates arc's session 4) is the
+# NINE and not the eleven. Concordia and Saturna are 27 years old and their
+# people came through a gate; nobody rolls a homeland into one. What the two
+# city states DO own is a name pool like everybody else, because the smith at
+# Concordia's counter is an angel and `quests.cast_service_providers` casts
+# him out of the country he is standing in.
+HUMAN_HOMELANDS = tuple(c for c in HOMELANDS if c not in CITY_STATES)
 SEXES = ("m", "f")
 
 
@@ -80,6 +93,12 @@ def roll_age(rng: random.Random) -> int:
 # is the whole of the rule in play.
 LANGUAGES = {country: LAND_SPECS[country]["tongue"] for country in HOMELANDS}
 LATIN = LANGUAGES["byzantium"]
+# The two gate cities have tongues of their own -- Heaven's high register IS
+# the church's Latin, and Hell speaks the Old Tongue -- but neither is a
+# SECOND tongue a human rolls: the eight a Byzantine can have learned are the
+# eight other human ones (rules.md's Heaven & Hell add-on, "the tongue").
+HUMAN_TONGUES = tuple(dict.fromkeys(LANGUAGES[c] for c in HUMAN_HOMELANDS
+                                    if LANGUAGES[c] != LATIN))
 
 
 def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
@@ -87,14 +106,69 @@ def roll_tongues(rng: random.Random, homeland: str) -> list[str]:
     or, for a Byzantine, one other tongue drawn from the eight."""
     home = LANGUAGES[homeland]
     if home == LATIN:
-        home = rng.choice([LANGUAGES[c] for c in HOMELANDS
-                           if LANGUAGES[c] != LATIN])
+        home = rng.choice(list(HUMAN_TONGUES))
     return [LATIN, home]
 
 
 def tongue_line(e: Entity) -> str:
     """The sheet's SPEAKS row for a person who has a list."""
     return "speaks: " + ", ".join(e.tongues)
+
+
+# --------------------------------------------------------------------------- #
+# The Nephilim (2026-09-12, the gates arc's session 3)
+# --------------------------------------------------------------------------- #
+# Half-blood is a FACT about a person, not a line of the trait sketch: it is
+# born, it is never chosen against at a hiring in the way a temperament is,
+# and the PC carries it while he carries no sketch at all. rpg.py owns what
+# it does to a body (BLOOD_FLOORS / BLOOD_CEILINGS / BLOOD_WARD and the Old
+# Tongue); this file owns what it is CALLED and what shows.
+#
+# The odds are the design's: the PC rolls a d6 and half of all PCs are
+# Nephilim (session.cmd_new), while a companion or a recruit rolls the long
+# odds below -- old blood 1 in 12, each of the two young lines 1 in 24, so
+# one hireable face in six is something other than human. A dict NPC rolls
+# nothing: the named Nephilim of a world are the packets' authority hooks,
+# not the dice's.
+BLOOD_CHANCE_DENOM = 24     # one draw, the three bands off the same roll
+BLOOD_ROLL = {0: "old", 1: "old", 2: "sky", 3: "fire"}   # else: plain human
+
+# What it is CALLED. The old blood descends from the stranded of the Closing
+# and is the oldest thing in a human line, so it is not "born" of anything
+# that came back twenty-seven years ago; the two young lines are.
+BLOOD_WORDS = {"old": "old-blood", "sky": "sky-born", "fire": "fire-born"}
+
+# The MARKER: what anyone in the room can see. One is picked per character
+# (below) so two fire-born on the same board do not read alike.
+BLOOD_MARKS: dict[str, tuple[str, ...]] = {
+    "old": ("eyes that catch the light", "taller than the door"),
+    "sky": ("gold in the eyes", "the hair does not grey"),
+    "fire": ("small horns under the hair", "warm to the touch"),
+}
+
+
+def roll_blood(rng: random.Random) -> str:
+    """A companion's or a recruit's blood: old 1 in 12, sky and fire 1 in 24
+    each, off ONE draw. "" is a plain human and is most of them."""
+    return BLOOD_ROLL.get(rng.randrange(BLOOD_CHANCE_DENOM), "")
+
+
+def blood_mark(e: Entity) -> str:
+    """Which of this blood's markers this body wears -- a pure function of
+    the name, so it is the same mark every time the sheet is printed and
+    across the save (nothing about it is stored)."""
+    marks = BLOOD_MARKS[e.blood]
+    payload = f"{e.name}|{e.blood}".encode("utf-8")
+    digest = hashlib.blake2b(payload, digest_size=8).digest()
+    return marks[int.from_bytes(digest, "big") % len(marks)]
+
+
+def blood_line(e: Entity) -> str:
+    """The sheet's BLOOD row -- the word and the marker. Empty for the plain
+    humans, who are most people."""
+    if not e.blood:
+        return ""
+    return f"BLOOD: {BLOOD_WORDS[e.blood]} ({blood_mark(e)})"
 
 
 # --------------------------------------------------------------------------- #
@@ -204,6 +278,37 @@ NAMES: dict[str, dict[str, tuple[str, ...]]] = {
               "Yasmin", "Zahra", "Aisha", "Halima", "Nusayba", "Rania",
               "Salma"),
     },
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Nobody
+    # is BORN here; these are the faces behind the two cities' counters and
+    # the people the party meets inside the walls. One language family, two
+    # registers (writing.md's two rows): Heaven's names are BOUND, every one
+    # of them ending in the suffix that means "of the Law", and its women
+    # carry the root with the soft ending instead; Hell's are UNBOUND -- a
+    # bare root, a hard ending, never -el, and rank is an epithet the table
+    # hangs on afterwards rather than a suffix.
+    "concordia": {
+        "m": ("Oriel", "Zohariel", "Dinael", "Emetiel", "Chesediel",
+              "Tzedekiel", "Mishpatiel", "Nuriel", "Barkiel", "Chokmiel",
+              "Binael", "Yashariel", "Tamiel", "Zakiel", "Hodael",
+              "Ramiel", "Sheliel", "Amitiel", "Meturgiel", "Kavodiel",
+              "Sedariel", "Tohoriel", "Gadriel", "Machaniel", "Peniel"),
+        "f": ("Orah", "Zohara", "Tohara", "Noga", "Emeta", "Dina",
+              "Chesda", "Tzedaka", "Nuria", "Barka", "Chokma", "Bina",
+              "Yeshara", "Tamah", "Zaka", "Hodaya", "Rama", "Shelah",
+              "Amita", "Kavoda", "Sedara", "Meira", "Gadara", "Machana",
+              "Peninah"),
+    },
+    "saturna": {
+        "m": ("Lahav", "Saar", "Dror", "Resheph", "Zaam", "Gever",
+              "Kerem", "Nesheq", "Shod", "Balak", "Tzayid", "Zeev",
+              "Layish", "Tirosh", "Qeren", "Raav", "Choshek", "Peretz",
+              "Mered", "Shachal", "Ragaz", "Hamon", "Naval", "Tzachok",
+              "Rahav"),
+        "f": ("Simcha", "Taava", "Dama", "Chaga", "Rina", "Hedva", "Gila",
+              "Tzama", "Lahava", "Sera", "Zima", "Rava", "Nedava",
+              "Chamda", "Ayala", "Shikra", "Marah", "Chava", "Nesha",
+              "Hamona", "Tzela", "Haya", "Rimona", "Shulah", "Kesem"),
+    },
     "tergal": {
         "m": ("Gruk", "Marok", "Thokk", "Drog", "Urzag", "Karg", "Snagg",
               "Bolg", "Ruk", "Ghor", "Muzgash", "Ogrim", "Varg", "Zug",
@@ -306,6 +411,15 @@ TRAIT_NOTES: dict[str, str] = {
                   f"capitals only) or their spirits drain nightly",
     "patriotic": "downtime in their homeland suits them",
     "religious": "downtime in a capital (the temples) suits them",
+    # The Nephilim (2026-09-12) are not traits, but their mechanics belong in
+    # the same one place every annotated word's do -- `character_sheet` reads
+    # them off the blood WORD, so a candidate's sheet prices his blood the
+    # way it prices his dress.
+    BLOOD_WORDS["old"]: "+1 MIND floor at creation",
+    BLOOD_WORDS["sky"]: "+1 DEX floor at creation; warded (+2 to a "
+                        "possession's DC, no assassin's opening)",
+    BLOOD_WORDS["fire"]: f"+1 STR floor and +2 max Power at creation; "
+                         f"speaks the {rpg.OLD_TONGUE}",
 }
 
 # One-line enemy descriptors for the "has an enemy" trait (flavor only --
@@ -327,7 +441,7 @@ def _detail_traits(traits: dict[str, str], rng: random.Random, homeland: str,
                            f"{rng.randint(8, 12)})")
     elif quirk == "has an enemy":
         enemy_home = (homeland if rng.random() < 0.5
-                      else rng.choice(HOMELANDS))
+                      else rng.choice(HUMAN_HOMELANDS))
         sex = rng.choice(SEXES)
         name = pick_name(rng, enemy_home, sex, used)
         traits["quirk"] = (f"has an enemy ({name}, a {enemy_home} "
@@ -374,7 +488,8 @@ def make_character(rng: random.Random, level: int = 1,
                    homeland: str | None = None, sex: str | None = None,
                    used_names: set[str] | None = None,
                    with_traits: bool = True,
-                   wizard: bool = False) -> Entity:
+                   wizard: bool = False,
+                   blood: str | None = None) -> Entity:
     """One person, any level: homeland/sex/name/age, the tongues they speak,
     the three-trait sketch,
     stats budgeted with trait floor/ceiling shifts, then grown
@@ -393,10 +508,15 @@ def make_character(rng: random.Random, level: int = 1,
     strictly above both DEX and STR -- rpg.make_human's test), which is
     how the PC is always a magic user. The reroll keeps the natural shape
     of a wizard's stats: nothing is nudged after the fact, an unlucky
-    budget is simply thrown away."""
-    homeland = homeland or rng.choice(HOMELANDS)
+    budget is simply thrown away.
+
+    `blood` (2026-09-12) is the Nephilim hook: None ROLLS the companion
+    odds (roll_blood), and a word -- "" included -- is taken as given,
+    which is how the PC's own d6 reaches the generator."""
+    homeland = homeland or rng.choice(HUMAN_HOMELANDS)
     sex = sex or rng.choice(SEXES)
     name = pick_name(rng, homeland, sex, used_names)
+    blood = roll_blood(rng) if blood is None else blood
     traits = (roll_traits(rng, homeland, level, used_names)
               if with_traits else {})
     floors: dict[str, int] = {}
@@ -405,14 +525,17 @@ def make_character(rng: random.Random, level: int = 1,
         floors["str"] = floors.get("str", 0) + 1
     if "short" in traits.values():
         ceilings["str"] = ceilings.get("str", 0) + 1
-    h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
+    h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings,
+                       blood=blood)
     for _ in range(WIZARD_ROLL_TRIES if wizard else 0):
         if h.school:
             break
-        h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings)
+        h = rpg.make_human(rng, name, floors=floors, ceilings=ceilings,
+                           blood=blood)
     h.homeland, h.sex, h.age, h.traits = (
         homeland, sex, roll_age(rng), traits)
     h.tongues = roll_tongues(rng, homeland)
+    rpg.add_blood_tongue(h)     # the homeland's roll goes over make_human's
     if "armored" in traits.values():
         h.def_bonus = ARMORED_DEF_BONUS
     rpg.develop_hero(h, level, rng)
@@ -434,7 +557,7 @@ def make_pair(rng: random.Random, level: int,
     both at the option's level; parent/child share a homeland; ages fixed up
     the relationship reads (parent 16+ years older, mentor 10+)."""
     kind = rng.choice(PAIR_KINDS)
-    first_homeland = homeland or rng.choice(HOMELANDS)
+    first_homeland = homeland or rng.choice(HUMAN_HOMELANDS)
     a = make_character(rng, level, homeland=first_homeland,
                        used_names=used_names)
     b = make_character(rng, level,
@@ -516,16 +639,29 @@ def trait_note(value: str) -> str:
     return ""
 
 
+# The order the sketch reads in: behavior first, then presentation. One
+# authority -- person_line writes it and session.hero_block_lines asks for it
+# rather than parsing a line back apart.
+TRAIT_ORDER = ("temperament", "quirk", "interest", "weakness", "background",
+               "speech", "voice", "dress", "looks")
+
+
+def trait_bits(e: Entity) -> list[str]:
+    """This person's sketch as `category: trait` bits, in the fixed order."""
+    return [f"{cat}: {e.traits[cat]}" for cat in TRAIT_ORDER
+            if cat in e.traits]
+
+
 def person_line(e: Entity) -> str:
     """One line of who this is (the sheet/status companion to rpg.stat_line's
-    body readout): homeland, sex, age, and -- for a companion -- the trait
-    sketch. The PC carries no sketch, so his line stops at the age."""
+    body readout): homeland, sex, age, the BLOOD when there is any, and --
+    for a companion -- the trait sketch. The PC carries no sketch, so his
+    line stops at the age unless he is a half-blood."""
     nick = f' "{e.nickname}"' if e.nickname else ""
     bits = [f"{e.homeland} {e.sex}, age {e.age}"] if e.homeland else []
-    for cat in ("temperament", "quirk", "interest", "weakness", "background",
-                "speech", "voice", "dress", "looks"):
-        if cat in e.traits:
-            bits.append(f"{cat}: {e.traits[cat]}")
+    if e.blood:
+        bits.append(blood_line(e))
+    bits += trait_bits(e)
     return f"{e.name}{nick} -- " + "; ".join(bits)
 
 
@@ -543,9 +679,11 @@ def character_sheet(e: Entity) -> list[str]:
     lines = [person_line(e), "  " + rpg.stat_line(e)]
     if e.tongues:
         lines.append("  " + tongue_line(e))
-    notes = [f"{e.traits[cat]}{trait_note(e.traits[cat])}"
-             for cat in sorted(e.traits)
-             if wanted(e.traits[cat])]
+    notes = [f"{BLOOD_WORDS[e.blood]}{trait_note(BLOOD_WORDS[e.blood])}"] \
+        if e.blood else []
+    notes += [f"{e.traits[cat]}{trait_note(e.traits[cat])}"
+              for cat in sorted(e.traits)
+              if wanted(e.traits[cat])]
     if notes:
         lines.append("  notes: " + "; ".join(notes))
     if e.skill_points:

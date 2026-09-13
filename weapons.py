@@ -14,7 +14,8 @@ as "suited, not ranked" long before it had a name). This module owns:
   quirk), true +DEX gated to the legendary tiers;
 - the famous ARMORY (`roll_armory`): the world's pregenerated named magic
   weapons, owners drawn from the cast, known from day one -- steal, rob,
-  or quest for them, never buy them;
+  or quest for them, never buy them, plus the TWO BARS (`gate_bar`) that
+  are not rolled at all: Tom's steel, still across the two old gates;
 - the legendary SMITHS (`roll_smiths` / `commission_weapon`): three per
   world, each with a cap tier and the pride floor (cap - 1) below which
   they will not work.
@@ -351,6 +352,108 @@ KEEPER_LINES = (            # the resting places of the unclaimed pieces
 )
 
 
+# --------------------------------------------------------------------------- #
+# THE TWO BARS (2026-09-12, the gates arc's session 2)
+# --------------------------------------------------------------------------- #
+# Tom barred both gates in the same season a thousand years ago, and both
+# bars are still across them. They are the world's two most famous pieces of
+# steel and the arc's endgame loot: fixed entries in the armory beside the
+# ten rolled ones, each owned by the sentinel that has held it since, each
+# resting at the bottom of its own dead city. Nothing is for sale and no
+# quest hangs on either -- what one does to a LIVE gate is the arc's open
+# question, and the bars are what point at it.
+#
+# The steel is GENERATED and not hand-written: sp 9 on a two-hander (heavy
+# arms, because a bar across a gate is what a two-hander is), off a stream
+# derived from the world seed, and filtered to `_plain_bar` -- no rider, no
+# quirk. The profile rule then has nothing off-axis to pay for, so all six
+# points above quality go to the zweihander's own STR axis and a bar is
+# `+3 STR` and nothing else. That makes it the SAME piece in every world,
+# which is deliberate and is the one place this file departs from the
+# rolled armory's doctrine: there is exactly one Candor bar in the setting,
+# and a seed does not re-forge it.
+GATE_BAR_SP = 9
+GATE_BAR_CHASSIS = "zweihander"
+GATE_BARS = (
+    {"gate": "candor", "boss": "sentinel of candor",
+     "name": "the Candor bar", "owner": "Zohariel the Sentinel",
+     "role": "the Sentinel of Candor",
+     "line": "The bar Tom set across Candor's gate: white iron a man long, "
+             "cold to the hand in any weather."},
+    {"gate": "libera", "boss": "old host of libera",
+     "name": "the Libera bar", "owner": "Saar the Old Host",
+     "role": "the Old Host of Libera",
+     "line": "The bar Tom set across Libera's gate: black iron a man long, "
+             "warm to the hand in any weather."},
+)
+GATE_BAR_BY_GATE = {spec["gate"]: spec for spec in GATE_BARS}
+GATE_BAR_BY_BOSS = {spec["boss"]: spec for spec in GATE_BARS}
+GATE_BAR_TRIES = 100        # the rejection sampler's leash (see below)
+
+
+def _plain_bar(w: Weapon) -> bool:
+    """The authored PROFILE: a bar and nothing else. No rider (Tom's steel
+    does not burn, bleed, poison or rime), no quirk (it pays no silver, it
+    costs no sin, it does not lunge) -- so the whole budget above quality
+    lands on the zweihander's own axis."""
+    return not (w.rider or w.lunge or w.silver_on_kill or w.karma_on_kill)
+
+
+def gate_bar(seed: int | str | None, gate: str) -> Weapon:
+    """One bar, off a stream derived from the world seed, filtered to the
+    authored profile -- the generator with the rider and the quirk refused.
+
+    THE SPEND THIS SETTLES: with nothing off-axis to pay for, sp 9 on a
+    zweihander is six points above quality and all six go to STR, so a bar
+    is `+3 STR` and nothing else -- the heaviest plain steel the ladder can
+    make. It is therefore the SAME piece in every world, which is the right
+    answer for an object the setting says there is exactly one of: Tom set
+    this bar across this gate, and no seed re-forges it."""
+    spec = GATE_BAR_BY_GATE[gate]
+    rng = random.Random(f"gate-bar:{seed}:{gate}")
+    for _ in range(GATE_BAR_TRIES):
+        bar = generate_weapon(rng, GATE_BAR_SP, GATE_BAR_CHASSIS,
+                              spec["name"])
+        if _plain_bar(bar):
+            # The one authored thing about it: what it looks like. The
+            # numbers stay the generator's, and are printed after.
+            return dataclasses.replace(
+                bar, description=f"{spec['line']} {bar.description}")
+    raise ValueError(f"{spec['name']}: the generator cannot make a plain "
+                     f"sp-{GATE_BAR_SP} {GATE_BAR_CHASSIS} any more")
+
+
+def gate_bar_entries(world: dict) -> list[dict]:
+    """The two fixed armory entries: owner, resting place, and the steel.
+
+    `where` names the deepest Site of the ruin, which is where the boss
+    stands -- the armory is the game's "famous weapons with owners and
+    resting places" record and the bars are the two it does not have to
+    invent a keeper for."""
+    from places import GATE_BY_KEY, ruin_area, ruin_sites   # runtime import
+    out = []
+    for spec in GATE_BARS:
+        record = world["gates"][spec["gate"]]
+        area = ruin_area(world, record["tile"])
+        deepest = ruin_sites(world, area)[-1]
+        w = gate_bar(world["seed"], spec["gate"])
+        out.append({
+            "weapon": dataclasses.asdict(w), "sp": GATE_BAR_SP,
+            "tier": w.tier, "name": w.name, "status": "known",
+            "gate": spec["gate"], "boss": spec["boss"],
+            "owner": {"name": spec["owner"], "role": spec["role"],
+                      "land": world["tiles"][record["tile"]]["country"],
+                      "seat": deepest["id"]},
+            # Each fragment stays inside the 40-column page (`_fragments`
+            # never splits one): short clauses, seams where they read.
+            "where": (f"held by {spec['owner']} -- "
+                      f"at the bottom of "
+                      f"{GATE_BY_KEY[spec['gate']]['name']}: "
+                      f"{deepest['name']}"),
+        })
+    return out
+
+
 def roll_armory(world: dict, rng: random.Random) -> list[dict]:
     """The world's famous magic weapons: rolled once at worldgen, named,
     and KNOWN -- the player can hear of every one from day one. Owners are
@@ -383,6 +486,8 @@ def roll_armory(world: dict, rng: random.Random) -> list[dict]:
             entry["where"] = (f"{rng.choice(KEEPER_LINES)} -- "
                               f"in {area['name']}")
         armory.append(entry)
+    # ...and the two that are not rolled: Tom's bars, where Tom left them.
+    armory.extend(gate_bar_entries(world))
     return armory
 
 

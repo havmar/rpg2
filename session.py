@@ -57,6 +57,7 @@ The shape of a playthrough:
                                                garrison, hold it with paid
                                                levies, collect tribute
   fight N                                   -- off-script encounters
+  delve [SITE]                              -- the gate ruins as dungeons
   hideout ROOM / barrow ROOM                -- the two set sites (DEV/TEST
                                                only since 2026-07-13; not
                                                part of a played campaign)
@@ -145,16 +146,19 @@ from rpg import (
     ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
     buy_ammo as _buy_ammo, grant_starter_ammo,
     WINDED_PENALTY, SPENT_PENALTY, fit_lines,
+    BLOOD_KINDS,
 )
 import karma
 import crime
 import conquest
 import worldsim                 # the world layer (2026-08-07, the frame)
 import weapons as weaponlib     # the weapon generation system (2026-07-28)
-from people import (make_character, make_pair, character_sheet, person_line,
+from people import (make_character, make_pair, character_sheet,
                     npc_line, downtime_match, joining_silver, tongue_line,
-                    PAIR_CHANCE)
-from sites import SITES, FOES, BANDIT_KINDS, WEAPON_INDEX, make_foe, roster_lines
+                    blood_line, trait_bits, PAIR_CHANCE)
+from sites import (SITES, FOES, BOSSES, BANDIT_KINDS, WEAPON_INDEX, make_foe,
+                   boss_bar,
+                   roster_lines, GATE_SKINS, GATE_FEROCITY)
 from quests import (generate_world, forge_quest, board_lines,
                     quest_silver_posted,
                     quest_detail_lines, quest_line, roster_kinds_line,
@@ -188,7 +192,9 @@ from places import (
     tile_brief_lines, tile_terms,
     tile_detail_lines as places_tile_detail, tile_ground as places_tile_ground,
     tile_id as tile_id_of, tile_label,
-    MAP_GLYPH_LEGEND, MAP_MARK_LEGEND,
+    MAP_GLYPH_LEGEND, MAP_MARK_LEGEND, MAP_GATE_LEGEND,
+    gate_line, gate_here, ruin_area, ruin_sites, ruin_site_state,
+    refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -527,16 +533,17 @@ def hero_block_lines(party: list, h) -> list[str]:
                         if r and (h.weapon is None or n != h.weapon.name))
     if dormant:
         lines.append(f"  drilled, not in hand: {dormant}")
+    if h.blood:
+        lines.append("  " + blood_line(h))
     if h.tongues:
         lines.append("  " + tongue_line(h))
     if h.satisfaction is not None:
         lines.append(f"  satisfaction {h.satisfaction}/{SATISFACTION_MAX}")
-    if h.homeland:
-        # person_line's trait sketch, minus the name and homeland/age already
-        # in the header (one source for the category order: people.py).
-        traits = person_line(h).split(" -- ", 1)[1].partition("; ")[2]
-        if traits:
-            lines.append(f"  {traits}")
+    # The trait sketch, minus the name and homeland/age already in the header
+    # (one source for the category order: people.trait_bits).
+    traits = "; ".join(trait_bits(h))
+    if traits:
+        lines.append(f"  {traits}")
     for ctag in condition_tags(h):
         lines.append(f"  [{ctag}]")
     for wtag in wound_tags(h):
@@ -757,6 +764,7 @@ def map_sheet_lines(state: dict) -> list[str]:
     lines.append("")
     lines.append(MAP_GLYPH_LEGEND)
     lines.append(MAP_MARK_LEGEND)
+    lines.append(MAP_GATE_LEGEND)
     lines.append("")
     lines.extend(here_lines(state))
     # The STATE DIFF (2026-08-07, the world layer): the country's wealth
@@ -1036,6 +1044,10 @@ def save(state: dict) -> None:
         # bookkeeping.
         "loose_ends": state.get("loose_ends", []),
         "pending_reward": state.get("pending_reward"),
+        # One-off steel on the ground (2026-09-12): every off-catalog
+        # weapon the party has seen fall, by name, so `give` can put a
+        # famous blade or a gate's bar in a hand.
+        "drops": state.get("drops", {}),
         "pending": _pending_to_dict(state.get("pending"), party),
         "rooms": {f"{site}#{room}": {"foes": [_entity_to_dict(f)
                                               for f in rec["foes"]],
@@ -1102,6 +1114,7 @@ def load() -> dict:
         # The loose-ends record (2026-08-08): rout escapees, newest first.
         "loose_ends": doc.get("loose_ends") or [],
         "pending_reward": doc.get("pending_reward"),
+        "drops": doc.get("drops", {}),
         "pending": _pending_from_dict(doc.get("pending"), party),
         "rooms": rooms,
     }
@@ -1255,9 +1268,15 @@ def tally_lines(state: dict) -> list[str]:
             field_xp = quest_clear_xp(q["level"], enc)
             lump = round(quest_turnin_xp(q["level"], enc) * mult)
             silver = round(quest_silver_posted(q) * mult)
-            lines.append(f"{ahead}; the work done pays {field_xp} XP in "
-                         f"the field, and the turn-in pays {silver}s, "
-                         f"{lump} XP at the giver.")
+            if q.get("delve"):
+                # A delve has nobody to report to: the field tranche is
+                # the whole of the pay (rules.md's Heaven & Hell add-on).
+                lines.append(f"{ahead}; clearing it pays {field_xp} XP in "
+                             f"the field. Nobody down here pays a turn-in.")
+            else:
+                lines.append(f"{ahead}; the work done pays {field_xp} XP in "
+                             f"the field, and the turn-in pays {silver}s, "
+                             f"{lump} XP at the giver.")
             note = deadline_note(q, clock.day)
             if note:
                 lines.append(f"  (due day {q['deadline_day']} -- {note}; "
@@ -1348,6 +1367,24 @@ def start_level(args: argparse.Namespace, rng: random.Random) -> int:
     if getattr(args, "level", None) is not None:
         return args.level
     return rng.randint(1, START_LEVEL_ROLL_MAX)
+
+
+# THE PC'S BLOOD (2026-09-12, the gates arc's session 3). A d6: 1-3 nothing,
+# 4 the old blood, 5 Heaven's, 6 Hell's. HALF of all player characters are
+# Nephilim, which is what "an important part of the setting" has to mean at
+# a table that plays one character -- a companion's odds (people.roll_blood)
+# are the world's real ones, and they are long.
+PC_BLOOD_ROLL = {4: "old", 5: "sky", 6: "fire"}
+BLOOD_OPTIONS = ("none", *BLOOD_KINDS)
+
+
+def pc_blood(args: argparse.Namespace, rng: random.Random) -> str:
+    """What the player character is: `--blood WORD` when given (`none` is
+    the plain human), else the d6 off the run's own rng."""
+    asked = getattr(args, "blood", None)
+    if asked is not None:
+        return "" if asked == "none" else asked
+    return PC_BLOOD_ROLL.get(rng.randint(1, 6), "")
 
 
 def career_purse(level: int) -> int:
@@ -1503,9 +1540,13 @@ def cmd_new(args: argparse.Namespace) -> None:
     # as a warrior any day he likes (combat training, weapon proficiency and
     # the move repertoire are all on his menu), so starting him with the
     # gift takes nothing away and opens everything.
+    #
+    # His BLOOD is rolled once, before the capacity rerolls, so a reroll
+    # re-rolls the stats and never the person (2026-09-12, the Nephilim).
+    blood = pc_blood(args, rng)
     while True:
         pc = make_character(rng, level=level, sex="m",
-                            homeland=homeland,
+                            homeland=homeland, blood=blood,
                             with_traits=False, wizard=True)
         if party_capacity(pc.cha) >= 1:
             break
@@ -2574,6 +2615,7 @@ def _close_site(state: dict, log: list[str], qid: str,
     site = sites[cur["site"]]
     n_sites = len(quest["sites"])
     last_site = cur["site"] == n_sites - 1
+    delve = quest.get("delve")
     pays_here = (quest.get("conquest")
                  or quest.get("hell_task")
                  or quest.get("align") == "dark")
@@ -2588,7 +2630,21 @@ def _close_site(state: dict, log: list[str], qid: str,
     # SITE CLEARED never reads as the whole job done (2026-07-19).
     pos = f" (site {cur['site'] + 1}/{n_sites})" if n_sites > 1 else ""
     tag = f" ({note})" if note else ""
-    if last_site and pays_here:
+    if last_site and delve:
+        # A DELVE (2026-09-12, the gates): the FIELD tranche and nothing
+        # else. There is no giver at the bottom of a dead city, so there is
+        # no turn-in tranche and no silver -- what the ruin pays is what is
+        # lying in it.
+        banner = "THE SITE IS CLEARED" + tag
+        field_xp = round(quest_clear_xp(quest["level"], enc) * pay_mult)
+        log.append("")
+        log_banner(log,
+                   f"  *** {banner}: {site['name']}{pos} -- nothing else "
+                   f"is standing in it. ***",
+                   [f"*** {banner}:", f"{site['name']}{pos} --",
+                    "nothing else is standing in it. ***"])
+        award_xp(party, field_xp, log, "the delve")
+    elif last_site and pays_here:
         banner = "QUEST COMPLETE" + tag
         # The clock's band rides ON TOP of the caper fraction (2026-07-26):
         # what the job is worth is what it is worth ON THE DAY it is handed
@@ -2655,6 +2711,15 @@ def _close_site(state: dict, log: list[str], qid: str,
                     "the job goes on."])
     cur["site"] += 1
     cur["room"] = 0
+    if last_site and delve:
+        quest["status"] = "done"
+        quest["done_day"] = day
+        for line in close_ruin_site(state["world"], site, day):
+            log.append(f"  {line}")
+        remember(state,
+                 f"[{qid}] {quest['name']} (L{quest['level']}) -- delved.",
+                 kind="quest")
+        return
     if last_site and not pays_here:
         # The world changes NOW -- the pass reopens when the deed is done,
         # not when it is paid. The epilogue and the history record wait
@@ -4210,6 +4275,8 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         weapons_left = fallen_weapons_line(foes)
         if weapons_left:
             log.append(weapons_left)
+        record_drops(state, foes)
+        mark_boss_dead(state, site, foes)
         # A field cleared by rout leaves its record (2026-08-08): the loose
         # end, and a `routed` mark on the site so its banner says driven
         # off, not slain. A won PURSUIT settles its record instead --
@@ -4842,7 +4909,9 @@ def cmd_room(args: argparse.Namespace) -> None:
         for i, kind in enumerate(kinds):
             state["foe_count"] += 1
             foe = make_foe(kind, state["foe_count"], rng,
-                           display=quest["skins"].get(kind))
+                           display=quest["skins"].get(kind),
+                           ferocity=quest.get("ferocity", {}).get(kind),
+                           weapon=ruin_boss_bar(state["world"], site, kind))
             if i == boss_at:
                 foe.name = boss["display"]
             foes.append(foe)
@@ -4913,17 +4982,180 @@ def cmd_forge(args: argparse.Namespace) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# THE DELVE (2026-09-12, the gates arc's session 1)
+# --------------------------------------------------------------------------- #
+# A ruin is a dungeon and its six Sites are its rooms-of-rooms. `delve SITE`
+# opens one WITHOUT A GIVER: it forges a quest on the spot over the Site's
+# authored rooms and the ordinary room walk, fights, encounter XP and loot
+# follow. Clearing pays the FIELD tranche of a job at that level and no
+# turn-in -- there is nobody down there to turn it in to. A cleared Site
+# refills after RUIN_REFILL_DAYS; the deepest one never does once its boss
+# is dead, and the ruin's ring goes quiet with it.
+
+def record_drops(state: dict, foes: list) -> None:
+    """Keep the ONE-OFF steel the fallen left where a hand can reach it.
+
+    `give` takes a weapon by name out of the catalog, which is every weapon
+    the game had until generated steel existed. A dropped bar (or any famous
+    blade a fight is won over) is not in the catalog, so the offer would be a
+    line the player cannot act on. Off-catalog drops are kept on the save
+    under their own names and `give` looks here first. The map ACCUMULATES
+    and nothing removes from it: these are one-off famous pieces, there are
+    a handful of them in a whole campaign, and a party that hands the bar to
+    somebody else two weeks later should still be able to."""
+    drops = state.setdefault("drops", {})
+    for f in foes:
+        w = f.weapon
+        if (f.alive or f.withdrew or w is None or f.weapon_broken
+                or w.value <= 0 or w.name in WEAPON_INDEX):
+            continue
+        drops[w.name] = dataclasses.asdict(w)
+
+
+def mark_boss_dead(state: dict, site_key: str | None, foes: list) -> None:
+    """A gate ruin seals on a BODY, not on a cleared room (2026-09-12, the
+    gates arc's session 2). The Old Host takes spoils and can break and run
+    out of its own hollow, so `close_ruin_site` asks whether the thing that
+    held the gate is dead, and this is what answers."""
+    world = state.get("world")
+    if world is None or site_key is None:
+        return
+    site = world["sites"].get(site_key)
+    record = site.get("ruin") if site else None
+    if not record or not record["boss"]:
+        return
+    display = BOSSES[record["boss"]].display
+    if any(f.dead and f.name.startswith(display) for f in foes):
+        record["boss_dead"] = True
+
+
+def ruin_boss_bar(world: dict, site: dict, kind: str):
+    """The steel a roster slot brings with it: the BAR, where the slot is
+    the deepest Site's own boss, and None everywhere else. The bars are
+    generated off the world seed (weapons.gate_bar), so a boss cannot carry
+    its own weapon on its catalog row the way the Marble Warden carries the
+    warden blade -- this is that hook, one level up."""
+    record = site.get("ruin")
+    if not record or record["boss"] != kind:
+        return None
+    return boss_bar(kind, world["seed"])
+
+
+def ruin_site_lines(world: dict, area: dict, day: int) -> list[str]:
+    """The ruin's six places as the player reads them: the name, the level,
+    and whether anything is still in it."""
+    lines = []
+    for site in ruin_sites(world, area):
+        state_word = ruin_site_state(site, day)
+        if state_word == "open":
+            note = ""
+        elif state_word == "sealed":
+            note = " -- cleared for good"
+        else:
+            left = (RUIN_REFILL_DAYS
+                    - (day - site["ruin"]["cleared_day"]))
+            note = f" -- cleared, quiet for {left} more day(s)"
+        lines.append(f"{site['name']} (L{site['level']}){note}")
+    return lines
+
+
+def cmd_delve(args: argparse.Namespace) -> None:
+    """Open one of the ruin's Sites: the dungeon move."""
+    state = load()
+    if not require_no_pending(state):
+        return
+    world = state.get("world")
+    if not world:
+        print("No world in this save -- start one with `new`.")
+        return
+    area = current_area(state)
+    if area["kind"] != "ruin":
+        here = ruin_area(world, state["position"]["tile"])
+        if here is None:
+            print("There is no ruin here. `delve` opens a Site of a gate "
+                  "ruin -- `map` has the two of them under GATES.")
+            return
+        print(f"{here['name']} is on this Tile. `go {here['name']}` first "
+              f"(a free step), then `delve SITE`.")
+        return
+    day = state["clock"].day
+    want = " ".join(args.site).strip().lower()
+    if not want:
+        print(f"{area['name']} -- `delve SITE`:")
+        for line in ruin_site_lines(world, area, day):
+            print(f"  {line}")
+        return
+    matches = [s for s in ruin_sites(world, area)
+               if want in s["name"].lower()]
+    if not matches:
+        print(f"No place in {area['name']} matches {want!r}. `delve` on its "
+              f"own lists them.")
+        return
+    site = matches[0]
+    record = site["ruin"]
+    state_word = ruin_site_state(site, day)
+    if state_word == "sealed":
+        print(f"{site['name']} is empty and stays empty -- nothing feeds it "
+              f"now.")
+        return
+    if state_word == "cleared":
+        left = RUIN_REFILL_DAYS - (day - record["cleared_day"])
+        print(f"{site['name']} was cleared on day {record['cleared_day']} "
+              f"and is still bare. The ring fills it again in {left} "
+              f"day(s).")
+        return
+    if record["cleared_day"] is not None:
+        # Thirty days gone by: the ring has fed it, with a fresh roster over
+        # the same authored rooms.
+        refill_ruin_site(world, site, day)
+        print(f"{site['name']} is not as it was left -- something has come "
+              f"back into it.")
+    qid = record.get("quest")
+    quest = world["quests"].get(qid) if qid else None
+    if quest is None or quest["status"] != "open":
+        qid = next_quest_id(world)
+        quest = forge_quest(
+            world, qid, site["level"], 1, len(site["rooms"]),
+            tuple(record["pool"]), f"{site['name']}, {area['name']}",
+            state["rng"], area_key=area["key"], align="neutral",
+            site_keys=(site["id"],),
+            skins=GATE_SKINS[record["side"]],
+            ferocity=GATE_FEROCITY[record["side"]],
+            desc=f"A delve into {area['name']}: {site['name']}, "
+                 f"level {site['level']}. Nobody posted it and nobody pays "
+                 f"for it; what is in there is what it is worth.")
+        quest["delve"] = site["id"]
+        world["quests"][qid] = quest
+        record["quest"] = qid
+    state["active_quest"] = qid
+    accepted = state.setdefault("accepted", [])
+    if qid not in accepted:
+        accepted.append(qid)
+    site["visited"] = True
+    state["position"]["site"] = site["id"]
+    state["position"]["room"] = None
+    rooms = site_rooms(world, site)
+    if rooms:
+        rooms[0]["known"] = True
+    print(f"The party goes down into {site['name']} (L{site['level']}, "
+          f"{len(rooms)} encounter(s)). `room` faces the next one.")
+    save(state)
+
+
+# --------------------------------------------------------------------------- #
 # The wilds: travel / explore / hunt / engage (the navigation layer)
 # --------------------------------------------------------------------------- #
 
 def _spawn_wild_foes(state: dict, kinds: list[str],
-                     skins: dict | None = None) -> list:
+                     skins: dict | None = None,
+                     ferocity: dict | None = None) -> list:
     rng = state["rng"]
     foes = []
     for kind in kinds:
         state["foe_count"] += 1
         foes.append(make_foe(kind, state["foe_count"], rng,
-                             display=(skins or {}).get(kind)))
+                             display=(skins or {}).get(kind),
+                             ferocity=(ferocity or {}).get(kind)))
     return foes
 
 
@@ -4937,7 +5169,8 @@ def party_preferred_field(party: list) -> int:
 
 def fight_wild_encounter(state: dict, kinds: list[str], level: int,
                          banner: str, field: int = WILD_FIELD,
-                         skins: dict | None = None) -> None:
+                         skins: dict | None = None,
+                         ferocity: dict | None = None) -> None:
     """Run a wilderness encounter through the same machinery as any other
     (it can pause; retreat scatters it -- the road is not a room). `field`
     is the engagement's opening gap (who noticed whom decides it), and the
@@ -4946,13 +5179,16 @@ def fight_wild_encounter(state: dict, kinds: list[str], level: int,
 
     `skins` reskins the roster for a world card's local encounter entry
     (2026-08-09): a Toll-Man is a cutthroat in the baron's livery, and the
-    stat row never changes with the costume."""
+    stat row never changes with the costume. `ferocity` rides beside it
+    (2026-09-12, the gates): the DISPOSITION is the one thing a gate's skin
+    does move -- Heaven's things do not spare and Hell's rob you and leave
+    you alive -- and it is an existing per-spawn override, not a new rule."""
     party = state["party"]
     log = new_combat_log()
     open_fight(party, log)
     log_banner(log, f"=== {banner} (a level-{level} encounter) ===",
                [f"=== {banner} ===", f"(a level-{level} encounter)"])
-    foes = _spawn_wild_foes(state, kinds, skins)
+    foes = _spawn_wild_foes(state, kinds, skins, ferocity)
     for line in roster_lines(foes):
         log.append("  " + line)
     resolve_encounter(state, log, foes, wild_encounter_xp(level),
@@ -4978,14 +5214,21 @@ def wild_event(state: dict, chance: float, banner: str,
     WHO the party meets and never how hard they are: the level is still the
     road's party-independent roll, which is a contract. `where` is the
     ground ("road" for a travel leg, "wilds" for a day afield or a night
-    camped)."""
+    camped).
+
+    THE TILE TABLE (2026-09-12, the gates) is asked FIRST and outranks it:
+    the ground under the party is more local than the country it is in, so
+    inside a gate's ring what comes down the road comes out of the gate."""
     rng = state["rng"]
     if rng.random() >= chance:
         return False
     level = roll_wild_level(rng)
     land = state["position"]["land"]
-    entry = worldsim.local_encounter(state["world"], land, where, rng)
+    tile = state["world"]["tiles"][state["position"]["tile"]]
+    entry = (worldsim.tile_encounter(tile, where, rng)
+             or worldsim.local_encounter(state["world"], land, where, rng))
     skins = dict(entry.get("skins") or {}) if entry else {}
+    ferocity = dict(entry.get("ferocity") or {}) if entry else {}
     kinds = build_wild_encounter(level, land, rng,
                                  pool=tuple(entry["kinds"]) if entry else None)
     if entry:
@@ -5002,7 +5245,7 @@ def wild_event(state: dict, chance: float, banner: str,
         line = f"L{level}: {roster_kinds_line(kinds, skins)}"
         state["sighting"] = {"kinds": list(kinds), "level": level,
                              "day": state["clock"].day, "line": line,
-                             "skins": skins}
+                             "skins": skins, "ferocity": ferocity}
         if towering:
             print(f"  Sighted at a distance -- {line}. Well above the "
                   f"party's weight; they haven't noticed you. `engage` to "
@@ -5022,7 +5265,7 @@ def wild_event(state: dict, chance: float, banner: str,
     else:
         field = WILD_FIELD      # met square: both sides cross the open
     fight_wild_encounter(state, kinds, level, banner, field=field,
-                         skins=skins)
+                         skins=skins, ferocity=ferocity)
     return True
 
 
@@ -5159,11 +5402,28 @@ def _road_costs(state: dict, origin: dict, dest: dict) -> int:
     return slow
 
 
+def tile_danger(state: dict, tile: dict | None = None) -> float:
+    """THE DANGER RING (2026-09-12, the gates): what the ground the party is
+    standing on does to how OFTEN the wilds roll. 1.0 everywhere but inside
+    a ruin's ring, where it is doubled. It never touches the LEVEL -- the
+    ring makes fights more frequent, not harder."""
+    world = state.get("world")
+    if not world:
+        return 1.0
+    if tile is None:
+        tile = world["tiles"][state["position"]["tile"]]
+    return worldsim.tile_danger(tile)
+
+
 def _road_roll(state: dict, arrival: dict, days: int) -> bool:
     """The leg's own encounter check (the per-day chance compounded over the
     days it took), plus the delivery's one guaranteed interception when this
-    is the leg that reaches the cargo's destination."""
-    chance = 1 - (1 - TRAVEL_ENCOUNTER_CHANCE) ** days
+    is the leg that reaches the cargo's destination. The arrival TILE's own
+    danger ring multiplies the per-day chance (2026-09-12)."""
+    world = state["world"]
+    per_day = min(1.0, TRAVEL_ENCOUNTER_CHANCE
+                  * tile_danger(state, world["tiles"][arrival["tile"]]))
+    chance = 1 - (1 - per_day) ** days
     banner = f"On the road at {arrival['name']}"
     delivery = active_delivery(state)
     if (delivery is not None and arrival["key"] == delivery["dest"]
@@ -5370,8 +5630,9 @@ def cmd_explore(args: argparse.Namespace) -> None:
               f"Tile for fresh ground.")
     print("\n".join(log))
     # Open water has no wilds table (the sea rolls weather, not foes).
-    if at_sea(state) or not wild_event(state, EXPLORE_ENCOUNTER_CHANCE,
-                                       f"In the wilds at {found_name}"):
+    if at_sea(state) or not wild_event(
+            state, min(1.0, EXPLORE_ENCOUNTER_CHANCE * tile_danger(state)),
+            f"In the wilds at {found_name}"):
         save(state)
 
 
@@ -5453,7 +5714,8 @@ def cmd_engage(args: argparse.Namespace) -> None:
     fight_wild_encounter(state, sighting["kinds"], sighting["level"],
                          "The party picks this fight",
                          field=party_preferred_field(state["party"]),
-                         skins=sighting["skins"])
+                         skins=sighting["skins"],
+                         ferocity=sighting.get("ferocity"))
 
 
 def cmd_pursue(args: argparse.Namespace) -> None:
@@ -5607,16 +5869,28 @@ def cmd_look(args: argparse.Namespace) -> None:
     print(f"TILE {tile_label(tile)} -- "
           f"{world['lands'][tile['country']]['name']}, "
           f"{places_tile_ground(tile)}")
+    gate = gate_line(world, tile)
+    if gate:            # the site LEADS (2026-09-12): standing on a gate is
+        print(gate)     # the first thing about the ground you are standing on
     print(area.get("description") or f"{area['name']} is a {kind} Area.")
     facts = active_known_facts(area)
     if facts:
         print(f"Current state: {facts[0]['id'].replace('_', ' ')}.")
+    if area["kind"] == "ruin":
+        # A ruin is a DUNGEON: six named places with their levels, and the
+        # way in is `delve`, not `go` (rules.md's Heaven & Hell add-on).
+        print("The ruin's places (`delve SITE`):")
+        for line in ruin_site_lines(world, area, state["clock"].day):
+            print(f"  {line}")
+        visible = [s for s in visible if not s.get("ruin")]
     if visible:
+        # A job's own site can stand in a ruin like anywhere else, and it is
+        # entered the ordinary way.
         print("Sites in reach:")
         for site in visible:
             print(f"  {site['name']}")
         print("Use `go SITE` to enter.")
-    else:
+    elif area["kind"] != "ruin":
         print("No local sites are known here.")
     services = area.get("services", ())
     if services:
@@ -6055,8 +6329,9 @@ def cmd_camp(args: argparse.Namespace) -> None:
             # anyone has slept -- the party fights it as tired as the day
             # left them, and what remains of the night is the player's call
             # again afterward.
-            chance = (CAMP_ENCOUNTER_CHANCE / 2 if scout
-                      else CAMP_ENCOUNTER_CHANCE)
+            chance = min(1.0, (CAMP_ENCOUNTER_CHANCE / 2 if scout
+                               else CAMP_ENCOUNTER_CHANCE)
+                         * tile_danger(state))
             if wild_event(state, chance,
                           f"In the night at {current_area(state)['name']}"):
                 return
@@ -6596,9 +6871,18 @@ def cmd_give(args: argparse.Namespace) -> None:
     if hero is None:
         return
     name = " ".join(args.weapon).lower()
+    dropped = {k.lower(): v for k, v in state.get("drops", {}).items()}
     weapon = WEAPONS.get(name)
+    if weapon is None and name in dropped:
+        # One-off steel off the ground (2026-09-12): a generated blade the
+        # party won a fight over is not in the catalog and is handed over by
+        # name like anything else.
+        weapon = _weapon_from(dropped[name])
     if weapon is None:
-        print(f"Unknown weapon: {name!r}. Weapons: {', '.join(sorted(WEAPONS))}.")
+        print(f"Unknown weapon: {name!r}. Weapons: "
+              f"{', '.join(sorted(WEAPONS))}"
+              + (f"; on the ground: {', '.join(sorted(dropped))}"
+                 if dropped else "") + ".")
         return
     if args.as_name:
         # The DM's custom-weapon hook (2026-07-13): a display name over an
@@ -7310,7 +7594,10 @@ def build_parser() -> argparse.ArgumentParser:
              "ALWAYS A MAGIC USER, CHA always holds at least one "
              "companion -- in a uniformly selected settlement slot, with "
              "his homeland set from that country and his long-time "
-             "companion at his side. It prints a level-fit OPENING HOOK "
+             "companion at his side. His BLOOD is rolled on a d6 "
+             "(2026-09-12): half of all PCs are half-blood -- old, sky "
+             "or fire -- and `--blood WORD` fixes it. "
+             "It prints a level-fit OPENING HOOK "
              "there to frame the first scene on. No character "
              "pick, no tavern opening (2026-07-13). The party's LEVEL is "
              f"rolled 1-{START_LEVEL_ROLL_MAX} unless `--level N` fixes "
@@ -7326,6 +7613,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help=f"start the party at this level (1-{LEVEL_CAP}); "
                         f"omitted, the level is ROLLED 1-"
                         f"{START_LEVEL_ROLL_MAX}")
+    p.add_argument("--blood", choices=BLOOD_OPTIONS, default=None,
+                   help="fix the PC's half-blood (the Nephilim, "
+                        "2026-09-12); omitted, it is ROLLED on a d6 -- "
+                        "1-3 none, 4 old, 5 sky, 6 fire, so half of all "
+                        "player characters are half-blood")
     p.add_argument("--no-pact", action="store_true",
                    help="a neutral adventurer: no pact, no assignments "
                         "(the pre-2026-07-19 game)")
@@ -7553,6 +7845,19 @@ def build_parser() -> argparse.ArgumentParser:
              "is the day-scale move between areas)")
     p.add_argument("dest", nargs="+", help="local site or room (substring)")
     p.set_defaults(func=cmd_go)
+
+    p = sub.add_parser(
+        "delve",
+        help=f"open one Site of the GATE RUIN the party is standing in "
+             f"(`go` into the ruin first; `delve` on its own lists the six "
+             f"with their levels and what is still in them). No giver, no "
+             f"board slot and no turn-in: the ordinary room walk, the "
+             f"encounter XP and the loot, and the FIELD tranche of a job "
+             f"at that level when the last room falls. A cleared Site "
+             f"refills {RUIN_REFILL_DAYS} days later; the deepest one "
+             f"never does once what holds it is dead.")
+    p.add_argument("site", nargs="*", help="a Site of this ruin (substring)")
+    p.set_defaults(func=cmd_delve)
 
     p = sub.add_parser(
         "back",

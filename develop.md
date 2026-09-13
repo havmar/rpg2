@@ -175,7 +175,8 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (five sessions, design in `gates.md`).
+  one build contract, THE GATES ARC (design in `gates.md`) -- ONE session
+  now, sessions 1, 2, 3 and 4 having shipped the same day.
   Before that it carried none. Three whole arcs have shipped out of it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
@@ -230,17 +231,19 @@ a pointer: what the file is, how it's run, where its docs are.
   authored-vs-generated boundary, the Room-content schema and the
   seed/reveal/mutation rules, which all still hold; read `rules.md` and
   this file for what the world actually is.
-- `gates.md` — **THE GATES ARC's design reference** (2026-09-12): the
-  Heaven & Hell setting (the timeline, the two powers and their inner
-  axes, the pagan coding, Tom, the tongue and the two name rows), the
-  four rolled sites and their placement rule, the ruins as dungeons,
-  the foe skin tables and pools, the two sentinels, the Nephilim, the
-  two one-tile city states, the two world-layer packets and the human
-  side, and the five session contracts plan.md points at. A spec
-  companion in worldsim.md's shape: a section is CUT when its session
-  lands and its result goes to the permanent docs. Section 0 records the
-  standing directives (the pact is a gimmick the arc ignores; the
-  low-band-only principle is set aside; conquest later).
+- `gates.md` — **THE GATES ARC's historical note** (2026-09-12). It was
+  the arc's design reference, a spec companion in worldsim.md's shape, and
+  every one of its sections was CUT as the session that built it landed.
+  The arc shipped whole in five sessions on 2026-09-12, so the file is now
+  a one-page map of where its content went: rules.md's Heaven & Hell
+  add-on parts 1-5, dm.md's "The gates", writing.md's two name rows,
+  develop.md's Files and five dev-map entries, benchlog's five entries and
+  designlog's 2026-09-12 (the design) and (A)-(E). Unlike `worldsim.md` it
+  keeps NO undesigned residue -- nothing in it went unbuilt, and the three
+  questions the arc declined (the live-gate endgame, conquest by the city
+  states, the pact's fate) are roadmap items in `plan.md`. What the note
+  does keep is the three standing DIRECTIVES the arc stood on, because they
+  outlive the build.
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -269,7 +272,8 @@ a pointer: what the file is, how it's run, where its docs are.
   surviving country or nothing in particular.
 - `places.py` — **the fixed-geography and procedural-place runtime**: loads and
   validates the immutable 30x18 Europe map, derives stable BLAKE2 child
-  seeds, creates the nine countries, 540 Tiles and 540 natural Areas,
+  seeds, creates the eleven lands (the nine painted countries and, since
+  2026-09-12, the two rolled city states), 540 Tiles and 540 natural Areas,
   rolls fixed settlement slots and materializes them lazily, including the
   historical towns, required settlement Sites, ordinary natural Sites and houses,
   resolves Room contents, tracks knowledge, and applies place-state mutation
@@ -486,15 +490,76 @@ a pointer: what the file is, how it's run, where its docs are.
   slot WILL wear, factored out of `materialize_slot`) and `slot_tier` are
   the two readers `conquest.slot_garrison_level` needed: a siege is laid
   on a slot, not on an Area that may never have been built.
+  **THE GATES** (2026-09-12, THE GATES ARC's session 1; rules.md's Heaven
+  & Hell add-on part 1) are one section above `create_geography`, and they
+  are the file's first layer that adds a new AREA KIND. `roll_gates(world)`
+  runs between the natural-Area loop and `roll_census` — it needs terrain,
+  climate and country per tile and the census and the boards must see a
+  ruin standing before they roll — and it writes `world["gates"]` (four
+  records of `side` / `kind` / `tile` / `keeper`-or-`cut_from`), the four
+  tile tags, the four permanent rings of `gate-ruin` / `gate-city` place
+  states (day 0, the side in `by`, never expiring), and the two `ruin`
+  Areas with their six authored Sites materialized whole. See the dev map
+  entry for the constant-by-constant list; the two things to know here are
+  that `_build_ruin_sites` / `ruin_site_rosters` RUNTIME-IMPORT `quests`
+  (the cycle), and that `_validate_gates` is a `validate_world` clause, so
+  the placement rule is re-checked on every world rather than only in the
+  suite. `place_state_line` now consults `GATE_STATE_WORDS` before
+  `WAR_STATE_WORDS` (a ring names its SIDE in `by` the way an occupation
+  names a `who`), `map_glyph` draws `R` and `G` over the settlement glyph,
+  `map_legend_lines` opens with `gate_legend_lines`, and
+  `tile_brief_lines` leads with `gate_line`.
+  **THE TAKEOVER** (2026-09-12, session 4; rules.md's add-on part 4) is
+  the city half of the same section and it is what makes this file's
+  country list ELEVEN. `CITY_STATES` / `HUMAN_COUNTRIES` /
+  `CITY_STATE_OF_SIDE` split the catalog's lands by the `rolled` flag and
+  are the vocabulary every "the nine" reader now uses (`_validate_fixed_data`,
+  `_validate_countries`' expected censuses, the name-reserve clause,
+  `human_capital_tiles`). `_city_takeover(world, spec, tile)` runs inside
+  `roll_gates`' second loop, where the ruins are built: the Tile's
+  `country` and its country TAG are re-homed, the tile moves between the
+  two lands' `tiles` lists, every Area standing on it (the natural one)
+  moves with it, and `land["capital_tile"]` is set. The GROUND is
+  untouched -- climate, terrain, harvest, goods and the natural Area's own
+  `template` stay the donor's, which is the design's "Concordia's fields
+  are still Seraptanian fields". `roll_census` then calls
+  `_seat_gate_city`, which seats ONE authored slot (tier `city`, the gate's
+  name, `capital`, `authored`, `charter="free"`, no companions, no rng
+  consumed). **`CAPITAL_TILES` is GONE**: the nine's authored answer key is
+  `HISTORICAL_CAPITAL_TILES`, a world's answer is `land["capital_tile"]`,
+  and the two readers are `capital_tile(world, country)` (strict) and
+  `human_capital_tiles(world)` (what the gate roll's no-capital clause
+  means). `GATE_CITY_MENU` is the catalog's `gate_city` menu read back and
+  multiplied in by `tile_terms`; `gate_legend_lines` names the two cities
+  as city states in their donor; the START draw skips a city state's slot;
+  and `_validate_gates` grew the city half (the flag, the one tile, the
+  capital, the donor no longer holding it, the authored seat).
 - `place_catalog.json` — **the checked-in ordinary place catalog**, and
-  since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 3 since
-  2026-08-21** (the medieval world arc's session 2), and the version
+  since 2026-08-15 (Europe MVP Closure) content ONLY. **VERSION 4 since
+  2026-09-12** (the gates arc's session 4), and the version
   number is what `validate_catalog` checks first. Two top-level keys:
-  `cultures` (four — `western`, `southern` and `steppe` are the old
+  `cultures` (SIX — `western`, `southern` and `steppe` are the old
   Firascir, Mortellaria and Tergal content moved under culture names
-  UNCHANGED, plus the new `norse`) and `lands` (nine records of `name` /
+  UNCHANGED, plus `norse`, plus the two GATE cultures `heaven` and `hell`)
+  and `lands` (ELEVEN records of `name` /
   `culture` / `tongue` / `description` and nothing else; per-land template
-  overrides are possible later and there are none now). A CULTURE carries
+  overrides are possible later and there are none now).
+  **The two ROLLED lands** (2026-09-12) are `concordia` and `saturna`, and
+  they carry two words more: `rolled` (their one tile comes off
+  `places.roll_gates`, so they have no letter on the country overlay) and
+  `side` (`heaven` / `hell`, which the skins, the pools, the rings and the
+  priced menu all read). Their cultures are the limiting case of a
+  culture: worn by ONE land, authoring no `natural` inventory and no
+  `natural_sites` at all (a city state's countryside was cut from the
+  DONOR's culture before the takeover and keeps it) and exactly ONE
+  settlement template, `gate_city`, at tier `capital` — which is the role
+  `_settlement_template` looks up for a capital slot, and a one-tile state
+  seats nothing else. `gate_city` is also the first template to carry a
+  `menu`: the city's own priced counter, read back by
+  `places.GATE_CITY_MENU` and applied by `tile_terms`.
+  `validate_catalog`'s culture clauses ask a ROLLED culture for exactly
+  what its lands can seat, which is where the five-tier and
+  every-ground-an-inventory rules stop being universal. A CULTURE carries
   its `natural` CHARACTER-to-inventory map (the seven land characters, a
   list per character so a culture can author two kinds of hill country;
   the `environment` key retired with the climate overlay), its
@@ -518,6 +583,91 @@ a pointer: what the file is, how it's run, where its docs are.
   Tile its `fits` admits, because it will be read at all of them. Fixed
   Tile geography, historical settlements and country/tier name pools live
   in `places.py`.
+- `test_gates.py` — **THE GATES ARC's contract suite** (2026-09-12,
+  session 1), six parts. *The placement*: every clause of the eligibility
+  rule swept over forty worlds — the two sets, the authored tiles and the
+  mines, the capitals and their ring, the four-tile separation, the live
+  city's land neighbour — plus the weighted preference showing without
+  becoming a filter, the placement moving with the seed, and an empty
+  candidate set raising. *The record and the ring*: `world["gates"]` in
+  exactly the spec's four-key shape, the save round-trip, the two tile
+  tags, the ring as the tile and its LAND neighbours within Chebyshev 1,
+  each state dated day 0 and naming its side in `by`, the `R`/`G` marks
+  and the GATES legend, and the clause that pins what session 1 did NOT
+  do (the city tiles still belong to their countries). *The ruins*: the
+  third Area kind and its tags, six Sites at 2/5/8/11/14/17 over their
+  authored rooms, the deepest walking four, rosters inside the side's own
+  pool, determinism per seed, Candor's stranded angel, the empty boss
+  slot, and the free `go` from the countryside. *The foes*: both skin
+  tables against the catalog, the made/bred asymmetry, the disposition,
+  the warden blade against the barrow blade field for field, and the four
+  pools. *The ring's encounters*: the table against the pools, a tile
+  entry outranking a land entry and the land still being asked on
+  ordinary ground, and the danger ring on the road and the day afield.
+  *The delve*: forging over authored rooms, no board slot and no radius,
+  the field tranche with no turn-in, the thirty-day refill, and the
+  deepest Site sealing itself and clearing the ring.
+  **Session 2 added four more parts** (2026-09-12). *The bosses*: a boss
+  key absent from the catalog and from every pool and from the bench's row
+  loop, both bodies against the Legend row, the two designs field by field,
+  `foe_spec` reading both tables, `make_foe` refusing to build one without
+  its bar, and the roster block announcing what it is. *The two bars*: the
+  clean sp-9 profile priced back at 9, the same piece across four seeds,
+  the two fixed armory entries with their owner and their deepest Site,
+  the 40-column page, only the deepest Site's boss being handed one, the
+  boss standing in "the bar" holding it in a real `room`, and the drop --
+  named without a double article, kept on the save and taken up by `give`.
+  *The seal needs a body*: a depth cleared with the boss alive refilling
+  WITH the boss in it, a dead boss sealing the depth and clearing the ring,
+  and `mark_boss_dead` saying no to a standing foe, no to one that
+  withdrew and yes to a corpse. *The ruin jobs and Tom's stone*: the eight
+  on every culture's table and on none of the epics, every row authored
+  whole and ASCII, each placed strictly on its own side's word, only the
+  two ruin Areas wearing those words (and no settlement on a gate tile
+  wearing any gate tag), a Heaven job landing in Candor and a Hell job in
+  Libera, the natural domain admitting a ruin, a board out of range
+  refusing to offer one and `_select_quest_area` raising for it, a posted
+  job leaving all six authored Sites untouched, a 24-seed sweep finding
+  them posted only inside the radius, and Tom's stone in every western and
+  southern inventory and no steppe or norse one, authored as a shrine and
+  materializing as one.
+  **Session 4 added `TheTakeover`** (2026-09-12), fourteen tests on the two
+  city states: the tile changing hands with its land lists and its country
+  tag, the countryside going with it and keeping the donor's inventory and
+  its ground, the one census slot and everything authored about it, the
+  city built at worldgen off the `gate_city` template with the seven
+  services a capital owes, `capital_tile` as a land fact that `sky_tile`
+  reads (and `CAPITAL_TILES` being gone), the catalog's priced counter
+  multiplying over the tile menu's own rows, eleven lands booting with a
+  deck, a constitution, a fact and a seat each, no campaign opening inside
+  one, the legend calling them countries, the two crowns and the two
+  defenders, the two name pools in their two registers, the counters
+  staffed out of the city's own pool, both tables landing on ordinary
+  ground inside the radius, and the two EPIC rows being capital-only by
+  construction. `ThePlacementRule` and `TheRecordAndTheRing` were widened
+  to read a live city's `cut_from` where they used to read its tile's
+  country, and session 1's "the city tiles are still ordinary tiles"
+  clause is deleted -- it was the hook, and this is the session that
+  spent it.
+  **Session 5 added six classes** (2026-09-12): `TheStandingGateStates`
+  (the five words on the right four lands and on nobody else over an
+  eight-seed sweep, no card able to set one, the two host words reaching a
+  counter, `pagan-host` on both ends or on neither over 24 seeds, the four
+  host facts on the right pages, and the year 1027 on every lore page and
+  on no other), `TheResolvedRelations` (the placeholder in the authored
+  table and nowhere in `RELATIONS`, every end resolving to a real land in
+  twelve worlds, each row running between a city and its OWN host, every
+  land reached, every derived word reaching a price or a road, a shut gate
+  felt at the host's healer, the spilled feast putting revelers on the
+  host's ground, and the `gate-watched` placeholder retired),
+  `TheHumanSide` (the synod question in both rite decks, its news naming
+  the rites by ADDRESS over six worlds, the crusade tension only on a Sun
+  host and never rollable over 400 draws, its card only in that host's
+  deck, and Tom's four versions one per land), `TheGateCityCounters`,
+  `TheTwoChains` (both chains driven end to end -- the state set, the
+  successor admitting, the state cleared, the person named ONCE and kept,
+  the quest posted, the prices moving, and the crime layer reached) and
+  `TheGateCrowns`.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -556,7 +706,11 @@ a pointer: what the file is, how it's run, where its docs are.
   hidden facts, ASCII, 40-column display wrapping, and ONE BROKEN WORLD
   per clause of `places.validate_world`. *The nine countries*
   (`TheNineCountries`, 2026-08-21 — it replaced
-  `TheThreeHumanCountries`): the closed homeland set over NINE, the four
+  `TheThreeHumanCountries`; ELEVEN LANDS since 2026-09-12, and the class
+  now says which claims are about the nine the overlay PAINTS and which
+  are about every land -- plus two clauses of its own: nobody is born in a
+  city state, and a city state is painted nowhere and rolled every
+  time): the closed land set over ELEVEN, the four
   cultures that carry the shared content and the country/culture split
   itself, each country's own name pools and tongue, the country overlay
   painting the land and deriving the sea, both per-country censuses
@@ -756,6 +910,16 @@ a pointer: what the file is, how it's run, where its docs are.
   `roll_accession`, `SUCCESSIONS` / `roll_succession`, which reads the
   traits and the accession through `SUCCESSION_READS` / `ACCESSION_READS`),
   and the readouts (`trait_phrase` / `accession_line` / `ruler_lines`).
+  **Three narrowing arguments** (2026-09-12, the gates arc's session 5):
+  `roll_ruler(barred=, accession=, puppeteers=)`. The vocabulary is a
+  measured HUMAN dataset and it still serves every land, which is
+  deliberate; what the two gate crowns may not be is a decaying mortal
+  body or a travelling feudal household, so `BODILESS` (six words) comes
+  out of the die before the first draw, `GATE_PUPPETEERS` replaces the
+  court behind the throne, and `ACCESSIONS` gained two weight-0 entries
+  (`appointed`, `acclaimed`) that never roll and are NAMED instead.
+  `accession=` still rolls and discards, so a caller that names one does
+  not move the stream. `worldsim._crown` is the only caller.
   It imports NOTHING from the rest of the game — `worldsim.py` keeps the
   rolled sheet on the land layer and `quests.py` casts the face that wears
   it. `python rulers.py --seed 1 --count 8` (add `--lesser` for the two-draw
@@ -1000,6 +1164,60 @@ a pointer: what the file is, how it's run, where its docs are.
   `STATE_ENCOUNTERS` row. The campaign sim over these records is
   `conquest.roll_campaigns`; the words its marks read as are
   `places.WAR_STATE_WORDS`.
+  **THE TILE-LEVEL ENCOUNTER TABLE** (2026-09-12, the gates arc's session
+  1) is `STATE_ENCOUNTERS`' sibling one level down: `TILE_STATE_ENCOUNTERS`
+  keyed by a TILE's state and forked by SIDE (each leaf exactly an
+  encounter entry; its `kinds` are quests.py's four gate pools written out,
+  because quests imports this file), `STATE_DANGER`, and the readers
+  `tile_encounter_entries` / `tile_encounter` / `tile_danger`.
+  `ENCOUNTER_KEYS` gained `ferocity` and `_validate_encounter` checks it.
+  **THE TWO GATE PACKETS are STUBS** (2026-09-12, the gates arc's session
+  4): `heaven` and `hell` are culture keys like `norse`, and what is
+  authored under them is the floor eleven lands make the validators
+  demand -- four constitutions each at 6/2/1/1, three tensions each (the
+  inner axis STANDING), twelve new blocs, twelve faction edges, ONE card
+  per track a side, one standing fact a side, and two placeholder relation
+  edges between the two cities. Every row is section 11's real content, so
+  session 5 grows the packets rather than replacing them; what is NOT
+  there is named in designlog 2026-09-12 (D). Three new `STATE_WORDS`
+  (`register-read`, `feast-spilled`, and the placeholder `gate-watched`).
+  `_HUMAN` is the nine written out as a card scope, and the six `mining/*`
+  cards took it instead of `ANY_LAND` -- a one-tile colony has no pit.
+  `sky_tile` reads `places.capital_tile(world, polity)` now that a capital
+  is a per-world fact, and `_validate_countries`' capital clause moved with
+  it into `places._validate_countries`.
+  **THE TWO PACKETS ARE WHOLE AND THE GATES REACH THE NINE** (2026-09-12,
+  the gates arc's session 5, rules.md's Heaven & Hell add-on part 5). The
+  stubs grew into gates.md section 11 entire: eight crisis cards, one
+  weather and one season card a side; six facts a side and two OPTIONS a
+  side (`heaven/choir` / `heaven/measures`, `hell/feast` / `hell/fire` --
+  the key's suffix IS the word the player types, which is what
+  `option_word` reads); seventeen new `STATE_WORDS` with their `STATE_MENU`
+  and `STATE_ENCOUNTERS` rows and two `STATE_MARKS` rows. Four cards NAME
+  somebody through `_authority_hook`, which grew a `born=` callable so the
+  child, the hermit, the debtor and the old woman come out of the HOST
+  country's name pool rather than the city's (`_host_of`). The parts that
+  cannot be authored at import, because the four gate ends are ROLLED:
+  **`_GATE_RELATIONS`** (four rows carrying the `HOST` placeholder),
+  `resolve_relations` / `relations_of` / `_possible_relations` --
+  `open_world` parks the resolved table on `world["relations"]` and
+  `derived_states` reads it, while the three import-time passes
+  (reachability, the state tables, the country audit) run on
+  `_possible_relations()`, every gate row against every land that could
+  host it; **`stamp_gates`** with `GATE_STANDING` / `GATE_FACTS` /
+  `gate_land` (five standing words in `EXTERNAL_STATES` and four standing
+  facts, written onto `land["facts"]`, which `facts_here` and so the lore
+  page read beside the authored `FACTS`); **`EXTERNAL_TENSIONS`** and
+  `_crusade_host` / `SUN_HOSTS` / `PAGAN_HOSTS` (the crusade axis is
+  authored on the western culture and stamped only on Hell's host, never
+  rollable); and **`_crown`** / `GATE_ACCESSION`, which draws the two gate
+  crowns off `rulers.BODILESS` and `rulers.GATE_PUPPETEERS` with the
+  accession named. The human side is two cards:
+  `communion/the-return-question` (both rites' decks, `_return_hook` reads
+  which rite has Concordia on its ground) and
+  `western/the-preaching-crusade`. `fact()` gained four per-culture Tom
+  lines and one ANY_LAND fact, THE YEAR OF THE CHURCH -- the one date the
+  game prints, and it prints on the lore page.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check; since 2026-08-22 it settles the wars to the same day).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -1189,12 +1407,23 @@ a pointer: what the file is, how it's run, where its docs are.
   opens the world layer (`worldsim.open_world`) on top of
   `create_geography`, because that is where the wars are rolled, and it
   rolls each world's campaign to `WAR_DAYS` (365). `python bench_worldgen.py
-  [--seeds N] [--only harvest|census|trade|wars]`; 100 seeds is the default and
+  [--seeds N] [--only harvest|census|trade|wars|gates]`; 100 seeds is the default and
   takes about twenty seconds, the arc's PINS were measured at 500 (about
   two minutes). Unlike `bench_abilities.py` and `bench_quests.py` this one
   IS reproducible — the layers are deterministic per seed — so it can
   clear a change. Re-run and append to benchlog after touching any
   constant in places.py's rolled half.
+  Since 2026-09-12 (session 4) the gates sweep reads a live city's
+  `cut_from` for its country histogram and the NINE painted capitals for
+  its capital gap, because a gate city's tile now flies its own flag and
+  its own capital is the tile being placed.
+  **The GATES sweep** (2026-09-12, the gates arc's session 1) is the fifth,
+  and the only one whose contract is enforced elsewhere:
+  `places._validate_gates` raises inside every `create_geography`, so what
+  the sweep adds is the histogram the rule does NOT force — which country
+  and which ground each of the four sites lands on, how many distinct tiles
+  it ever uses, and the observed pairwise separation and capital gap. Run it
+  after touching a weight function or the eligibility rule.
 - `archive/worldmap.py` — **the first rejected procedural map
   experiment**, preserved verbatim from the generator commit: the 80x40
   noise / continent-mask implementation and all of its inspection
@@ -1332,7 +1561,10 @@ a pointer: what the file is, how it's run, where its docs are.
   `Entity.mercy_level` / `ferocity` / `withdrew` / `fate_paid`,
   `party_defeated`,
   `apply_defeat_mercy`, reverse retreat through `attempt_foe_retreat`, and
-  Fate's paid-victory restoration), and the batch-sim
+  Fate's paid-victory restoration), THE NEPHILIM (2026-09-12, the gates
+  arc's session 3: `Entity.blood`, the `BLOOD_*` tables and
+  `add_blood_tongue`, and `make_human(blood=...)` folding their floors and
+  ceilings in — rules.md's Heaven & Hell add-on part 3), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
   the top.
@@ -1351,6 +1583,27 @@ a pointer: what the file is, how it's run, where its docs are.
   generated board covers the band; the benches still run them).
   One-shot: `python sites.py [--site
   hideout] [--seed N] [--training N]`.
+  **THE GATE SKINS** (2026-09-12, the gates arc's session 1): `GATE_SKINS`
+  -- two tables in karma's `HELL_SKINS` shape, Heaven's things MADE and
+  Hell's BRED -- with `GATE_BRED` and `GATE_FEROCITY` beside them (the
+  disposition the skin carries), `WARDEN_BLADE` in `WEAPON_INDEX`, and
+  `SKIN_WEAPONS`, the one lookup in `make_foe` that lets a display name
+  bring its own steel.
+  **THE BOSSES** (2026-09-12, the arc's session 2; rules.md's Heaven &
+  Hell add-on part 2): `BOSSES` -- a SECOND dict beside `FOES` in the same
+  `FoeSpec` shape, holding the tier above the dragon that rules.md's
+  bestiary doctrine says is never a catalog row. Zohariel the Sentinel
+  (L17) and Saar the Old Host (L16), both on the Legend row with no mortal
+  tradeoffs. Keeping a boss OUT of the machinery is structural, not
+  bookkept: the key is not in `FOES`, so no pool can draw it, no threat
+  reader indexes it and `bench_bestiary`'s row loop never sees it. Beside
+  them: `BOSS_GATES`, `foe_spec(kind)` -- the catalog-then-bosses reader
+  every display that may meet an authored roster goes through -- and
+  `boss_bar(kind, seed)`, which runtime-imports `weapons.gate_bar`.
+  `make_foe` grew `weapon=`, which OVERRIDES the row's own steel and
+  `SKIN_WEAPONS`, and which a BOSSES row REQUIRES (the bars are built off
+  the world seed, so a boss with no weapon passed is a bug, not a default,
+  and it raises).
 - `quests.py` — **the quest & encounter generator over persistent places**
   (rules.md, the Quest System and World & Navigation add-ons): tree
   accessors, the threat math (all constants at the top, calibrated by
@@ -1412,6 +1665,30 @@ a pointer: what the file is, how it's run, where its docs are.
   Since 2026-08-15 (Europe MVP Closure) `NAME_PARTS` and `_settlement_name`
   are DELETED — the old fragment-assembled settlement naming, dead since
   names started coming from `places.SETTLEMENT_NAMES`.
+  Since 2026-09-12 (the gates arc's session 1) it also holds the four GATE
+  POOLS (`HEAVEN_RUIN_POOL` / `HEAVEN_CITY_POOL` / `HELL_RUIN_POOL` /
+  `HELL_CITY_POOL`, which `places.roll_gates` runtime-imports), and
+  `forge_quest` grew `site_keys=` / `skins=` / `ferocity=` / `desc=` -- with
+  `site_keys` it forges over Sites THE WORLD ALREADY OWNS and builds
+  nothing, which is what `delve` needs.
+  **INTO THE RUINS** (2026-09-12, the arc's session 2): `RUIN_TEMPLATES`,
+  eight authored jobs appended to EVERY culture's table, and `_ruin_place`
+  behind their eight `QUEST_PLACE_REQUIREMENTS` rows -- `area_any` is the
+  ONE side word (`heaven-ruin` / `hell-ruin`), which is the whole of the
+  "a Heaven job cannot land in Libera" rule, plus a new requirement flag
+  **`strict`**. Strict means there is no honest fallback: `_post_quest`
+  filters a strict template out of `fitting` (and out of the
+  snap-to-the-ladder branch) unless `place_reachable` finds its ground
+  inside the target radius, and `_select_quest_area` RAISES rather than
+  dropping the job in the origin's countryside. The `domain: "natural"`
+  filter was widened to admit kind `ruin` (a dead city is not somebody's
+  settlement), `_reusable_site` now SKIPS any Site carrying a `ruin`
+  record (the six authored Sites belong to `delve`; a posted job builds
+  its own place in the ruin Area under the template's stem), `build_quest`
+  carries a template's `ferocity` onto the quest beside its `skins`, and
+  three readers that can meet an authored roster (`notice_contest`,
+  `foes_preferred_field`, `roster_kinds_line`) go through
+  `sites.foe_spec` instead of `FOES`.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
@@ -1554,6 +1831,25 @@ a pointer: what the file is, how it's run, where its docs are.
   casting path (givers, recipients, notables, service faces, posse
   leaders, residents, smiths). It drives `cmd_new` end to end against a
   temp save — never the playthrough's.
+  **THE NEPHILIM added four parts** (2026-09-12, the gates arc's session
+  3). *The PC's blood*: the d6 read off its own table, the roll riding and
+  moving with the run seed, the measured half over three thousand draws,
+  `--blood` fixing each word with `none` as the plain human, an unknown
+  word refused by the parser, and the word surviving both the capacity and
+  the wizard rerolls. *What the blood does*: each floor against a
+  same-seed plain twin, the ward equalling +2 on a possession's DC where
+  possession reads it, the fire-born's Power range moved +2 at both ends,
+  the Old Tongue last on his SPEAKS row and on nobody else's, an unknown
+  word raising out of `make_human`, and a plain human being byte-for-byte
+  the character the game always rolled. *The sheet*: the BLOOD row's
+  shape, the marker stable for a body and across the save, both markers of
+  each line reached, a plain human saying nothing anywhere, the person
+  line and the sheet both carrying it, the `notes:` row pricing it like a
+  trait, the party board printing it inside the 40-column wrap, and the
+  companion sketch still printing beside it. *The companion odds*: the
+  measured 1-in-12 and two 1-in-24 over 24000 draws, a generated companion
+  and a recruit pair rolling them, the long-time companion usually human,
+  a dict NPC and a sim body carrying none, and the blood riding the save.
   `python -m unittest -v test_start.py`.
 - `weapons.py` — **the weapon generation system** (2026-07-28, rules.md's
   Weapon Ladder & Generation add-on): the severity-point price table and
@@ -1561,7 +1857,19 @@ a pointer: what the file is, how it's run, where its docs are.
   riders, quirks, the +DEX legendary gate), the quest reward ladder
   (`reward_weapon_for_level`), the famous armory (`roll_armory`), the
   legendary smiths (`roll_smiths` / `commission_weapon` — the pride
-  floor), and the 40-column readouts. The sims never import it; worldgen
+  floor), and the 40-column readouts.
+  **THE TWO BARS** (2026-09-12, the gates arc's session 2): `GATE_BAR_SP`
+  (9) / `GATE_BAR_CHASSIS` (the zweihander) / `GATE_BARS` (the two
+  authored rows -- gate, boss, name, owner, role and the one authored
+  description line) / `GATE_BAR_BY_GATE` / `GATE_BAR_BY_BOSS`, and behind
+  them `gate_bar(seed, gate)` -- `generate_weapon` at sp 9 off a stream
+  derived from the world seed, REJECTION-SAMPLED to `_plain_bar` (no
+  rider, no quirk), which is what settles the spend: the whole budget
+  above quality lands on the zweihander's own axis, so a bar is `+3 STR`
+  and the same piece in every world. `gate_bar_entries(world)` builds the
+  two fixed armory rows (owner, `where` at the deepest Site; it
+  runtime-imports `places`) and `roll_armory` appends them, so the armory
+  is `ARMORY_TIERS` + `GATE_BARS` long. The sims never import it; worldgen
   calls it on DERIVED rngs so no bench stream moves. `python weapons.py
   [--seed N]` prints one world's armory, smiths, and sample commissions
   (the eyeball check).
@@ -1588,7 +1896,17 @@ a pointer: what the file is, how it's run, where its docs are.
   which rides `dataclasses.asdict` into the save like every other field;
   an empty list means never rolled (foes, `rpg.make_party` sim bodies),
   and dict NPCs carry no key at all. Nothing in the engine gates on a
-  tongue. Plus the trait
+  tongue. **THE NEPHILIM** (2026-09-12, the gates arc's session 3 —
+  rules.md's Heaven & Hell add-on part 3): `BLOOD_CHANCE_DENOM` /
+  `BLOOD_ROLL` / `roll_blood` (the companion odds — old 1 in 12, sky and
+  fire 1 in 24 each, off one draw), `BLOOD_WORDS` / `BLOOD_MARKS` /
+  `blood_mark` / `blood_line` (the sheet's BLOOD row), the three
+  `TRAIT_NOTES` entries keyed by the blood word, and `make_character`'s
+  `blood=` switch. `rpg.Entity.blood` and what it does to a body are
+  rpg.py's; the mark is derived from the name, never stored. `TRAIT_ORDER`
+  / `trait_bits` (the sketch as ordered bits) came out of `person_line` in
+  the same pass — `session.hero_block_lines` calls it instead of parsing a
+  person line apart. Plus the trait
   tables (1 behavior + 2 presentation categories per character; the
   mechanical few annotated in `TRAIT_NOTES`; looks pool widened
   2026-07-13) — **COMPANIONS only since 2026-08-05**: `with_traits=False`
@@ -1797,6 +2115,15 @@ a pointer: what the file is, how it's run, where its docs are.
   available as the local board's) and then `quests.rumor_lines` for the
   1-3 day groups. `board all` still shows the whole world and still moves
   only what the party could hear.
+  **THE DELVE** (2026-09-12, the gates arc's session 1): `cmd_delve` and
+  `ruin_site_lines` (the ruin's six places, their levels and whether
+  anything is in them), the delve branch in `_close_site` -- the FIELD
+  tranche, no turn-in, `places.close_ruin_site` on the way out -- and its
+  line in `tally_lines`; `tile_danger(state)` multiplying `_road_roll`,
+  `cmd_explore` and `cmd_camp`; the tile-first lookup in `wild_event` with
+  `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
+  and the stored sighting; the gate line and the dungeon list in
+  `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark legend.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -1822,7 +2149,15 @@ a pointer: what the file is, how it's run, where its docs are.
   reference party is built on progression doctrine v2 (2026-07-17: the
   old default build priced in the point economy — pools to the old curve,
   training at 2n, proficiency, monotone).
-  `python bench_bestiary.py [--trials N] [--kind wolf]`.
+  **`--bosses`** (2026-09-12, the gates arc's session 2) runs the same
+  columns over `sites.BOSSES` instead of the catalog -- the authored
+  one-offs are not IN the bestiary, but the level on a boss has to mean
+  what the level on a wight means. Each is handed its own bar
+  (`sites.boss_bar`, off `BENCH_WORLD_SEED` = 1; the bars' profile is
+  authored clean, so that one world stands for all of them). This is the
+  first bench that reaches `weapons.py`, through that one call, and it
+  moves no stream: the bar comes off its own string-seeded rng.
+  `python bench_bestiary.py [--trials N] [--kind wolf] [--bosses]`.
 - `bench_abilities.py` — the equal-cost matrix (2026-07-17, levelling
   session A; grown in B): frames at L4/L8/L14, each column one
   whole-budget way to spend the same points (reference doctrine /
@@ -1913,6 +2248,7 @@ python bench_training.py # wipe/clear rates per combat-training rank
 python bench_weapons.py  # weapons "suited, not ranked" matrix (duel + swarm)
 python bench_ranged.py   # ranged cards by opening field + the escort shape
 python bench_bestiary.py # bestiary level-annotation calibration (per row +-2)
+python bench_bestiary.py --bosses  # the two authored one-offs at the baseline
 python bench_party.py    # party-size sweep (the "Balanced for two" check)
 python bench_wounds.py   # wound records and load per hero, one room and a whole job
 python bench_quests.py   # generated rooms/sites honesty + the career sim
@@ -1929,10 +2265,15 @@ python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_rolled_world.py # the harvest and the census
 python -m unittest -v test_trade.py   # mines, goods and the trade network
 python -m unittest -v test_hookup.py  # the read surface + the League
+python -m unittest -v test_gates.py   # the gates: ruins, delve, bosses,
+                                      # bars, the packets, the human side
+python session.py lore concordia      # ...and the two gate cities' pages
+python session.py delve               # the gate ruin's six places
 python econmap.py character           # what each Tile is CALLED
 python econmap.py routes 7            # one built world's trade network
-python bench_worldgen.py              # the four worldgen sweeps (100 seeds)
+python bench_worldgen.py              # the five worldgen sweeps (100 seeds)
 python bench_worldgen.py --seeds 500  # ...at the pins
+python bench_worldgen.py --only gates # where the four gate sites land
 python session.py tile [COORD]        # the DM's page behind one Tile
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -2526,6 +2867,214 @@ mechanic *does* and *why* is rules.md's job.
   sweep the measurement. **The three non-goals are law** and each has a
   test: no border moves, nothing outside the sim's own states is touched,
   and no war ever ends.
+- **The gates: the four sites, the ruins and the delve** (2026-09-12, THE
+  GATES ARC's session 1 — rules.md's Heaven & Hell add-on part 1, dm.md's
+  "The gates", `gates.md` for what is left to build) — split four ways.
+  `places.py` ROLLS and STORES, in one section above `create_geography`:
+  `HEAVEN_LANDS` / `HELL_LANDS` (the two sets), `GATE_SEPARATION` (4),
+  `GATE_SPECS` (the roll order and the four weight functions, which are
+  WEIGHTS and never filters), `GATE_KEYS` / `GATE_BY_KEY` / `GATE_TAGS`,
+  `RUIN_SITES` (the two authored six-Site dungeons; the deepest Site's
+  `boss` is None and is the slot session 2 names a `sites.BOSSES` key in)
+  with `RUIN_SHARES` for its four-room curve, `RUIN_REFILL_DAYS` (30),
+  `SIDE_WORDS` / `GATE_STATE_WORDS` / `GATE_WORDS` / `RUIN_LINES`, and
+  behind them `roll_gates(world)` — called between the natural-Area loop
+  and `roll_census` — with `gate_candidates` / `gate_ring` / `_ruin_area` /
+  `_build_ruin_sites` / `ruin_site_rosters`. The readers are `gate_here` /
+  `gate_line` / `gate_glyph` / `gate_legend_lines` / `ruin_area` /
+  `ruin_sites` / `ruin_site_state` / `refill_ruin_site` /
+  `close_ruin_site`, and `_validate_gates` is the new `validate_world`
+  clause that re-checks the whole placement rule on every world.
+  `_build_ruin_sites` and `ruin_site_rosters` RUNTIME-IMPORT `quests`
+  (quests imports places, so a module-level import would cycle — the
+  `people.make_npc` precedent). `sites.py` DRESSES: `GATE_SKINS` (the two
+  tables, each in karma's `HELL_SKINS` shape), `GATE_BRED` and
+  `GATE_FEROCITY` beside them (the side-level disposition: Heaven
+  relentless, Hell's PEOPLE take spoils, Hell's animals keep their rows),
+  `WARDEN_BLADE` in `WEAPON_INDEX`, and `SKIN_WEAPONS` — the one-line hook
+  in `make_foe` that lets a display name carry its own steel. `quests.py`
+  OWNS THE POOLS (`HEAVEN_RUIN_POOL` / `HEAVEN_CITY_POOL` /
+  `HELL_RUIN_POOL` / `HELL_CITY_POOL`) and `forge_quest` grew
+  `site_keys=` / `skins=` / `ferocity=` / `desc=`, which is what lets a
+  delve forge over Sites the world already owns instead of building new
+  ones. `worldsim.py` PUTS THEM ON THE ROAD: `TILE_STATE_ENCOUNTERS`
+  (keyed by TILE state, then forked by SIDE, each leaf exactly a
+  `STATE_ENCOUNTERS` entry; its `kinds` are the four pools written out
+  because worldsim cannot import quests, and `test_gates` pins the two
+  copies together), `STATE_DANGER`, and the readers
+  `tile_encounter_entries` / `tile_encounter` / `tile_danger`;
+  `ENCOUNTER_KEYS` gained `ferocity`. `session.py` PLAYS: `cmd_delve` and
+  `ruin_site_lines`, the delve branch in `_close_site` (the FIELD tranche,
+  no turn-in, `close_ruin_site` on the way out) and its line in
+  `tally_lines`, `tile_danger(state)` multiplying `_road_roll`,
+  `cmd_explore` and `cmd_camp`, the tile-first lookup in `wild_event` with
+  `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
+  and the stored sighting, the gate line and the ruin's dungeon list in
+  `cmd_look`, and `MAP_GATE_LEGEND` on the map page. `test_gates.py` is
+  the suite and `bench_worldgen.py`'s `gates` sweep the measurement.
+  **What session 1 deliberately did NOT build**, and where the hook is:
+  the city tiles' TAKEOVER (they are rolled, ringed, tagged and drawn and
+  are otherwise ordinary tiles of their countries — session 4). Its other
+  two hooks — the deepest Sites' BOSSES and the ruin QUEST TEMPLATES —
+  are the entry below.
+- **The gates: the two sentinels, the bars and the ruin jobs**
+  (2026-09-12, THE GATES ARC's session 2 — rules.md's Heaven & Hell
+  add-on part 2, dm.md's "The gates", `gates.md` for what is left) —
+  split five ways. `sites.py` OWNS THE BODIES: `BOSSES` beside `FOES`,
+  `BOSS_GATES`, `foe_spec`, `boss_bar`, and `make_foe`'s new `weapon=`
+  (see Files). `weapons.py` OWNS THE STEEL: `GATE_BARS` / `gate_bar` /
+  `_plain_bar` / `gate_bar_entries`, appended to `roll_armory`'s ten.
+  `places.py` NAMES THEM AND SEALS ON A BODY:
+  `RUIN_SITES[...][-1]["boss"]` carries a real key, the site record grew
+  **`boss_dead`**, and both `ruin_site_state` and `close_ruin_site` now
+  read `deepest and boss_dead` where they read `deepest and not boss` —
+  the Old Host takes spoils and can break and run out of its own hollow,
+  so a cleared depth with no body in it refills like any other.
+  `_validate_gates` checks the authored key against `sites.BOSSES`,
+  `materialize_site` honors an authored `spec["template"]` (Tom's stone is
+  a shrine and its name does not say so), and the Area tag merge now drops
+  `GATE_TAGS` as well as `TRADE_TAGS`, so only the ruin Area wears
+  `heaven-ruin` / `hell-ruin`. `quests.py` POSTS THE WORK:
+  `RUIN_TEMPLATES`, `_ruin_place`, the `strict` flag, `place_reachable`,
+  the widened natural domain and the ruin-Site reuse ban (see Files).
+  `session.py` PLAYS IT: `ruin_boss_bar` (the spawn hook — a bar cannot
+  ride a catalog row the way the warden blade does, because it is built
+  off the world seed), `cmd_room` passing both it and the quest's own
+  `ferocity` into `make_foe` (session 1 stored that dict and nobody read
+  it), `record_drops` / `mark_boss_dead` in `resolve_encounter`'s won
+  branch, the `drops` map on the save, and `cmd_give` looking there before
+  the catalog. `rpg.py` gained `the(name)` — the article helper behind
+  `fallen_weapons_line` and `equip_weapon`, so a piece that names itself
+  never reads "the the Candor bar". `place_catalog.json` gained TOM'S
+  STONE in all eleven western and southern natural inventories.
+  `test_gates.py` is the suite and `bench_bestiary.py --bosses` the
+  measurement. **What this session deliberately did NOT build**: anything
+  one can DO to a live gate (the arc's open endgame question — the bars
+  point at it and nothing hangs on them), and the lore page's one Tom line
+  per culture (session 5's, with the packets).
+- **The gates: the Nephilim** (2026-09-12, THE GATES ARC's session 3 —
+  rules.md's Heaven & Hell add-on part 3, dm.md's "The gates" and "The
+  player character", `gates.md` for what is left) — the arc's small
+  additive session, split three ways and touching no other layer.
+  `rpg.py` OWNS WHAT IT DOES: `Entity.blood` (`""` / `old` / `sky` /
+  `fire`, riding `dataclasses.asdict` into the save like `tongues`), the
+  constants block under `HERO_STAT_BUDGET` (`BLOOD_KINDS`, `BLOOD_FLOORS`,
+  `BLOOD_CEILINGS`, `BLOOD_WARD`, `OLD_TONGUE`) and `add_blood_tongue`,
+  all read by `make_human`'s new `blood=` argument — which folds the
+  blood's floors and ceilings in ON TOP of the caller's (the trait hook's
+  own mechanism) and sets `blood` / `spell_ward` on the built Entity. An
+  unknown word RAISES. Two things to know before touching the numbers: a
+  **floor** is worth about a flat +1 because the fixed surplus budget is
+  dealt on top of it (and lands elsewhere when the stat is already at its
+  ceiling), and `BLOOD_CEILINGS["fire"]["power"] = -2` is the game's only
+  ceiling RAISE (`_adjusted_range` reads a ceiling as a subtraction), so a
+  fire-born's Power range is 5-8 — legal because the natural cap 6 is the
+  DEX/STR FRAME's and Power is a pool levels already buy.
+  `people.py` OWNS WHAT IT IS CALLED: `BLOOD_CHANCE_DENOM` / `BLOOD_ROLL`
+  and `roll_blood` (ONE `randrange(24)` for all three bands),
+  `BLOOD_WORDS` / `BLOOD_MARKS` / `blood_mark` / `blood_line`, the three
+  new `TRAIT_NOTES` entries keyed by the blood WORD, `make_character`'s
+  `blood=` (None ROLLS the companion odds; a word — `""` included — is
+  taken as given, which is how the PC's d6 reaches the generator), the
+  `add_blood_tongue` call that puts the Old Tongue back after
+  `roll_tongues` overwrites the list, and the readouts: `person_line`
+  carries the BLOOD bit and `character_sheet` prices it in the `notes:`
+  row the way it prices a dress trait. `blood_mark` is a pure function of
+  `name|blood` through blake2b — deterministic per body, stable across the
+  save, and NOTHING about it is stored, which is why the session added one
+  Entity field and not two. `TRAIT_ORDER` / `trait_bits` were factored out
+  in the same pass so `session.hero_block_lines` asks people.py for the
+  sketch instead of parsing `person_line` back apart (the blood bit would
+  otherwise have landed in the trait tail).
+  `session.py` ROLLS THE PC'S: `PC_BLOOD_ROLL` / `BLOOD_OPTIONS` /
+  `pc_blood` beside `start_level`, `new --blood none|old|sky|fire`, the
+  roll placed in `cmd_new` AFTER the world is built and BEFORE the
+  capacity reroll loop (so a seed's level and world are exactly what they
+  were, and a reroll re-rolls the stats and never the person), and the
+  BLOOD row in `hero_block_lines`.
+  **Nothing gates on blood** — no price, card, quest or conversation reads
+  it, by design: the world's reaction is dm.md's table protocol and the
+  two packets' authority hooks (session 5). `test_start.py` is the
+  contract and benchlog's 2026-09-12 (C) entry the measurement. The sims
+  never import people.py and `blood=""` is byte-identical behaviour, which
+  `sites.py --seed 3` and `bench_training.py` were diffed against the
+  previous commit to confirm.
+- **The gates: the two city states** (2026-09-12, THE GATES ARC's session
+  4 — rules.md's Heaven & Hell add-on part 4, dm.md's "The gates" and "The
+  nine countries", `gates.md` for what session 5 still owes) — the session
+  that made the world ELEVEN LANDS, and the only one in the arc that
+  touched the country machinery. **The thing to hold in your head before
+  touching any country-keyed reader: "the nine" and "every land" are now
+  two different questions.** `places.HUMAN_COUNTRIES` is the nine the
+  overlay paints and `places.COUNTRIES` is all eleven; the rule of thumb
+  is that AUTHORED answer keys, pinned censuses and anything a person is
+  BORN into mean the nine, and everything a land HAS — a record, a
+  culture, a capital, a deck, a lore page, a crown, prices, a board — means
+  eleven. Split four ways.
+  `place_catalog.json` goes to **v4** (see Files): two `lands` with
+  `rolled` / `side`, two one-template `cultures`, and the first template
+  `menu`. `places.py` TAKES THE TILE: `_city_takeover` inside `roll_gates`,
+  `_seat_gate_city` inside `roll_census`, `CAPITAL_TILES` retired into
+  `HISTORICAL_CAPITAL_TILES` + `land["capital_tile"]` + `capital_tile()` /
+  `human_capital_tiles()`, `GATE_CITY_MENU` in `tile_terms`, the start
+  draw skipping a city state, and the three validators taught the gates
+  (`_validate_fixed_data` stays about the nine; `_validate_countries`
+  checks the pinned censuses MINUS the ceded tile and the two states'
+  single tiles; `_validate_gates` grew the city half). `worldsim.py` GIVES
+  THEM A LAYER: two STUB packets under the culture keys (see Files), the
+  `_HUMAN` scope for the Miners' League, and `sky_tile` off the land
+  record. `quests.py` / `people.py` / `conquest.py` GIVE THEM IDENTITY:
+  `TEMPLATES["heaven"]` and `TEMPLATES["hell"]` (four rows each, the EPIC
+  one capital-only by construction because the culture has exactly one
+  land and that land has exactly one board), their eight
+  `QUEST_PLACE_REQUIREMENTS` rows (none strict — the work lands in the
+  human countryside inside the ordinary three-day radius),
+  `RULER_TITLES` and `DEFENDER_ROLES` rows, `people.NAMES` pools of 25+25
+  in the two registers, and `people.HUMAN_HOMELANDS` / `HUMAN_TONGUES` —
+  the birth roll and the Byzantine's second tongue are the NINE.
+  `test_gates.TheTakeover` is the contract.
+- **The gates: the two packets and the human side** (2026-09-12, THE
+  GATES ARC's session 5, the LAST — rules.md's Heaven & Hell add-on part
+  5, dm.md's "The gates", designlog 2026-09-12 (E)) — the arc's content
+  half and the end of it. Almost all of it is authored rows in
+  `worldsim.py` (see Files); what is MACHINERY is the four things a rolled
+  gate forces, and each is worth knowing before touching the world layer:
+  1. **The relations table is per-world now.** `RELATIONS` is still the
+     twenty authored human edges, but the four rows that reach the two
+     city states run between a city and its rolled HOST, so they live in
+     `_GATE_RELATIONS` with a `HOST` placeholder. `open_world` calls
+     `resolve_relations(world)` FIRST and parks the answer on
+     `world["relations"]`; `derived_states` reads it through
+     `relations_of`, which is strict. Import-time validation cannot see a
+     world, so the three passes that need the whole table
+     (`_validate_reachability`, `_validate_state_tables`,
+     `_validate_countries`) call `_possible_relations()` — every gate row
+     against every land that could host that gate.
+  2. **Worldgen writes standing states and standing facts.** `stamp_gates`
+     runs inside `open_world`, between the layer loop and the opening
+     crisis draw, so a card can admit on one of its words on day one. The
+     five words are in `EXTERNAL_STATES` (worldgen produces them, no card
+     does, nothing takes them off); the four facts go on
+     `land["facts"]` — a new list on `places._new_land_record` — which
+     `worldsim.facts_here` prints beside the authored `FACTS`. If you add
+     a per-world fact to anything, that is the road.
+  3. **A tension can be stamped rather than rolled.** `EXTERNAL_TENSIONS`
+     is `STANDING_TENSIONS`' sibling: authored in a culture's list, taken
+     out of `roll_tensions`' pool and out of the rollable-count check, and
+     held only where `open_world` puts it. `church-vs-saturna` is the one
+     so far. It must be stamped BEFORE `_deck` is cut or its card never
+     enters the deck.
+  4. **A crown can be narrowed.** `rulers.roll_ruler` grew `barred=` /
+     `accession=` / `puppeteers=`; `worldsim._crown` is the one caller
+     that uses them, for the two gate cities, off `rulers.BODILESS` and
+     `rulers.GATE_PUPPETEERS`. `accession=` still ROLLS and discards, so
+     naming one does not move the stream.
+  Two smaller things in the same pass: `quests.epic_templates(culture)`
+  re-casts the three country-agnostic epics' givers for the two gate
+  cultures (a one-tile state has no king's general), and
+  `worldsim._authority_hook` grew `born=` so a card can name a person of
+  another land. `test_gates`'s six new classes are the contract and
+  benchlog's 2026-09-12 (E) entry the measurement.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
@@ -2918,6 +3467,23 @@ up 0-7 points for the same reason. `bench_wounds.py` is the new meter for
 the records-per-hero and load-per-hero pair. Nothing
 was tuned beyond the accrual table, the cap and the salve; the give is
 flagged for the felt game to judge.
+
+**The two sentinels (2026-09-12, the gates arc's session 2; benchlog
+2026-09-12 (B) has the tables).** The bestiary gained a second table and
+no catalog row moved. `bench_bestiary.py --bosses` annotates the authored
+one-offs at the same duo baseline: **Zohariel the Sentinel 63.6% win at
+its annotated 17** on the Legend row exactly as specced, and **Saar the
+Old Host 58.8% at 16** after two levers came off. The lesson for the next
+authored one-off is the lever order, not the numbers: Saar as specced read
+29% win / 62% wipe, and **HP could not fix it** (11 HP — under a wight's —
+still only reached 45%, because the duo was WIPING rather than failing to
+cut through). The offense levers are what were out of band: the bar's
+**+3 STR on a STR-8 body** (effective STR 11; the dragon fights at 9) plus
+the drake's fueled sweep. Shipped at `hp` 16 and `training` 2; `pain`
+stayed 3 and was never reached. **Decide an authored one-off's WEAPON
+first and its body after it.** The catalog sweep, `tune.py` and every
+other bench are untouched: a boss key is not in `FOES` and the bars come
+off their own string-seeded rng.
 
 **The towns & the tongues moved NOTHING (2026-08-22, the medieval world
 arc's session 3; benchlog 2026-08-22).** `bench_worldgen.py --seeds 500`

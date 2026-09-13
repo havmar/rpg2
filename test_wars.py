@@ -65,12 +65,16 @@ def rolled(seed: int, day: int) -> dict:
 
 
 def war_states(built: dict) -> list[tuple[str, dict]]:
-    """Every active state the campaign sim has written, place id and all."""
+    """Every active state the campaign sim has written, place id and all.
+
+    The WARS' own vocabulary only (2026-09-12): a Tile also carries the
+    gates' permanent rings now, and those are worldgen's, not the sim's."""
     out = []
     for store in (built["tiles"], built["settlement_slots"]):
         for key, place in store.items():
             for state in place["states"]:
-                if state.get("active"):
+                if state.get("active") and state["id"] not in \
+                        places.GATE_STATE_WORDS:
                     out.append((key, state))
     return out
 
@@ -237,6 +241,12 @@ class TheWarRoll(unittest.TestCase):
             for war in built["wars"]:
                 fighting = set(war["attackers"]) | set(war["defenders"])
                 for tid in war["theater"]:
+                    # A cell one of the gate cities took is NOT in the
+                    # theater (2026-09-12): `new_war` drops it, because
+                    # the standing wars are not rolled over the city
+                    # states.
+                    self.assertNotIn(built["tiles"][tid]["country"],
+                                     places.CITY_STATES, tid)
                     self.assertIn(built["tiles"][tid]["country"], fighting,
                                   f"{seed}/{war['key']}/{tid}")
 
@@ -577,7 +587,7 @@ class TheSurfaces(unittest.TestCase):
         tile = self._marked_tile()
         lines = places.tile_brief_lines(self.built, tile)
         for state in tile["states"]:
-            if state.get("active"):
+            if state.get("active") and state["id"] in places.WAR_STATE_WORDS:
                 self.assertTrue(
                     any(places.WAR_STATE_WORDS[state["id"]] in line
                         for line in lines), state)
@@ -591,7 +601,8 @@ class TheSurfaces(unittest.TestCase):
         detail = places.tile_detail_lines(self.built, slot["tile"])
         brief = places.tile_brief_lines(self.built, slot["tile"])
         word = places.WAR_STATE_WORDS[
-            next(s["id"] for s in slot["states"] if s.get("active"))]
+            next(s["id"] for s in slot["states"]
+                 if s.get("active") and s["id"] in places.WAR_STATE_WORDS)]
         self.assertTrue(any(word.split(" ")[0] in line for line in detail))
         self.assertTrue(any(word.split(" ")[0] in line for line in brief))
 

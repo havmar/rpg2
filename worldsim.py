@@ -141,11 +141,13 @@ import random
 
 import rulers                    # the politics rung's person half: the
                                  # weighted trait pool a crown is rolled off
-from places import (CAPITAL_TILES, CLIMATE_PROFILES, CULTURE_LANDS,
-                    CULTURE_OF, LAND_SPECS, add_state, clear_state,
-                    detail_wrap, land_id, stable_seed, tile_coordinate,
-                    tile_id, tile_label)
-from sites import FOES           # the encounter outlet's vocabulary: a card
+from places import (CITY_STATE_OF_SIDE, CLIMATE_PROFILES, CULTURE_LANDS,
+                    CULTURE_OF, GATE_BY_KEY, HUMAN_COUNTRIES, LAND_SPECS,
+                    add_state, capital_tile, clear_state, detail_wrap,
+                    land_id, stable_seed, tile_coordinate, tile_id,
+                    tile_label)
+from sites import (FOES,        # the encounter outlet's vocabulary: a card
+                   GATE_SKINS, GATE_FEROCITY)   # ...and the gates' faces
                                  # that puts foes on a road names catalog rows
                                  # like every other roster in the game
 
@@ -278,6 +280,33 @@ CRISIS_TENSION_ROLLS = 2        # ...and two when it opens in CRISIS, because
 # running out is simply what the mountain is now.
 
 STATE_WORDS = {                 # state id -> the readout's short phrase
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's sessions 4 and 5).
+    # Three groups: what the two packets' own cards leave standing, the
+    # five STANDING words worldgen stamps on the human lands off
+    # `world["gates"]` (a land does not stop hosting a gate), and the four
+    # words the gates' relation rows derive.
+    "register-read": "the Pruners' list is out",
+    "removal": "a child was taken",
+    "gate-shut": "the gate is guarded from both sides",
+    "preached-against": "the pulpit is against the gate",
+    "feast-spilled": "the feast has spilled over the wall",
+    "year-owed": "a village owes a year",
+    "lord-hanged": "the free company hanged a lord",
+    "cages-open": "the wild market is selling people",
+    # ...the standing five (worldgen's, never a card's)
+    "hosts-heaven": "Heaven's gate city stands on this ground",
+    "hosts-hell": "Hell's gate city stands on this ground",
+    "keeps-candor": "Heaven's dead city is in this country",
+    "keeps-libera": "Hell's dead city is in this country",
+    "pagan-host": "old-god country, and the gate knows it",
+    # ...the human side's two
+    "return-argued": "the synod is arguing about the Return",
+    "crusade-preached": "a crusade is preached against the feast",
+    # ...and the four derived off the gates' own relation rows
+    "cure-dear": "the cure has gone dear",
+    "feast-abroad": "the feast is out on the road",
+    "pulpit-against": "the host's pulpit is against it",
+    "hounds-out": "the host's hounds are on the road",
     # the western culture
     "harvest-failed": "the harvest has failed",
     "bread-dear": "bread is expensive",
@@ -528,6 +557,20 @@ STATE_MENU = {
     # is under the white storm is buying from a cart instead of a hull.
     "ice-locked": {"goods": 1.30, "lodging": 1.15},
     "white-storm": {"lodging": 1.35},
+    # THE TWO GATES (2026-09-12, session 5). The standing pair first: a land
+    # that hosts a gate city is a land the cure or the feast leaks out of,
+    # every day, for the whole campaign -- which is the cheapest way the map
+    # says a foreign power is HERE. Then what the two packets leave
+    # standing, and last the four words the gates' relation rows derive
+    # onto the hosts and onto the cities.
+    "hosts-heaven": {"healer": 0.90},
+    "hosts-hell": {"lodging": 0.90},
+    "gate-shut": {"healer": 1.50, "goods": 1.30},
+    "feast-spilled": {"lodging": 0.60},
+    "year-owed": {"lodging": 1.20},
+    "cure-dear": {"healer": 1.30},
+    "feast-abroad": {"lodging": 0.70},
+    "pulpit-against": {"goods": 1.20},
 }
 # The discipline that keeps the two halves from double-charging: a state
 # belongs HERE when no card of its own carries a `menu` payload, or when it
@@ -602,7 +645,93 @@ STATE_ENCOUNTERS = {
                "skins": {"soldier": "Levy", "cutthroat": "Deserter",
                          "bruiser": "Straggler"},
                "chance": 0.35},
+    # THE TWO GATE CITIES (2026-09-12, session 5). Five rows: three for what
+    # the packets' own states put on the road, and two for the words the
+    # gates' relation rows derive onto a host -- the ones with no card in
+    # the host land to name their foes, which is what this table is for.
+    # The skins are the sides' own (`sites.GATE_SKINS`), so a warden met on
+    # a road outside Concordia is the same warden met inside Candor.
+    "gate-shut": {"kinds": ("soldier", "veteran", "champion"),
+                  "where": "road",
+                  "as": "wardens turning travellers back off the gate road",
+                  "skins": GATE_SKINS["heaven"],
+                  "ferocity": GATE_FEROCITY["heaven"], "chance": 0.40},
+    "feast-spilled": {"kinds": ("cutthroat", "bruiser", "archer"),
+                      "where": "wilds",
+                      "as": "revelers out of Saturna, three days drunk",
+                      "skins": GATE_SKINS["hell"],
+                      "ferocity": GATE_FEROCITY["hell"], "chance": 0.40},
+    "lord-hanged": {"kinds": ("cutthroat", "soldier", "veteran"),
+                    "where": "road",
+                    "as": "the free company that did the hanging",
+                    "skins": GATE_SKINS["hell"],
+                    "ferocity": GATE_FEROCITY["hell"], "chance": 0.40},
+    "feast-abroad": {"kinds": ("cutthroat", "bruiser", "archer"),
+                     "where": "wilds",
+                     "as": "the feast's people, out past the wall",
+                     "skins": GATE_SKINS["hell"],
+                     "ferocity": GATE_FEROCITY["hell"], "chance": 0.35},
+    "hounds-out": {"kinds": ("wolf", "dire wolf"), "where": "road",
+                   "as": "hounds off Saturna's kennels, hunting loose",
+                   "skins": GATE_SKINS["hell"], "chance": 0.40},
 }
+
+# --------------------------------------------------------------------------- #
+# THE TILE-LEVEL ENCOUNTER TABLE (2026-09-12, the gates arc's session 1)
+# --------------------------------------------------------------------------- #
+# STATE_ENCOUNTERS is keyed by a LAND's states; this is its sibling one level
+# down, keyed by a TILE's. The ground is more local than the country, so a
+# tile entry OUTRANKS a land entry in `session.wild_event`: inside a gate's
+# ring, what the party meets is what the gate put there.
+#
+# The fork by SIDE is what the land-level table never needs: a ring state
+# carries `heaven` or `hell` in its `by` word, and the two sides field
+# entirely different things. Each leaf is exactly a STATE_ENCOUNTERS entry.
+# The `kinds` tuples are the four pools of `quests.py` written out -- this
+# file cannot import quests (quests imports it), and an authored literal is
+# what every other row here is anyway; `test_gates` pins the two against
+# each other.
+#
+# The entry never touches the LEVEL. The ring changes WHO, and the danger
+# ring below changes HOW OFTEN; the party-independent danger curve is a
+# contract neither of them may bend.
+TILE_STATE_ENCOUNTERS = {
+    "gate-ruin": {
+        "heaven": {"kinds": ("skeleton", "ghoul", "wight",
+                             "ogre", "troll", "giant"),
+                   "where": "any", "as": "something out of the ruin",
+                   "skins": GATE_SKINS["heaven"],
+                   "ferocity": GATE_FEROCITY["heaven"], "chance": 0.6},
+        "hell": {"kinds": ("wolf", "dire wolf", "boar", "bear",
+                           "ogre", "troll", "giant",
+                           "wyvern", "drake", "dragon"),
+                 "where": "any", "as": "something out of the ruin",
+                 "skins": GATE_SKINS["hell"],
+                 "ferocity": GATE_FEROCITY["hell"], "chance": 0.6},
+    },
+    "gate-city": {
+        "heaven": {"kinds": ("cutthroat", "archer", "bruiser", "soldier",
+                             "veteran", "champion", "blademaster",
+                             "warlord", "hexer", "pyromancer", "magus"),
+                   "where": "road", "as": "a patrol out of Concordia",
+                   "skins": GATE_SKINS["heaven"],
+                   "ferocity": GATE_FEROCITY["heaven"], "chance": 0.35},
+        "hell": {"kinds": ("cutthroat", "archer", "bruiser", "soldier",
+                           "veteran", "champion", "blademaster",
+                           "warlord", "hexer", "pyromancer", "magus"),
+                 "where": "road", "as": "revelers out of Saturna",
+                 "skins": GATE_SKINS["hell"],
+                 "ferocity": GATE_FEROCITY["hell"], "chance": 0.35},
+    },
+}
+
+# THE DANGER RING (2026-09-12). What a tile's states do to how OFTEN the
+# wilds roll on it: the per-day chance on the road, the day afield and the
+# night camped, all multiplied by this. The ruin's ring doubles them; a
+# gate CITY's ring carries no multiplier at all -- a patrol on the road is
+# not a more dangerous road, only a different one.
+STATE_DANGER = {"gate-ruin": 2.0}
+
 
 # WHAT A STATE PUTS IN THE CRIME LAYER'S MARK TABLE (2026-08-11, the
 # religion & magic rung). The third of the same shape: a state that makes a
@@ -628,6 +757,21 @@ STATE_MARKS = {
         "burglary": ("a great house whose servants are all out",),
         "con": ("a masked table that cannot see your face either",),
     },
+    # THE TWO GATES (2026-09-12, session 5). What the gate cities put in a
+    # neighbour's crime table. The lamps ride the STANDING word, because a
+    # lamp of Concordia is worth a horse in the host country every day of
+    # the campaign and not only in the week the thieves are being chased;
+    # the cages ride the card's own state, because the wild market is only
+    # selling people while THE CAGES stands. `powder` is this game's
+    # smuggling category (move the goods at night, take the price at dawn).
+    "hosts-heaven": {
+        "burglary": ("a lamp of Concordia, on a shelf behind a shutter",),
+        "con": ("a collector who wants a lamp and asks no questions",),
+    },
+    "cages-open": {
+        "powder": ("a covered cart out of the wild market, and it moves",),
+        "con": ("a bidder at the cage market with a full purse",),
+    },
 }
 
 OUTLETS = ("quest", "menu", "encounter", "news", "state")
@@ -650,6 +794,11 @@ LIVE_KEY = {"crisis": "live", "weather": "weather_live",
 # runtime actually asks about, and it leaves ANY_LAND and a bare land key
 # alone.
 CULTURES = dict(CULTURE_LANDS)
+# THE NINE, written out as a card scope (2026-09-12, the gates arc's session
+# 4). `ANY_LAND` now reaches eleven, and two of them are one-tile city states
+# that no mine, no manor and no countryside belongs to. A card that is about
+# HUMAN ground says so with this.
+_HUMAN = tuple(HUMAN_COUNTRIES)
 
 
 def _expand(land: str | tuple[str, ...]) -> tuple[str, ...]:
@@ -953,6 +1102,37 @@ _CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "no first among them at all: every fjord its own "
                      "jarl, and the law stops at the next headland"),
     ),
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Both
+    # packets are STUBS on purpose: the frame each one owes -- four
+    # constitutions, its tensions and their blocs, a card on each track, a
+    # standing fact -- authored off gates.md section 11's real content so
+    # session 5 extends them rather than replacing them.
+    "heaven": (
+        constitution("hierarchy", "THE HIERARCHY", 6,
+                     "ranks all the way up; the Prefect answers to the "
+                     "gate"),
+        constitution("mission", "THE MISSION", 2,
+                     "the Gardeners hold the city; the school and the "
+                     "infirmary come first"),
+        constitution("quarantine", "THE QUARANTINE", 1,
+                     "the Pruners hold the city; the gate is guarded from "
+                     "both sides"),
+        constitution("council-of-choirs", "THE COUNCIL OF CHOIRS", 1,
+                     "the choirs vote; the Prefect counts"),
+    ),
+    "hell": (
+        constitution("the-feast", "THE FEAST", 6,
+                     "a Lord of Misrule for a year and a day, elected at "
+                     "the long table"),
+        constitution("free-companies", "THE FREE COMPANIES", 2,
+                     "no lord; the captains hold the city between them"),
+        constitution("long-feast", "THE LONG FEAST", 1,
+                     "the Lord of Misrule did not step down; the Hunger "
+                     "holds the city"),
+        constitution("the-kennel", "THE KENNEL", 1,
+                     "the Master of Hounds rules; the feast is for the "
+                     "hounds"),
+    ),
 }
 
 # The blocs. Most are named by exactly one land's tensions; the shared ones
@@ -1000,6 +1180,23 @@ FACTIONS: dict[str, dict] = {f["key"]: f for f in (
     faction("missionaries", "the missionaries", face="wildcard"),
     faction("feud-house", "the house that struck first"),
     faction("rival-house", "the house that struck back"),
+    # -- the two gate cities (2026-09-12, the gates arc's session 4)
+    faction("gardeners", "the Gardeners"),
+    faction("pruners", "the Pruners"),
+    faction("prefect", "the Prefect", face="ruler"),
+    faction("bishops", "the host's bishops"),
+    faction("angels", "the angels of the city"),
+    faction("converts", "the converts", face="wildcard"),
+    faction("feast", "the Feast"),
+    faction("hunger", "the Hunger"),
+    faction("lord", "the Lord of Misrule", face="ruler"),
+    faction("captains", "the free companies' captains"),
+    faction("demons", "the demons of bargains", face="wildcard"),
+    faction("debtors", "the debtors"),
+    # ...and the one bloc that is a PLACE (2026-09-12, session 5): the
+    # crusade axis in Hell's host runs between the host's own bishops and
+    # the feast town down the road, which is not a bloc of anybody's court.
+    faction("saturna", "the feast town down the road"),
 )}
 
 # What each land is fighting about. A land rolls one (two in crisis); the
@@ -1023,6 +1220,16 @@ _TENSIONS: dict[str, tuple[dict, ...]] = {
                 factions=("shrines", "rival-shrines")),
         tension("abbey-vs-village", "the abbey against the families",
                 factions=("abbey", "village")),
+        # THE CRUSADE AXIS (2026-09-12, session 5). Authored on the western
+        # culture because the three lands that can host Saturna and keep
+        # the Sun communion are all western (Phyrascia, Teutonia and
+        # Vellisclavia -- Seraptania is in Heaven's set and can never host
+        # Hell), and HELD only where `open_world` stamps it. It is in
+        # EXTERNAL_TENSIONS, so no roll can put it on a western land with
+        # no feast town standing in it.
+        tension("church-vs-saturna",
+                "the bishops against the feast town",
+                factions=("bishops", "saturna")),
     ),
     "southern": (
         tension("sword-vs-robe", "old swords against bought offices",
@@ -1070,13 +1277,47 @@ _TENSIONS: dict[str, tuple[dict, ...]] = {
                 "which face of the god rules the year",
                 factions=("penitents", "carnival")),
     ),
+    # The two gate cities (2026-09-12): the inner axis is STANDING on each
+    # side -- it is what the power IS, not what it happens to be arguing
+    # about this year -- and two rollable ones sit over it.
+    "heaven": (
+        tension("gardeners-vs-pruners",
+                "raise the world up, or make it clean",
+                factions=("gardeners", "pruners")),
+        tension("prefect-vs-church",
+                "the host's church against the Prefect",
+                factions=("prefect", "bishops")),
+        tension("angels-vs-converts",
+                "the gate's people against the city's",
+                factions=("angels", "converts")),
+    ),
+    "hell": (
+        tension("feast-vs-hunger",
+                "set them loose, or eat them",
+                factions=("feast", "hunger")),
+        tension("lord-vs-captains",
+                "the Lord against the free companies",
+                factions=("lord", "captains")),
+        tension("demons-vs-debtors",
+                "who owes whom a year",
+                factions=("demons", "debtors")),
+    ),
 }
 # The tensions that are NOT colour: held on top of the roll and never in the
 # rollable pool. The western manor is the econ packet's oppression axis and
 # is simply what the land is.
 _STANDING_TENSIONS: dict[str, tuple[str, ...]] = {
     "western": ("manor-vs-village",),
+    "heaven": ("gardeners-vs-pruners",),
+    "hell": ("feast-vs-hunger",),
 }
+# ...and the tensions that are neither colour NOR standing: authored, never
+# in the rollable pool, and held only where WORLDGEN puts them (2026-09-12,
+# session 5). One of them so far: the crusade axis, which `open_world`
+# stamps on Hell's host when the host is a Sun-communion land. The same
+# discipline `EXTERNAL_STATES` applies to states -- worldgen produces it and
+# no roll does -- so a land that does not host Saturna can never draw it.
+EXTERNAL_TENSIONS = ("church-vs-saturna",)
 
 # The authored tables are keyed by CULTURE (or by a single land where the
 # content is that land's own); every reader asks with a LAND key.
@@ -1161,6 +1402,31 @@ FACTION_EDGES: tuple[dict, ...] = (
          "the grove priests have a pole up with a priest's name on it"),
     edge("norse", "feud-house", "kill", "rival-house",
          "the two houses are six men in and still counting"),
+    # the two gate cities (2026-09-12, the gates arc's session 4)
+    edge("heaven", "pruners", "list", "converts",
+         "the register names every half-blood in the city"),
+    edge("heaven", "gardeners", "heal", "converts",
+         "the infirmary takes anybody and asks afterwards"),
+    edge("heaven", "bishops", "preach-against", "angels",
+         "the host's pulpit calls the city's people a lie"),
+    edge("heaven", "prefect", "tax", "converts",
+         "the half-blood pays for the wall he lives behind"),
+    edge("heaven", "angels", "judge", "converts",
+         "the law applies to everybody equally, which is the trouble"),
+    edge("heaven", "converts", "petition", "prefect",
+         "the city's humans queue at the Prefecture every court day"),
+    edge("hell", "hunger", "own", "debtors",
+         "a year of a man's life, written in the debt-house"),
+    edge("hell", "feast", "free", "debtors",
+         "the Feast tears up what it can reach and drinks to it"),
+    edge("hell", "captains", "raid", "debtors",
+         "the free companies collect where the books say nothing"),
+    edge("hell", "lord", "pardon", "debtors",
+         "the Lord of Misrule cancels a year for the joke of it"),
+    edge("hell", "demons", "bargain", "debtors",
+         "the demons of bargains keep every promise they hate"),
+    edge("hell", "debtors", "petition", "lord",
+         "the long table hears anybody who can still stand"),
 )
 
 
@@ -1287,7 +1553,10 @@ def sky_tile(world: dict, polity: str) -> dict:
     tile = world["tiles"][world["party_tile"]]
     if tile["country"] == polity and tile["climate"] is not None:
         return tile
-    return world["tiles"][CAPITAL_TILES[polity]]
+    # WHERE THE CAPITAL IS is a per-world fact since 2026-09-12 (the gates
+    # arc's session 4): the nine take theirs off the authored answer key and
+    # the two city states off the gate roll, and both answer here.
+    return world["tiles"][capital_tile(world, polity)]
 
 
 def weather_phrase(climate: str, word: str,
@@ -1432,14 +1701,23 @@ def named_authority(world: dict, polity: str, key: str) -> dict | None:
     return land_layer(world, polity).get("authorities", {}).get(key)
 
 
-def _authority_hook(key: str, role: str, field: str = "who"):
+def _authority_hook(key: str, role: str, field: str = "who", born=None):
+    """A card that has to NAME somebody. The name is rolled once, kept on
+    the land layer under `key`, and handed back for the news line's `field`.
+
+    `born(world, polity)` names the land whose name pool the person comes
+    out of, for the one case where the firing land is not where the person
+    is from: the gate cities' cards (2026-09-12, session 5) name a child,
+    a debtor, a hermit and an old woman who all live in the HOST country,
+    and a half-blood child off Concordia's register is a village child
+    with a village name. Default: the firing land's own pool."""
     def hook(world: dict, polity: str, day: int,
              rng: random.Random) -> dict:
         from people import pick_name         # lazy: quests imports worldsim
         layer = land_layer(world, polity)
         who = layer.setdefault("authorities", {}).get(key)
         if who is None:
-            homeland = polity
+            homeland = polity if born is None else born(world, polity)
             sheet = rulers.roll_ruler(rng, crown=False)
             sheet.update(name=pick_name(rng, homeland,
                                         rng.choice(("m", "f"))),
@@ -1479,6 +1757,56 @@ _BEASTS = ("wolf", "dire wolf", "bear")                     # band 1-6
 # anybody's soldiery.
 _UNDEAD = ("skeleton", "ghoul", "wight")                    # band 1-10
 _CASTERS = ("hexer", "pyromancer", "magus")                 # band 2-12
+
+
+# --- THE TWO GATE CITIES' four named people (2026-09-12, session 5) -------- #
+# The Nephilim's payload is the world's REACTION (designlog 2026-09-12 (C)),
+# and a card cannot read the party -- so the reaction arrives as four people
+# the packets NAME and keep: the child the Pruners took off the register, the
+# hermit in the hills who turns out to be an angel a thousand years native,
+# the debtor who sold a year, and the old woman who has run the same feast
+# for forty generations. Each is rolled once on the city's layer and is the
+# same person for the rest of the campaign.
+#
+# All four are people of the HOST country, not of the city, so they take the
+# host's name pool: a half-blood child on Concordia's list is a village child
+# with a village name, which is exactly what makes the list frightening.
+
+def _host_of(side: str):
+    """The human land this side's gate city was cut out of."""
+    def born(world: dict, polity: str) -> str:
+        return world["gates"][CITY_STATE_OF_SIDE[side]]["cut_from"]
+    return born
+
+
+_CHILD_HOOK = _authority_hook("nephilim-child", "the child off the register",
+                              "child", born=_host_of("heaven"))
+_ANGEL_HOOK = _authority_hook("stranded-angel", "the hermit in the hills",
+                              "hermit", born=_host_of("heaven"))
+_DEBTOR_HOOK = _authority_hook("hell-debtor", "the debtor who sold a year",
+                               "debtor", born=_host_of("hell"))
+_DEMON_HOOK = _authority_hook("stranded-demon", "the old woman of the fen",
+                              "woman", born=_host_of("hell"))
+
+
+# --- THE HUMAN SIDE's one hook: which rite has the gate city (session 5) --- #
+# The synod card's news has to name BOTH answers and say whose is whose, and
+# which rite that is depends on where Concordia landed. The southern rite is
+# the old one (Byzantium, Andalusia, Umaia); the western church is its eldest
+# daughter (Seraptania). Nothing is stored: the hook reads `world["gates"]`
+# and hands the line three words.
+_RITE_WORDS = {"southern": "the old rite",
+               "western": "the western church"}
+
+
+def _return_hook(world: dict, polity: str, day: int,
+                 rng: random.Random) -> dict:
+    host = world["gates"]["concordia"]["cut_from"]
+    keeps = CULTURE_OF[host]
+    other = "western" if keeps == "southern" else "southern"
+    return {"host": world["lands"][host]["name"],
+            "hosting": _RITE_WORDS[keeps], "other": _RITE_WORDS[other]}
+
 
 CARDS = (
     # -- the west: MANORIAL OPPRESSION & THE CROWN'S DEBTS ---------------- #
@@ -1863,7 +2191,7 @@ CARDS = (
     # The rush CHAIN: the seam is found (a slot, so it outlives the card),
     # and the bust that follows admits on it, puts the slot back, and
     # settles the argument the find started.
-    card("mining/new-seam", "A new seam is found", ANY_LAND,
+    card("mining/new-seam", "A new seam is found", _HUMAN,
          wealth=("normal", "prosperous"), without=("claims-collide",),
          days=(15, 25),
          news="A new seam has been found in the hills. Two League "
@@ -1883,7 +2211,7 @@ CARDS = (
                               "claim went to the chapter with the most "
                               "men."),
              "pay": 1.20}),
-    card("mining/gold-rush", "The rush and the bust", ANY_LAND,
+    card("mining/gold-rush", "The rush and the bust", _HUMAN,
          states=("deposit-found",), days=(12, 20),
          news="Everyone who could walk came up for the new seam, and it is "
               "already thinning. The town has four times the people it can "
@@ -1911,18 +2239,18 @@ CARDS = (
              "pay": 1.15}),
     # The bust CHAIN: the vein runs out and the land goes to crisis, and
     # only the reopening takes it back out.
-    card("mining/vein-dries", "The vein runs out", ANY_LAND,
+    card("mining/vein-dries", "The vein runs out", _HUMAN,
          wealth=("normal", "prosperous"), days=None,
          news="The vein that fed the district is running out. The League's "
               "books say otherwise, and the League's books are the law.",
          state={"slot": {"deposit": "deposit-drying"}, "wealth": "crisis"}),
-    card("mining/veins-reopened", "The dead veins are reopened", ANY_LAND,
+    card("mining/veins-reopened", "The dead veins are reopened", _HUMAN,
          wealth=("crisis",), states=("deposit-drying",), days=None,
          news="An old engineer has found a way to work a seam everyone had "
               "written off. Every chapter with a dead pit wants him, and "
               "one of them wants him quiet.",
          state={"slot": {"deposit": "deposit-normal"}, "wealth": "normal"}),
-    card("mining/strike", "The pits stand idle", ANY_LAND,
+    card("mining/strike", "The pits stand idle", _HUMAN,
          wealth=("crisis",), days=(12, 20),
          news="The pits stand idle. The workers want their share of the "
               "new find before the League books it, and the company shop "
@@ -1945,7 +2273,7 @@ CARDS = (
     # until somebody else's harvest fails, and the edge is what tells the
     # mining country about it. The trade layer drew the road it walks (the
     # grain road to a mine that cannot feed itself) two sessions ago.
-    card("mining/food-caravan", "The food caravan", ANY_LAND,
+    card("mining/food-caravan", "The food caravan", _HUMAN,
          states=("grain-scarce",), days=(10, 18),
          news="A food caravan is coming up the mine road. Every chapter "
               "with an empty larder knows the day it is due, and so does "
@@ -2072,6 +2400,318 @@ CARDS = (
          news="Green is coming up through the black. Nobody alive will "
               "call it healed, but the deer are back.",
          state={"clear": ("burned-over",)}),
+
+    # -- THE TWO GATE CITIES (2026-09-12, the gates arc's sessions 4 and 5) - #
+    # gates.md section 11's two packets, whole: eight crisis cards, a
+    # weather card and a season card a side. They are built as opposites on
+    # purpose. Heaven's trouble is ADMINISTRATIVE -- a list, a removal, a
+    # quarantine, a sermon, a thing made that walked off -- and Hell's is
+    # APPETITE: a feast that will not stay inside the wall, a debt
+    # collected, a lord hanged, a market selling things that are alive.
+    # Neither deck is the villain's, and the table plays both.
+    #
+    # TWO CHAINS, one a side, each built the way the chain rule demands (a
+    # link is a `set` state the successor admits on and CLEARS, never a
+    # `while`):
+    #     heaven/the-register  -> heaven/the-removal    (register-read)
+    #     hell/the-feast-spills -> hell/the-debt-book   (feast-spilled)
+    #
+    # FOUR of these cards NAME somebody and keep the name (the four hooks
+    # above). That is where the Nephilim's payload lands: a card cannot
+    # read the party, so what the world does about half-bloods arrives as
+    # a child, a hermit, a debtor and an old woman the party can go and
+    # find.
+    card("heaven/the-register", "The register is read", "heaven",
+         tension=("gardeners-vs-pruners",),
+         news="The Pruners have posted the register on the Prefecture "
+              "wall: every half-blood born in twenty-seven years, named, "
+              "with the village written beside the name. Nobody outside "
+              "the walls has ever seen the list before.",
+         state={"set": ("register-read",)},
+         encounter={"kinds": ("soldier", "veteran"), "where": "road",
+                    "as": "wardens working down the register, asking "
+                          "names",
+                    "skins": GATE_SKINS["heaven"],
+                    "ferocity": GATE_FEROCITY["heaven"], "chance": 0.35}),
+    card("heaven/the-removal", "A child is taken", "heaven",
+         states=("register-read",), days=(15, 30), hook=_CHILD_HOOK,
+         news="The Pruners have taken a child called {child} off the "
+              "register and in through the gate-side door of the "
+              "Prefecture. The mother walked up from the host village "
+              "and is still standing at the wall. The Gardeners are "
+              "saying nothing out loud.",
+         state={"clear": ("register-read",), "while": ("removal",)},
+         quest={"post": job(
+             "Bring the Child Home",
+             "The Pruners hold the child inside Concordia's walls. The "
+             "wardens at the post will not hand the child over and will "
+             "not say why. The mother is paying what she has.",
+             pool=_TOUGHS, skins=GATE_SKINS["heaven"],
+             sites=("the warden's post",),
+             giver="the mother from the host village",
+             epilogue="The child is home. The register has one name "
+                      "crossed out and nobody in Concordia says by whom.",
+             failure_epilogue="The post is shut and the child is inside "
+                              "the walls. The mother walks up to the "
+                              "gate every morning."),
+             "pay": 1.20}),
+    card("heaven/the-cure-line", "The infirmary opens to all", "heaven",
+         tension=("gardeners-vs-pruners",), days=(20, 35),
+         menu={"healer": 0.50},
+         news="The Gardeners have opened the infirmary to anybody who "
+              "walks in, host villager or not. The line goes out of the "
+              "gate and a mile down the road. The Pruners are writing "
+              "down who is standing in it."),
+    card("heaven/the-gate-guarded", "The gate is guarded from both sides",
+         "heaven", tension=("prefect-vs-church",), days=(20, 40),
+         news="The Prefect has put wardens on the gate facing IN as well "
+              "as out. Nothing comes through and nothing goes down, and "
+              "the road up to the walls is turned back a mile out.",
+         state={"while": ("gate-shut",)}),
+    card("heaven/a-stranded-one", "A stranded angel is found", "heaven",
+         chance=0.25, days=(15, 30), hook=_ANGEL_HOOK,
+         news="A hermit the host villages call {hermit} has been walled "
+              "into the same cell on the same hill for longer than the "
+              "villages have existed. Concordia has worked out what that "
+              "means. The Pruners want the hermit brought in; the "
+              "Gardeners want the hermit left where the hermit is.",
+         quest={"post": job(
+             "The Hermit's Escort",
+             "Concordia is sending a party up the hill for the hermit "
+             "and wants an escort that can hold a road. What happens at "
+             "the cell is the escort's problem: three villages have said "
+             "out loud that the hermit is not going anywhere.",
+             pool=_TOUGHS, skins=GATE_SKINS["heaven"],
+             sites=("the hill road", "the walled cell"), places=2,
+             giver="a Gardener of Concordia", align="good",
+             epilogue="The hermit is escorted down the hill, and is "
+                      "still on this side of the wall when the party is "
+                      "paid.",
+             failure_epilogue="The Pruners sent their own people up the "
+                              "hill. The cell is open, the hermit is "
+                              "inside Concordia, and the three villages "
+                              "have stopped talking to the city."),
+             "pay": 1.25}),
+    card("heaven/the-lamp-thieves", "Lamps are stolen", "heaven",
+         wealth=("normal", "prosperous"), days=(12, 25),
+         news="Six lamps went off a cart on the host road in daylight. A "
+              "lamp of Concordia burns without oil and is worth a horse "
+              "the moment it is outside the walls, and the Market of "
+              "Lamps is paying to have them back.",
+         quest={"post": job(
+             "The Lamp Thieves",
+             "Six lamps of Concordia were stolen off a cart. The thieves "
+             "are camped in the hills and the lamps show at night, which "
+             "is the whole of the tracking problem.",
+             pool=_TOUGHS, sites=("the thieves' camp",),
+             giver="the Market of Lamps",
+             epilogue="Six lamps back on the counter. The hills are dark "
+                      "again.",
+             failure_epilogue="The lamps are sold and scattered. "
+                              "Somebody four countries off is paying a "
+                              "horse apiece for them.")}),
+    card("heaven/the-sermon", "The bishop preaches against the gate",
+         "heaven", tension=("prefect-vs-church",), days=(20, 40),
+         news="The host's bishop preached against the gate on Sunday and "
+              "called it an invasion wearing the god's face. The question "
+              "goes to the synod. Pilgrims are walking up the gate road "
+              "with staves and singing.",
+         state={"while": ("preached-against",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "archer"),
+                    "where": "wilds",
+                    "as": "pilgrims with staves, up off the sermon",
+                    "skins": {"cutthroat": "Pilgrim",
+                              "bruiser": "Staff-Man",
+                              "archer": "Pilgrim Bow"},
+                    "chance": 0.35}),
+    card("heaven/the-servant-loose", "A marble servant walks off", "heaven",
+         chance=0.35, days=(12, 25),
+         news="A marble servant walked out of Concordia in the night with "
+              "a crate on its shoulder and has not stopped walking. It is "
+              "two villages along the host road. It does not answer and "
+              "nothing has been able to turn it.",
+         quest={"post": job(
+             "The Servant That Walks",
+             "A marble servant of Concordia is standing in a churchyard "
+             "with a crate on its shoulder. It does not answer. Break it "
+             "or lead it home; the city will take either.",
+             pool=_UNDEAD, skins=GATE_SKINS["heaven"],
+             sites=("the churchyard",),
+             giver="the Prefecture's clerk",
+             epilogue="The servant is back inside the walls, or in "
+                      "pieces outside them. The clerk writes down which.",
+             failure_epilogue="The servant walked on. It is four villages "
+                              "further and the crate is still on its "
+                              "shoulder.")}),
+    card("heaven/clear-sky", "The sky over Concordia is clear", "heaven",
+         track="weather", chance=0.4, days=(3, 6), sky="clear",
+         news="The sky over the white walls is open and stays open. The "
+              "choirs are out on the roofs and nobody will say whether "
+              "that is the cause."),
+    card("heaven/the-choir-season", "The choir sings the year in",
+         "heaven", track="season", chance=0.3, days=(30, 60),
+         menu={"healer": 0.80},
+         news="The choir has begun the long rite and will not stop until "
+              "the season turns. The infirmary is taking anybody who "
+              "walks in while it lasts."),
+    card("hell/the-feast-spills", "The feast spills over the wall", "hell",
+         tension=("feast-vs-hunger",),
+         news="Saturna's feast has come out of the gate and gone up the "
+              "road. The nearest villages are drunk, unfenced and very "
+              "cheerful, and nobody is watching the herds.",
+         state={"set": ("feast-spilled",)}),
+    card("hell/the-debt-book", "The debt-house collects", "hell",
+         states=("feast-spilled",), days=(15, 30), hook=_DEBTOR_HOOK,
+         news="The debt-house has sent collectors up the road after a "
+              "village that sold a year at the feast. The name written "
+              "in the book is {debtor}, and the book says the year is "
+              "due now.",
+         state={"clear": ("feast-spilled",), "while": ("year-owed",)},
+         quest={"post": job(
+             "The Year Owed",
+             "A village sold a year of a man's life at Saturna's feast "
+             "and wants it back. The book is in the debt-house and the "
+             "collectors are already on the road. Burn the book, or walk "
+             "in front of it and collect.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             sites=("the debt-house",),
+             giver="the village that sold the year", align="good",
+             epilogue="The book is burned. The man walks out a year "
+                      "younger, or says he does.",
+             failure_epilogue="The collectors got there first. The year "
+                              "is paid and the village has stopped "
+                              "counting how many it has left."),
+             "pay": 1.20}),
+    card("hell/the-lord-hanged", "The free company hangs a lord", "hell",
+         tension=("lord-vs-captains",), days=(20, 40),
+         news="The free companies took the Lord of Misrule off the long "
+              "table and hanged him from his own feast-hall beam. The "
+              "captains are holding the town between them and nobody has "
+              "cut him down.",
+         state={"while": ("lord-hanged",)},
+         quest={"post": job(
+             "The Lord's Men",
+             "The hanged lord's own men got out of Saturna and are "
+             "living off the host road. They want paying, they want the "
+             "captains dead, and until one of those happens nothing "
+             "moves on that road.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             sites=("the road camp",),
+             giver="a captain of the free companies",
+             epilogue="The lord's men are off the road. The captains pay "
+                      "in Saturna's coin and count it out slowly.",
+             failure_epilogue="The lord's men have the road and are "
+                              "taking a share of everything on it. The "
+                              "captains have stopped pretending to "
+                              "care.")}),
+    card("hell/the-kennels-open", "Hounds get loose", "hell",
+         chance=0.45, days=(12, 20),
+         news="Somebody opened the kennels at the feast and did not shut "
+              "them. Hell hounds are out on the host road in threes and "
+              "fours, hunting whatever is on it.",
+         quest={"post": job(
+             "Hounds off the Road",
+             "A pack out of Saturna's kennels is working the host road "
+             "and has taken two carters. Kill the pack. The collars are "
+             "Saturna's and the Master of Hounds wants them back.",
+             pool=_BEASTS, skins=GATE_SKINS["hell"],
+             sites=("the road's bad mile",),
+             giver="the Master of Hounds",
+             epilogue="The collars are back on the kennel wall. The road "
+                      "is a road again.",
+             failure_epilogue="The pack has the road and has bred on it. "
+                              "The carters go the long way round now.")},
+         encounter={"kinds": ("wolf", "dire wolf"), "where": "road",
+                    "as": "hounds out of the open kennels",
+                    "skins": GATE_SKINS["hell"], "chance": 0.45}),
+    card("hell/a-stranded-one", "A stranded demon is found", "hell",
+         chance=0.25, days=(15, 30), hook=_DEMON_HOOK,
+         news="An old woman called {woman} in a fen village has run the "
+              "same feast on the same night for forty generations, and "
+              "the village has never once thought it strange. Saturna "
+              "has heard. The Feast wants her left alone; the Hunger "
+              "wants her brought in.",
+         quest={"post": job(
+             "The Old Feast",
+             "Saturna has sent for the old woman who keeps the fen "
+             "village's feast. The village will not give her up and the "
+             "Hunger's people are already at the causeway. Stand at one "
+             "end of it or the other.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             sites=("the causeway", "the feast house"), places=2,
+             giver="the fen village's headman", align="good",
+             epilogue="The Hunger's people go back down the causeway "
+                      "empty. The old woman lays the table that night "
+                      "as if nothing happened.",
+             failure_epilogue="The old woman went to Saturna between two "
+                              "of the Hunger's people. The fen village "
+                              "held its feast anyway and it was not the "
+                              "same."),
+             "pay": 1.25}),
+    card("hell/the-cages", "The wild market sells people", "hell",
+         tension=("feast-vs-hunger",),
+         constitution=("long-feast", "the-kennel"), days=(20, 35),
+         news="The wild market has cages on the stalls with people in "
+              "them, and the Hunger is standing over the scales. The "
+              "Feast is drinking on the other side of the square and "
+              "saying it is not their market.",
+         state={"while": ("cages-open",)},
+         quest={"post": job(
+             "Open the Cages",
+             "Eleven people out of the host villages are in cages in "
+             "Saturna's wild market, sold for a year each. The keepers "
+             "are the Hunger's own. Open the cages and walk them out.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             sites=("the wild market",),
+             giver="a Feast captain who wants the Hunger embarrassed",
+             align="good",
+             epilogue="The cages are open and eleven people are walking "
+                      "home. The Feast is delighted and buys the party a "
+                      "night of it.",
+             failure_epilogue="The market sold out by evening. The "
+                              "villages know the number and know where "
+                              "it went."),
+             "pay": 1.30}),
+    card("hell/the-election", "The feast elects a Lord of Misrule", "hell",
+         chance=0.35, days=(3, 5),
+         news="The year and a day are up. The long table has argued for "
+              "two nights, drunk everything in the town and elected a "
+              "new Lord of Misrule, who is being carried round the "
+              "hollow on the table itself.",
+         state={"succession": "secure"},
+         encounter={"kinds": ("cutthroat", "bruiser", "archer"),
+                    "where": "road",
+                    "as": "the new Lord's people, still celebrating",
+                    "skins": GATE_SKINS["hell"],
+                    "ferocity": GATE_FEROCITY["hell"], "chance": 0.40}),
+    card("hell/the-horned-ones", "The grove knows its own", "hell",
+         states=("pagan-host",), chance=0.30, days=(15, 30),
+         menu={"goods": 0.90},
+         news="The host's old-god people have walked to Saturna in a "
+              "body, horns and all, and have been let in at the hollow "
+              "without a word said. Neither side is explaining it. Both "
+              "sides clearly think the other is the guest.",
+         encounter={"kinds": ("cutthroat", "bruiser", "boar"),
+                    "where": "wilds",
+                    "as": "pilgrims of the grove, walking to the gate",
+                    "skins": {"cutthroat": "Grove-Walker",
+                              "bruiser": "Horn-Bearer",
+                              "boar": "Grove Boar"},
+                    "chance": 0.35}),
+    card("hell/feast-fires", "The feast-fires are lit", "hell",
+         track="weather", chance=0.4, days=(1, 2), sky="clear",
+         news="The sky over Saturna is red to the horizon and smells of "
+              "fat and pitch. It is not weather and it will not rain."),
+    card("hell/the-wild-season", "The hunt is on", "hell",
+         track="season", chance=0.3, days=(30, 60),
+         menu={"goods": 0.90},
+         news="The season's hunt is up. Hounds are cheap, horn is "
+              "cheaper, and the road is loud from dark to dark.",
+         encounter={"kinds": ("cutthroat", "soldier", "wolf"),
+                    "where": "road",
+                    "as": "hunters and hounds, out with the season",
+                    "skins": GATE_SKINS["hell"],
+                    "ferocity": GATE_FEROCITY["hell"], "chance": 0.35}),
 )
 
 # --------------------------------------------------------------------------- #
@@ -3460,6 +4100,29 @@ _HERMIT_HOOK = _authority_hook("hermit", "the walled-in hermit", "hermit")
 _TALENT_HOOK = _authority_hook("wild-talent", "the wild talent", "talent")
 
 RELIGION_CARDS = (
+    # THE PREACHING CRUSADE (2026-09-12, the gates arc's session 5). The
+    # human side's answer to a feast town on its own ground, and it is a
+    # CARD and not a war: the standing wars are not rolled over the city
+    # states until conquest exists (gates.md section 0). It rides the
+    # `church-vs-saturna` tension, which `open_world` stamps on Hell's host
+    # and only there -- so no western land without Saturna beside it ever
+    # draws it, and no land of the other three cultures can.
+    card("western/the-preaching-crusade",
+         "A crusade is preached against the feast", "western",
+         tension=("church-vs-saturna",), days=(25, 45),
+         news="The bishop has preached a crusade against the feast town "
+              "and the word is going round the parishes. The men walking "
+              "the gate road are carrying staves and are not pilgrims. "
+              "Nobody has asked the crown and the crown has not asked.",
+         state={"while": ("crusade-preached",)},
+         encounter={"kinds": ("cutthroat", "bruiser", "archer"),
+                    "where": "road",
+                    "as": "pilgrims with staves, walking the gate road",
+                    "skins": {"cutthroat": "Cross-Taker",
+                              "bruiser": "Staff-Man",
+                              "archer": "Parish Bow"},
+                    "chance": 0.40}),
+
     # == the west: THE PARISH IS THE SECOND STATE ========================= #
     # The relic CHAIN: a town steals a saint, and the synod that has to rule
     # on which of three skulls is his is the card a season later.
@@ -3623,6 +4286,24 @@ RELIGION_CARDS = (
                               "writing the account that will be read in "
                               "fifty years."),
              "pay": 1.25, "slots": -1}),
+
+    # THE RETURN QUESTION (2026-09-12, the gates arc's session 5). The
+    # other thing the two rites have to argue about now, in the same two
+    # decks and on the same derived word. It does NOT split the church --
+    # the standing rule holds here exactly as it does for the synod -- and
+    # which rite welcomes the Return is not an opinion but an ADDRESS: the
+    # rite that has Concordia standing on its own ground calls it the
+    # god's own country come back, and the other one calls it an invasion.
+    card("communion/the-return-question", "The synod asks what came back",
+         ("byzantium", "seraptania"), states=("schism-near",),
+         days=(12, 20), hook=_return_hook,
+         news="The synod has been asked what came back through the gates "
+              "twenty-seven years ago. {hosting}, which has Concordia "
+              "standing on {host}'s own ground, says the god's own "
+              "country has come back and the saint's work is finished. "
+              "{other} says it is an invasion wearing the god's face. "
+              "Neither will move and neither will split over it.",
+         state={"while": ("return-argued",)}),
 
     # == BYZANTIUM: WHICH FACE RULES ====================================== #
     # The pendulum calendar, the death-rite and the carnival are the
@@ -4338,6 +5019,86 @@ RELATIONS = tuple(
 
 
 # --------------------------------------------------------------------------- #
+# THE GATES' OWN RELATIONS (2026-09-12, the gates arc's session 5)
+# --------------------------------------------------------------------------- #
+# Four rows, one per site, and none of them can be authored above: each runs
+# between a gate city and the human land it was CUT OUT OF, and that land is
+# rolled. So the table below carries a HOST placeholder and `open_world`
+# resolves it off `world["gates"]` when it opens the world (gates.md's
+# [decided] call). The resolved table is what `derived_states` reads and
+# what the reachability pass runs on.
+#
+# The shape is the same one every other edge has -- a state the SOURCE holds,
+# a word the TARGET wears while it does -- and the direction is the point:
+# two rows run OUT of the cities (the cure goes dear in the host when
+# Concordia shuts its gate; the feast is out on the host's roads when
+# Saturna's spills over) and two run INTO them (the host's pulpit turns on
+# Concordia; the host's hounds are up against Saturna). A power that lands
+# on somebody's country is felt by the country and answers to it.
+HOST = "@host"                  # the placeholder end, resolved per world
+
+_GATE_RELATIONS = (
+    relation("concordia", HOST, "the cure",
+             when=("gate-shut", "removal"), then="cure-dear",
+             because="the infirmary's doors"),
+    relation("saturna", HOST, "the feast",
+             when=("feast-spilled", "cages-open"), then="feast-abroad",
+             because="what spills over Saturna's wall"),
+    relation(HOST, "concordia", "the bishops",
+             when=("interdict", "preached-against"), then="pulpit-against",
+             because="the host's pulpit"),
+    relation(HOST, "saturna", "the hunt",
+             when=("hunt-up", "at-war"), then="hounds-out",
+             because="the host's men on the road"),
+)
+
+
+def _gate_host(world: dict, city: str) -> str:
+    """The human land a gate city was cut out of, for this world."""
+    return world["gates"][city]["cut_from"]
+
+
+def resolve_relations(world: dict) -> tuple[dict, ...]:
+    """The world's relations table: the authored land-to-land edges plus the
+    four gate edges with their HOST end filled in off `world["gates"]`.
+    `open_world` calls this once and parks it on the world; nothing derives
+    a state off the module table any more, because two of the eleven lands
+    are only reachable through a rolled end."""
+    out = list(RELATIONS)
+    for edge in _GATE_RELATIONS:
+        city = edge["to"] if edge["from"] == HOST else edge["from"]
+        host = _gate_host(world, city)
+        out.append({**edge,
+                    "from": host if edge["from"] == HOST else edge["from"],
+                    "to": host if edge["to"] == HOST else edge["to"]})
+    return tuple(out)
+
+
+def relations_of(world: dict) -> tuple[dict, ...]:
+    """This world's resolved relations table. Strict: a world with no
+    `relations` key has not been opened, which is a state worldgen cannot
+    produce."""
+    return world["relations"]
+
+
+def _possible_relations() -> tuple[dict, ...]:
+    """Every edge ANY world's resolved table can hold: the authored rows
+    plus each gate row resolved against every land that could host that
+    gate. The import-time passes (reachability, the state tables, the
+    country audit) run on this, because no world exists at import and the
+    four rolled ends are exactly the rows that reach the two city states."""
+    out = list(RELATIONS)
+    for edge in _GATE_RELATIONS:
+        city = edge["to"] if edge["from"] == HOST else edge["from"]
+        for host in GATE_BY_KEY[city]["lands"]:
+            out.append({**edge,
+                        "from": host if edge["from"] == HOST
+                        else edge["from"],
+                        "to": host if edge["to"] == HOST else edge["to"]})
+    return tuple(out)
+
+
+# --------------------------------------------------------------------------- #
 # The FACTS (2026-08-11): the standing colour, for the DM and nobody else
 # --------------------------------------------------------------------------- #
 # The engine never reads one of these. They cost nothing at runtime, they ride
@@ -4440,9 +5201,11 @@ FACTS = (
     # The standing colour behind the extraction cards. THE KNOCKERS comes
     # back word for word from the catalog the contraction cut: it was human
     # mining folklore when it was written and it is human mining folklore
-    # now. It is also the file's first ANY_LAND fact, because the belief
-    # follows the pits and every country has them.
-    fact(ANY_LAND, "knockers", "THE KNOCKERS",
+    # now. It was the file's first ANY_LAND fact, because the belief
+    # follows the pits and every country has them -- and since 2026-09-12
+    # it is scoped to the NINE with the six mining cards, for the same
+    # reason: a one-tile gate city has no pit for anything to knock in.
+    fact(_HUMAN, "knockers", "THE KNOCKERS",
          "The mine-spirits knock before a collapse and are paid for it: "
          "the last bite of every meal, left at the working face. "
          "Whistling underground is forbidden. Skeptics exist; they are "
@@ -4553,6 +5316,105 @@ FACTS = (
          "gives judgement the same hour, and writes nothing down. Its "
          "verdicts are obeyed by people who ignore every other court in "
          "the country."),
+    # -- the two gate cities (2026-09-12, sessions 4 and 5): six standing
+    # facts a side, which is the whole of what the DM needs to answer a
+    # question inside either city without inventing a religion at the
+    # table. Each one stands behind a card in this file or prices
+    # something the player can buy, which is the characteristic criterion.
+    fact("heaven", "the-gate-concordia", "THE GATE",
+         "It stands in the middle of the city and it is open. Things come "
+         "through it that nobody here made, and the Prefect's wardens "
+         "count every one of them in and out."),
+    fact("heaven", "the-lamps", "THE LAMPS",
+         "The lamps of Concordia burn without oil and do not go out. One "
+         "is worth a horse the moment it is outside the walls, which is "
+         "why six of them coming off a cart is a job on a board."),
+    fact("heaven", "the-register", "THE REGISTER",
+         "The Pruners keep a list of every half-blood born in the last "
+         "twenty-seven years, name and village. Nobody outside the city "
+         "has seen it. When it is posted, people find out what they are "
+         "from a wall."),
+    fact("heaven", "the-cure", "THE CURE",
+         "The infirmary heals what the temples cannot -- wounds that are "
+         "closed the same day, sicknesses nobody here can name -- and "
+         "charges for it. When the Gardeners hold the city it is free to "
+         "anybody who walks in, and the line goes a mile down the road."),
+    fact("heaven", "the-marble-servants", "THE MARBLE SERVANTS",
+         "Stone that walks and carries. They are the city's labour, made "
+         "and not born, they do not answer questions, and one of them "
+         "walking out of the gate with a crate is nobody's idea of "
+         "normal."),
+    fact("heaven", "saint-tom", "SAINT TOM",
+         "The Church's saint barred this gate's elder a thousand years "
+         "ago and Concordia knows exactly who he was. The city does not "
+         "say the name. Ask an angel about Tom and watch the answer take "
+         "a moment too long."),
+    fact("hell", "the-gate-saturna", "THE GATE",
+         "It is a hollow in the middle of the town, and the town sits "
+         "round it the way a feast sits round a fire. Nobody guards it. "
+         "Anybody may walk down."),
+    fact("hell", "the-year", "THE YEAR",
+         "Every bargain in Saturna is paid in time: a year of your life, "
+         "owed, written in the debt-house and collected. Nobody is "
+         "cheated and nobody is forced. The book is the only thing here "
+         "that is kept tidily."),
+    fact("hell", "the-feast", "THE FEAST",
+         "Once a week the town eats and drinks everything it has and "
+         "elects nothing, decides nothing and keeps nothing back. "
+         "Strangers eat free. What a stranger agrees to at the table is "
+         "agreed to all the same."),
+    fact("hell", "the-hounds", "THE HOUNDS",
+         "Hell hounds are bred here and sold, and the kennels are the "
+         "richest house in the town. A collar off a Saturna hound is "
+         "worth carrying home; the hound it came off was worth more."),
+    fact("hell", "the-wild-market", "THE WILD MARKET",
+         "Cages and stalls, and the things for sale in them are alive. "
+         "Most weeks that means hounds, boars and worse out of the "
+         "kennels. Some weeks it does not, and the Feast drinks on the "
+         "far side of the square while the Hunger works the scales."),
+    fact("hell", "tom-the-thief", "TOM THE THIEF",
+         "The Hunger says Tom stole a thousand years of feasting and "
+         "should be hunted through whatever he is in now. The Feast "
+         "drinks to him every week for the same reason. Both halves of "
+         "the town mean it."),
+
+    # -- TOM, ONE LINE A CULTURE (2026-09-12, session 5; gates.md section
+    # 4's last line). The game asserts only that a person called Tom
+    # barred both gates in one season. Every culture kept its own version
+    # and none of them knows the others'; the four lines below are what a
+    # lore page in that culture says, and they disagree on purpose.
+    fact("western", "saint-tom-west", "SAINT TOM AND THE RETURN",
+         "The Church's saint shut the door on hell a thousand years ago "
+         "with an iron bar, and the Church counts its years from the day "
+         "he did it. Since the Return the sermons have got careful: "
+         "something came back through a door a saint shut, and nobody "
+         "will say out loud which door."),
+    fact("southern", "saint-tom-south", "SAINT TOM OF THE TWO DOORS",
+         "The old rite keeps a harder Tom: he shut TWO doors, not one, "
+         "and the second was not hell's. The rite has always said so and "
+         "has never been thanked for it. The relic is a length of iron, "
+         "and three cathedrals claim the same length."),
+    fact("norse", "tom-the-smith", "TOM THE SMITH",
+         "Tom was a smith who worked a season and a season only, barred "
+         "the door of the horned ones and the door of the bright ones in "
+         "the same year, and then had nothing more to do. The north does "
+         "not call him a saint. It calls him the last man who finished "
+         "a job."),
+    fact("tergal", "tom-sewed-the-sky", "TOM WHO SEWED THE SKY",
+         "The Sky was torn in two places and a man called Tom sewed both "
+         "with iron thread, which is why the clans say iron is the "
+         "Sky's own metal. The song is sung at the horse fairs and the "
+         "singers argue about how it ends."),
+
+    # -- THE ONE DATE THE GAME PRINTS (2026-09-12, session 5). rules.md's
+    # Heaven & Hell add-on part 1: the Church counts its years from the
+    # Closing, so this is the year 1027 -- and a lore page is the ONLY
+    # place the game ever says a date out loud.
+    fact(ANY_LAND, "church-year", "THE YEAR OF THE CHURCH",
+         "It is the year 1027. The Church counts from the Closing of the "
+         "gates and everybody who writes anything down uses its count, "
+         "including the people who do not believe a word of the rest of "
+         "it."),
     fact("umaia", "the-flood-mark", "THE FLOOD MARK",
          "The great river's flood is measured on a marked pillar every "
          "summer and the year's tax is set off the number. A low mark is "
@@ -4633,6 +5495,34 @@ OPTIONS = (
            does="book", silver=150, term="goods", states=("tower-open",),
            line="silver might open the door; volunteering as the subject of "
                 "the experiment opens it faster and costs less"),
+    # -- the two gate cities: the counters the arc was waiting for --------- #
+    # (2026-09-12, session 5.) Two a side and the same two verbs both
+    # times, because the sides sell the SAME things and sell them
+    # oppositely: a rite that is worth something to everybody who stands
+    # through it, and a school that will teach the gift to anybody who has
+    # it. Heaven charges more for the rite and prices it at the infirmary's
+    # counter; Hell charges less and prices it at the bed, because in
+    # Saturna the rite IS the bed. Both schools undercut every human
+    # teaching door in the game, which is the era line arriving at a price:
+    # the technology is through the gates.
+    option("heaven/choir", "the choir's blessing of order", "heaven",
+           does="bless", silver=40, term="healer", days=5, gives=2,
+           line="a choir sings the rite of order over the party; every "
+                "companion is steadier for it"),
+    option("heaven/measures", "a term at the School of Measures", "heaven",
+           does="book", silver=120, term="goods",
+           line="the school teaches the ice school's first diagrams to "
+                "anyone with the gift, and writes down who came"),
+    option("hell/feast", "a place at the long table", "hell",
+           does="bless", silver=25, term="lodging", days=7, gives=2,
+           line="a place at the long table: the party eats, drinks and "
+                "sings until morning, and every companion is the better "
+                "for it"),
+    option("hell/fire", "a term at the Fire School", "hell",
+           does="book", silver=120, term="goods",
+           line="the forge hall teaches the fire school's first diagrams "
+                "to anyone with the gift, and asks for nothing in "
+                "writing"),
 )
 
 OPTIONS_BY_KEY = {o["key"]: o for o in OPTIONS}
@@ -4659,6 +5549,15 @@ def option_named(word: str) -> dict | None:
 def facts_of(polity: str) -> tuple[dict, ...]:
     """The standing colour of one land, for the DM. Static -- no world."""
     return FACTS_BY_LAND[polity]
+
+
+def facts_here(world: dict, polity: str) -> tuple[dict, ...]:
+    """Everything the lore page prints: the authored facts this land's
+    culture carries, then the ones THIS WORLD put on it. The second list is
+    the gate roll's (2026-09-12, session 5) -- a land that hosts Concordia
+    or keeps Candor says so on its own page, and which land that is cannot
+    be known until the world is rolled."""
+    return facts_of(polity) + tuple(world["lands"][polity]["facts"])
 
 
 def options_of(polity: str) -> list[dict]:
@@ -4718,7 +5617,7 @@ def lore_lines(world: dict, polity: str) -> list[str]:
     its magic, then whatever its counters are selling today. Free, and never
     seen by the engine -- this is the one surface a FACT has."""
     lines = [f"-- {world['lands'][polity]['name']}: what is believed here --"]
-    for entry in facts_of(polity):
+    for entry in facts_here(world, polity):
         lines.append(f"  {entry['title']}")
         lines.append(f"    {entry['line']}")
     lines.extend(service_lines(world, polity))
@@ -4836,17 +5735,27 @@ def _belligerents(spec: dict,
     return tuple(attackers), tuple(defenders)
 
 
-def new_war(spec: dict, rng: random.Random, day: int) -> dict:
+def new_war(world: dict, spec: dict, rng: random.Random, day: int) -> dict:
     """One rolled war's record. `occupied` and `scars` are the campaign
     sim's ledgers (conquest.py) and open empty; `rolled_day` is its
-    watermark, so catching a war up is living through it."""
+    watermark, so catching a war up is living through it.
+
+    A theater cell one of the two GATE CITIES has taken is dropped
+    (2026-09-12, the gates arc's session 4): the standing wars are not
+    rolled over the city states, and the campaign sim burns, camps on and
+    besieges the ground in this list. A neutral one-tile state is not
+    anybody's front, and the theaters are hand-drawn over many cells, so
+    losing one costs the war nothing."""
     attackers, defenders = _belligerents(spec, rng)
+    theater = [tile_id(row, column) for row, column in spec["theater"]]
+    neutral = {record["tile"] for record in world["gates"].values()
+               if record["kind"] == "city"}
     return {
         "key": spec["key"],
         "name": spec["name"],
         "attackers": list(attackers),
         "defenders": list(defenders),
-        "theater": [tile_id(row, column) for row, column in spec["theater"]],
+        "theater": [tid for tid in theater if tid not in neutral],
         "posture": spec["posture"],
         "herald": spec["herald"],
         "rolled_day": day,
@@ -4868,7 +5777,7 @@ def roll_wars(world: dict, day: int = 0) -> list[dict]:
         land["liege"] = None
     liege = VASSALAGE[rng.randint(1, len(VASSALAGE)) - 1]
     world["lands"]["andalusia"]["liege"] = liege
-    wars = [new_war(spec, rng, day)
+    wars = [new_war(world, spec, rng, day)
             for spec in rng.sample(list(WAR_TEMPLATES), WARS_ROLLED)]
     world["wars"] = wars
     for war in wars:
@@ -4963,7 +5872,9 @@ def roll_tensions(rng: random.Random, polity: str, band: str) -> list[str]:
     that decides which political cards its deck holds at all, which is what
     keeps the packet a pool and the rolled world specific."""
     standing = list(STANDING_TENSIONS.get(polity, ()))
-    pool = [t["key"] for t in TENSIONS[polity] if t["key"] not in standing]
+    pool = [t["key"] for t in TENSIONS[polity]
+            if t["key"] not in standing
+            and t["key"] not in EXTERNAL_TENSIONS]
     draws = (CRISIS_TENSION_ROLLS if band == "crisis" else TENSION_ROLLS)
     rolled = rng.sample(pool, min(draws, len(pool))) if pool else []
     return standing + rolled
@@ -4990,6 +5901,103 @@ def _deck(world: dict, polity: str, track: str = "crisis",
     return keys
 
 
+# --------------------------------------------------------------------------- #
+# WHAT WORLDGEN STAMPS OFF THE GATES (2026-09-12, the gates arc's session 5)
+# --------------------------------------------------------------------------- #
+# Five standing state words, four standing facts and one tension, all of them
+# facts about WHERE the four gates landed, and none of them authorable at
+# import because the four ends are rolled. They go on at `open_world` and
+# nothing ever takes them off: a land that hosts a gate city hosts it for the
+# whole campaign, and that is the point -- it is the cheapest thing on the
+# map that says a foreign power is HERE, and it is felt at a counter every
+# day (`STATE_MENU`: the cure leaks out of Concordia, and so does the feast).
+
+# Where Hell's host keeps the Sun communion, the host gains the crusade
+# tension. The three are the western lands in Hell's set; the norse and
+# steppe lands keep the old gods and get `pagan-host` instead.
+SUN_HOSTS = ("phyrascia", "teutonia", "vellisclavia")
+PAGAN_HOSTS = ("thule", "tergal")
+
+# The four host-and-keeper facts, keyed by the gate they belong to. `{land}`
+# is the land's own name; the title and the line are otherwise fixed.
+GATE_FACTS = {
+    "concordia": ("THE GATE CITY",
+                  "Concordia stands on ground that was {land}'s twenty-seven "
+                  "years ago. The fields on that tile are still worked by "
+                  "{land}'s people and the flag over them is not {land}'s. "
+                  "Nobody here has decided what to call that yet."),
+    "saturna": ("THE GATE CITY",
+                "Saturna stands on ground that was {land}'s twenty-seven "
+                "years ago. The feast comes up the road out of it about "
+                "once a week, and half of {land} would rather it did not "
+                "and goes anyway."),
+    "candor": ("THE WHITE RUIN",
+               "Heaven's dead city is in {land}, a thousand years empty and "
+               "white to the horizon. What comes down off it is made and "
+               "not born, and the villages under it have moved the flocks."),
+    "libera": ("THE WILD RUIN",
+               "Hell's dead city is in {land}, a thousand years empty and "
+               "still feasting. What comes out of it is bred, hungry, and "
+               "in the habit of taking sheep off the hill."),
+}
+GATE_STANDING = {"concordia": "hosts-heaven", "saturna": "hosts-hell",
+                 "candor": "keeps-candor", "libera": "keeps-libera"}
+
+
+def gate_land(world: dict, key: str) -> str:
+    """The human land that hosts or keeps one gate: a city's donor, a
+    ruin's keeper."""
+    record = world["gates"][key]
+    return record["cut_from"] if record["kind"] == "city" \
+        else record["keeper"]
+
+
+def _crusade_host(world: dict) -> str | None:
+    """The land that gains `church-vs-saturna`, or None."""
+    host = gate_land(world, "saturna")
+    return host if host in SUN_HOSTS else None
+
+
+def stamp_gates(world: dict) -> None:
+    """The five standing words and the four standing facts, stamped on the
+    lands the roll put the gates in. Day 0: worldgen's own day, the same
+    one the rings are dated."""
+    for key, word in GATE_STANDING.items():
+        land = gate_land(world, key)
+        set_state(world, land, word, 0)
+        title, line = GATE_FACTS[key]
+        world["lands"][land]["facts"].append(
+            {"key": f"gate-{key}", "title": title,
+             "line": line.format(land=world["lands"][land]["name"])})
+    # THE PAGAN HOST. Hell came back into old-god country, which is the
+    # setting's own joke on itself (rules.md: the northern gods are what the
+    # memory of Libera became) -- and it is the one standing word that goes
+    # on BOTH ends, because the card that reads it is Saturna's own.
+    host = gate_land(world, "saturna")
+    if host in PAGAN_HOSTS:
+        set_state(world, host, "pagan-host", 0)
+        set_state(world, CITY_STATE_OF_SIDE["hell"], "pagan-host", 0)
+
+
+# The two gate crowns are an angel and a demon and the rolled sheet has to
+# read like it (2026-09-12, session 5). The vocabulary stays the same one
+# every other crown draws from -- a Prefect can be cruel and a Lord of
+# Misrule cultivated -- minus the six words about a decaying mortal body,
+# with the accession NAMED rather than rolled and the hand behind the throne
+# drawn from the city's own people rather than from a feudal court.
+GATE_ACCESSION = {"heaven": "appointed", "hell": "acclaimed"}
+
+
+def _crown(rng: random.Random, polity: str) -> dict:
+    """One land's ruler sheet."""
+    side = LAND_SPECS[polity].get("side")
+    if not side:
+        return rulers.roll_ruler(rng)
+    return rulers.roll_ruler(rng, barred=rulers.BODILESS,
+                             accession=GATE_ACCESSION[side],
+                             puppeteers=rulers.GATE_PUPPETEERS[side])
+
+
 def open_world(world: dict) -> dict:
     """Roll the world layer onto a fresh world: every land's wealth band,
     its politics (the constitution slot, the tensions, the ruler's sheet),
@@ -5005,17 +6013,30 @@ def open_world(world: dict) -> dict:
     gate.
 
     Called by `quests.generate_world` on a DERIVED rng, so the worldgen
-    stream every career bench rides is untouched."""
+    stream every career bench rides is untouched.
+
+    THE GATES (2026-09-12, session 5) are the one part of the layer that
+    cannot be authored at import, because their ends are rolled: the
+    relations table is resolved onto the world here, the five standing
+    words are stamped on the host and keeper lands, the host-specific
+    facts go on those lands' pages, and the crusade tension is stamped on
+    Hell's host where the host keeps the Sun communion. All of it happens
+    BEFORE the decks are cut and before the opening crisis draw, so a card
+    that admits on one of those words can fire on day one."""
+    world["relations"] = resolve_relations(world)
+    crusade = _crusade_host(world)
     for polity in world["lands"]:
         rng = random.Random(_land_seed(world, polity, "worldsim-open", 0))
         band = roll_wealth(rng)
         tensions = roll_tensions(rng, polity, band)
+        if polity == crusade:
+            tensions = tensions + ["church-vs-saturna"]
         world["lands"][polity]["world"] = {
             "wealth": band,
             "wealth_day": 0,
             "constitution": roll_constitution(rng, polity),
             "tensions": tensions,
-            "ruler": rulers.roll_ruler(rng),
+            "ruler": _crown(rng, polity),
             "authorities": {},      # the lesser named faces cards create
             "deck": _deck(world, polity, "crisis", tensions),
             "weather_deck": _deck(world, polity, "weather", tensions),
@@ -5036,6 +6057,7 @@ def open_world(world: dict) -> dict:
             "told_seq": 0,          # ...and how many of them were told
             "rolled_day": 0,        # the last day this land was rolled
         }
+    stamp_gates(world)
     for polity in world["lands"]:
         layer = land_layer(world, polity)
         if layer["wealth"] in OPENING_DRAW:
@@ -5088,7 +6110,7 @@ def derived_states(world: dict, polity: str) -> list[dict]:
     partners, and the table can never chase its own tail."""
     out: list[dict] = []
     seen = set()
-    for edge in RELATIONS:
+    for edge in relations_of(world):
         if edge["to"] != polity:
             continue
         source = {s["id"] for s in held_states(world, edge["from"])}
@@ -5701,6 +6723,48 @@ def local_encounter(world: dict, polity: str, where: str,
     return entry
 
 
+def tile_encounter_entries(tile: dict, where: str = "any") -> list[dict]:
+    """The entries a TILE's own active states put on this ground. A ring
+    state names its side in `by`, and the side picks the table's leaf."""
+    entries = []
+    for state in tile.get("states", ()):
+        if not state.get("active"):
+            continue
+        table = TILE_STATE_ENCOUNTERS.get(state["id"])
+        if table is None:
+            continue
+        entry = table.get(state.get("by"))
+        if entry is None:
+            raise ValueError(f"{tile['id']}: {state['id']} names no side")
+        entries.append(dict(entry))
+    return [e for e in entries
+            if where == "any" or e.get("where", "any") in (where, "any")]
+
+
+def tile_encounter(tile: dict, where: str,
+                   rng: random.Random) -> dict | None:
+    """Roll ONE of the tile's own entries, or None. `local_encounter`'s
+    sibling, and it is asked FIRST: the ground the party is standing on is
+    more local than the country it belongs to."""
+    entries = tile_encounter_entries(tile, where)
+    if not entries:
+        return None
+    entry = entries[0] if len(entries) == 1 else rng.choice(entries)
+    if rng.random() >= entry.get("chance", ENCOUNTER_CHANCE):
+        return None
+    return entry
+
+
+def tile_danger(tile: dict) -> float:
+    """The multiplier this tile's states put on the per-day encounter
+    chance -- 1.0 on ordinary ground, and the product where several stack."""
+    danger = 1.0
+    for state in tile.get("states", ()):
+        if state.get("active"):
+            danger *= STATE_DANGER.get(state["id"], 1.0)
+    return danger
+
+
 # --- the MARK outlet's corner: what the world puts in the crime tables ------ #
 # (2026-08-11, the religion & magic rung.) The priced menu covers what a state
 # does to a price and the encounter table covers who it puts on a road; this
@@ -5987,7 +7051,7 @@ def shelter_roll(rng: random.Random) -> dict | None:
 QUEST_KEYS = ("post", "pay", "slots", "reprice")
 JOB_KEYS = ("title", "desc", "pool", "sites", "giver", "epilogue",
             "failure_epilogue", "places", "skins", "align")
-ENCOUNTER_KEYS = ("kinds", "where", "as", "skins", "chance")
+ENCOUNTER_KEYS = ("kinds", "where", "as", "skins", "chance", "ferocity")
 
 
 def _validate_quest(key: str, spec: dict) -> None:
@@ -6036,7 +7100,8 @@ def _validate_encounter(key: str, spec: dict) -> None:
         raise ValueError(f"{key}: not an encounter term: {sorted(unknown)}")
     if not spec.get("kinds"):
         raise ValueError(f"{key}: an encounter entry with no foes in it")
-    for kind in tuple(spec["kinds"]) + tuple(spec.get("skins") or ()):
+    for kind in (tuple(spec["kinds"]) + tuple(spec.get("skins") or ())
+                 + tuple(spec.get("ferocity") or ())):
         if kind not in FOES:
             raise ValueError(f"{key}: no such foe row: {kind}")
     if spec.get("where", "any") not in ENCOUNTER_WHERE:
@@ -6142,7 +7207,8 @@ def _validate_politics_tables() -> None:
             if word not in keys:
                 raise ValueError(f"{polity}: standing tension {word} is "
                                  f"not in its own list")
-        rollable = keys - set(STANDING_TENSIONS.get(polity, ()))
+        rollable = (keys - set(STANDING_TENSIONS.get(polity, ()))
+                    - set(EXTERNAL_TENSIONS))
         if len(rollable) < CRISIS_TENSION_ROLLS:
             raise ValueError(f"{polity}: fewer rollable tensions than a "
                              f"crisis land draws")
@@ -6257,7 +7323,15 @@ def _validate_lore_tables() -> None:
 
 
 EXTERNAL_STATES = ("sky-bought",    # set by a verb, not by any card
-                   "at-war")        # ...and by the war roll at worldgen
+                   "at-war",        # ...and by the war roll at worldgen
+                   # THE FIVE STANDING GATE WORDS (2026-09-12, session 5).
+                   # `open_world` stamps them off `world["gates"]` and
+                   # nothing ever takes them off: a land that hosts a gate
+                   # city, or keeps a dead one, does so for the whole
+                   # campaign. They are here for the same reason `at-war`
+                   # is -- worldgen produces them and no card does.
+                   "hosts-heaven", "hosts-hell",
+                   "keeps-candor", "keeps-libera", "pagan-host")
 
 
 def _validate_reachability(cards) -> None:
@@ -6272,7 +7346,7 @@ def _validate_reachability(cards) -> None:
     that OUTLIVES its setter (`set`, a slot value, a relation's derived
     state) or one another track holds up."""
     outlives: set[str] = set(EXTERNAL_STATES)
-    outlives.update(r["then"] for r in RELATIONS)
+    outlives.update(r["then"] for r in _possible_relations())
     held_while: dict[str, set[str]] = {}
     for drawn in cards:
         state = drawn["outlets"].get("state") or {}
@@ -6295,7 +7369,7 @@ def _validate_state_tables() -> None:
     """A STATE_MENU / STATE_ENCOUNTERS / STATE_MARKS row keyed on a state
     nothing produces is dead data (deposit-dead was the shipped example)."""
     producible: set[str] = set(EXTERNAL_STATES)
-    producible.update(r["then"] for r in RELATIONS)
+    producible.update(r["then"] for r in _possible_relations())
     for drawn in CARDS:
         state = drawn["outlets"].get("state") or {}
         producible.update(state.get("set", ()))
@@ -6333,12 +7407,14 @@ def _validate_countries() -> None:
                                  f"there")
         if not FACTS_BY_LAND.get(polity):
             raise ValueError(f"{polity}: no standing lore")
-        if not [e for e in RELATIONS
+        if not [e for e in _possible_relations()
                 if polity in (e["from"], e["to"])]:
             raise ValueError(f"{polity}: no relation reaches it")
-        if polity not in CAPITAL_TILES:
-            raise ValueError(f"{polity}: no capital Tile, so no sky to "
-                             f"read while the party is elsewhere")
+        # A land's CAPITAL TILE used to be checked here against a module
+        # constant. It is a per-world fact since 2026-09-12 (two of the
+        # eleven have a rolled one), so the clause moved to where world
+        # facts are checked: `places._validate_countries` walks every land
+        # record and stands its capital on its own ground.
 
 
 def validate_content() -> None:
@@ -6411,7 +7487,18 @@ def validate_content() -> None:
         if state_id not in STATE_WORDS:
             raise ValueError(f"STATE_ENCOUNTERS: no such state: {state_id}")
         _validate_encounter(f"state {state_id}", entry)
-    for edge in RELATIONS:
+    # The TILE table is not keyed on STATE_WORDS: a tile state is places.py's
+    # vocabulary (GATE_STATE_WORDS), not a land's.
+    for state_id, sides in TILE_STATE_ENCOUNTERS.items():
+        if set(sides) != {"heaven", "hell"}:
+            raise ValueError(f"TILE_STATE_ENCOUNTERS: {state_id} owes both "
+                             f"sides an entry")
+        for side, entry in sides.items():
+            _validate_encounter(f"tile state {state_id}/{side}", entry)
+    for state_id in STATE_DANGER:
+        if state_id not in TILE_STATE_ENCOUNTERS:
+            raise ValueError(f"STATE_DANGER: {state_id} is no tile state")
+    for edge in _possible_relations():
         for side in ("from", "to"):
             if edge[side] not in LAND_SPECS:
                 raise ValueError(f"relation {edge}: no such land")

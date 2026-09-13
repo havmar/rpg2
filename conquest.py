@@ -130,6 +130,10 @@ DEFENDER_ROLES = {
     "andalusia": "keeper of the gate",
     "umaia": "captain of the guard",
     "tergal": "war-chief of the garrison",
+    # The two gate cities (2026-09-12): who stands on the wall when the
+    # party comes for it. Heaven posts an office; Hell posts the kennels.
+    "concordia": "warden of the gate",
+    "saturna": "master of hounds",
 }
 
 _ROOM_ROLES = ("the outer wall", "the gatehouse", "the keep")

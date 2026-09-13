@@ -50,7 +50,7 @@ from typing import Iterable
 
 from rpg import (LEVEL_CAP, xp_to_next, quest_xp_total, quest_encounter_xp,
                  quest_silver, conspicuousness, NOTICE_BASE, CAST_RANGE)
-from sites import FOES, Site
+from sites import FOES, GATE_FEROCITY, GATE_SKINS, Site, foe_spec
 from places import (
     CULTURE_OF, LAND_SPECS, SITE_TEMPLATES, create_geography,
     generic_room_contents, materialize_settlement, stable_seed,
@@ -306,6 +306,18 @@ GIANTKIN_POOL = ("ogre", "troll", "giant")
 SPIDER_POOL = ("great spider",)
 DRAKE_POOL = ("wyvern", "drake", "dragon")
 
+# THE GATE POOLS (2026-09-12, the gates arc): what comes out of the two ruins
+# and what stands in the two gate cities. Heaven's things are MADE, so its
+# ruin is the undead rows and the giant-kin wearing marble; Hell's are BRED,
+# so its ruin is the beasts. The two CITY pools are the same list twice on
+# purpose -- a garrison is a garrison, and what differs is the name over it
+# (`sites.GATE_SKINS`). The stranded angel of Candor's fifth site is a
+# `champion` placed by that site's authored roster, never out of the pool.
+HEAVEN_RUIN_POOL = UNDEAD_POOL + GIANTKIN_POOL
+HEAVEN_CITY_POOL = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
+HELL_RUIN_POOL = WOLF_POOL + BEAST_POOL + GIANTKIN_POOL + DRAKE_POOL
+HELL_CITY_POOL = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
+
 # KEYED BY CULTURE (2026-08-21, the nine): nine countries share four card
 # packets and four quest tables. What a country owns is its names, its
 # capital and its tongue; what a culture owns is the work its people post.
@@ -490,12 +502,237 @@ TEMPLATES["norse"] = [
                           "hang in it and nobody goes to the trees."),
 ]
 
+# INTO THE RUINS (2026-09-12, the gates arc's session 2): eight jobs that
+# send people into the two dead gate cities, on EVERY culture's table --
+# what comes out of Candor and Libera is everybody's problem, and the work
+# is posted by whoever lives near it. The three-day target radius is what
+# keeps the table local: `strict` on the place requirement means the
+# template is not even offered at a board with no reachable ruin, so only
+# the handful of settlements around Candor and Libera ever post these.
+# The SIDE is carried by the requirement's own tag (`heaven-ruin` /
+# `hell-ruin`, stamped on the ruin Area at worldgen): a Heaven-skinned job
+# cannot land in Libera because Libera's Area does not wear the word.
+RUIN_TEMPLATES: list[dict] = [
+    dict(title="Looters in the White Ruin",
+         desc="Looters are stripping the white stone off Candor's terraces "
+              "and selling it. Clear them out.",
+         pool=LADDER_POOL[:5], skins={},
+         sites=("the outer terraces",),
+         giver="the sheriff",
+         epilogue="The terraces are quiet. The stone stays where Tom left "
+                  "it.",
+         failure_epilogue="Two more courses of white stone are gone. A "
+                          "merchant three days off is selling it by the "
+                          "cartload."),
+    dict(title="The Servant That Walks",
+         desc="A marble servant has walked out of Candor and is standing in "
+              "the churchyard. It does not answer. Break it or lead it "
+              "home.",
+         pool=HEAVEN_RUIN_POOL[:3], skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]),
+         sites=("the choir hall",),
+         giver="the village priest",
+         epilogue="The servant is broken. The priest keeps a hand of it on "
+                  "the altar.",
+         failure_epilogue="The servant is still in the churchyard and now "
+                          "there are two. Nobody buries anyone this week."),
+    dict(title="The Lamp in the Glass Garden",
+         desc="A lamp still burns in Candor's glass garden. The merchant "
+              "pays for it. The wardens of the garden are still there too.",
+         pool=HEAVEN_RUIN_POOL, skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), proof="the lamp",
+         sites=("the glass garden",),
+         giver="a lamp merchant",
+         epilogue="The lamp burns on the merchant's counter. He is not "
+                  "selling.",
+         failure_epilogue="The merchant has stopped asking. He says the "
+                          "garden is not a garden and the lamp is not a "
+                          "lamp."),
+    dict(title="The Register of Candor",
+         desc="Concordia wants the old register out of Candor's measuring "
+              "house. The porters in there have kept it for a thousand "
+              "years.",
+         pool=HEAVEN_RUIN_POOL + ("champion",),
+         skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), align="good",
+         sites=("the measuring house",),
+         giver="an archivist from Concordia",
+         epilogue="The register goes to Concordia. Somebody there is "
+                  "reading the names.",
+         failure_epilogue="The archivist went in after it himself. The "
+                          "measuring house has him on a shelf now."),
+    dict(title="Hounds off the Wild Ruin",
+         desc="Hell hounds are coming out of Libera's feast-hall and taking "
+              "sheep. Kill the pack and bring back the collars.",
+         pool=WOLF_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), proof="the collars",
+         sites=("the fallen feast-hall",),
+         giver="the head shepherd",
+         epilogue="The collars hang on the shepherd's door. The sheep are "
+                  "back on the hill.",
+         failure_epilogue="The pack has the hill. The shepherd has moved "
+                          "what is left of the flock inside the walls."),
+    dict(title="The Vine Pits",
+         desc="The old vine pits at Libera are still bearing. The vintner "
+              "wants the vintage. The boars want it too.",
+         pool=BEAST_POOL + ("dire wolf",), skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the vine pits",),
+         giver="the vintner",
+         epilogue="Twelve barrels of a thousand-year vintage. The vintner "
+                  "will not say what it tastes like.",
+         failure_epilogue="The vintage stays in the pits. The vintner is "
+                          "asking a lower price and finding no takers."),
+    dict(title="The Kennel Master's House",
+         desc="Saturna wants the old kennel book out of Libera. The black "
+              "hounds and the ember troll in the kennels are not selling.",
+         pool=HELL_RUIN_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), align="dark",
+         sites=("the kennels",),
+         giver="the Master of Hounds of Saturna",
+         epilogue="The kennel book goes to Saturna. The hounds there are "
+                  "bred from it now.",
+         failure_epilogue="Saturna sent its own people for the book. Two "
+                          "villages on the way were eaten out in a night."),
+    dict(title="The Debt of a Thousand Years",
+         desc="A man from Saturna says his year is written in Libera's old "
+              "counting house and can be burned there. The horned brutes "
+              "keep the house.",
+         pool=HELL_RUIN_POOL + ("champion",),
+         skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the wild market",),
+         giver="a debtor from Saturna",
+         epilogue="The book is burned. The man walks out a year younger, "
+                  "or says he does.",
+         failure_epilogue="The man went back to Saturna and paid. He is "
+                          "older than he was and will not say by how much."),
+]
+
+# THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Two cultures
+# worn by one land each, so these tables are as close to a COUNTRY's own work
+# as this game has: what Concordia and Saturna pay people to do. The city is
+# its state's capital and its only settlement, which is what makes the two
+# EPIC rows capital-only without a flag -- there is no other board in either
+# country to post them at. The jobs land in the human countryside within
+# three days' road, which is how a city state is FELT before the player ever
+# walks in.
+TEMPLATES["heaven"] = [
+    dict(title="Escort the Healers",
+         desc="Two healers walk to the villages every week. Raiders have "
+              "taken to walking with them. Walk with them instead.",
+         pool=LADDER_POOL[:4], skins={},
+         sites=("the road",),
+         giver="the infirmary's warden",
+         epilogue="The healers make their rounds. The raiders do not.",
+         failure_epilogue="The healers did not come back. Concordia has "
+                          "stopped sending them and the villages have "
+                          "noticed."),
+    dict(title="The Lamp Thieves",
+         desc="Six lamps of Concordia were stolen off a cart. Bring them "
+              "back. The thieves are camped in the hills and the lamps "
+              "show at night.",
+         pool=LADDER_POOL[:5], skins={}, proof="the lamps",
+         sites=("the thieves' camp",),
+         giver="the Market of Lamps",
+         epilogue="Six lamps back on the counter. The hills are dark "
+                  "again.",
+         failure_epilogue="The lamps are sold and scattered. Somebody four "
+                          "countries off is paying a horse apiece for "
+                          "them."),
+    dict(title="Bring the Child Home",
+         desc="The Pruners took a child off the register to Concordia. The "
+              "mother wants the child back. The wardens at the post will "
+              "not hand it over.",
+         pool=LADDER_POOL[:5] + ("soldier",),
+         skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), align="good",
+         sites=("the warden's post",),
+         giver="a mother from the host village",
+         epilogue="The child is home. The register has one name crossed "
+                  "out and nobody in Concordia says by whom.",
+         failure_epilogue="The post is shut and the child is inside the "
+                          "walls. The mother walks to the gate every "
+                          "morning."),
+    dict(title="The Prefect's Levy",
+         desc="The Prefect wants the raiders who burned a lamp-cart made "
+              "an example of. Muster with the wardens and take the hold.",
+         pool=LADDER_POOL, skins=dict(GATE_SKINS["heaven"]),
+         ferocity=dict(GATE_FEROCITY["heaven"]), places=2,
+         sites=("the muster field", "the raiders' hold"),
+         giver="the Prefect",
+         epilogue="The hold is taken. The wardens hang nobody; the "
+                  "Prefect's law does not hang. It registers.",
+         failure_epilogue="The levy came home short and the hold still "
+                          "stands. The Prefect has written down who "
+                          "walked away."),
+]
+
+TEMPLATES["hell"] = [
+    dict(title="Bring the Wine",
+         desc="The feast is in four days and the wine cart is stuck at a "
+              "bridge held by toll-men. Bring the wine.",
+         pool=BANDIT_POOL, skins={},
+         sites=("the cart road",),
+         giver="the Feast-hall",
+         epilogue="The wine arrives. The toll-men are invited.",
+         failure_epilogue="The feast drank the town dry instead. The "
+                          "toll-men are still on the bridge and the cart "
+                          "is still theirs."),
+    dict(title="Guard the Feast",
+         desc="Every feast somebody starts a fight and every fight "
+              "somebody dies. This week, stop it.",
+         pool=LADDER_POOL[:5] + ("dire wolf",),
+         skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]),
+         sites=("the long table",),
+         giver="the Lord of Misrule",
+         epilogue="Nobody dies. It is the quietest feast in Saturna's "
+                  "memory and the Lord of Misrule is not pleased.",
+         failure_epilogue="Three dead over a cup and a dog. The Lord of "
+                          "Misrule calls it a good feast."),
+    dict(title="Break the Debt-House",
+         desc="Half the village owes a year to Saturna's debt-house. The "
+              "elder wants the books burned. The demons of bargains keep "
+              "the books.",
+         pool=LADDER_POOL[:6], skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), align="good",
+         sites=("the debt-house",),
+         giver="a village elder from the host land",
+         epilogue="The books burn. Half the village is a year richer and "
+                  "Saturna's demons of bargains write it down as a "
+                  "lesson.",
+         failure_epilogue="The books are still written and the collectors "
+                          "came early. The elder is owed to somebody now "
+                          "as well."),
+    dict(title="The Hunt of Misrule",
+         desc="Once a year the feast hunts something that hunts back. This "
+              "year it is a horned giant off Libera. Ride with the "
+              "hounds.",
+         pool=HELL_RUIN_POOL, skins=dict(GATE_SKINS["hell"]),
+         ferocity=dict(GATE_FEROCITY["hell"]), places=2,
+         sites=("the hunt's yard", "the quarry's ground"),
+         giver="the Master of Hounds",
+         epilogue="The giant's horns hang in the feast-hall. The hounds "
+                  "ate well.",
+         failure_epilogue="The hunt came home with nothing and fewer "
+                          "hounds. The giant is somewhere east of the "
+                          "road and moving."),
+]
+
+
+# ...and the eight ruin jobs go on EVERY culture's table, the two gate
+# cities' included: what comes out of Candor and Libera is everybody's
+# problem (the three-day radius is what keeps the table local).
+for _culture in TEMPLATES:
+    TEMPLATES[_culture].extend(dict(_template) for _template in RUIN_TEMPLATES)
+
 # Country-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
 EPIC_TEMPLATES: list[dict] = [
     dict(title="The Dragon's Tribute",
          desc="A dragon takes food and silver from an entire valley. Kill it "
-              "and end the tribute. The general pays on its head.",
+              "and end the tribute. The pay is on its head.",
          pool=DRAKE_POOL, skins={}, proof="the dragon's head",
          sites=("the burned storehouses", "the mountain path",
                 "the dragon's cave"),
@@ -523,6 +760,38 @@ EPIC_TEMPLATES: list[dict] = [
                           "The king's wizard has stopped answering questions "
                           "about it."),
 ]
+
+
+# THE EPICS' GIVERS IN A CITY STATE (2026-09-12, the gates arc's session 5).
+# The three rows above are country-agnostic and name a human court -- the
+# king's general, the border commander, the king's wizard. A one-tile gate
+# city has no king, no border and no royal wizard, and both of them are
+# capitals, so both post all three. The same three JOBS are re-cast here
+# rather than given a table of their own: what changes is who is paying.
+EPIC_GIVERS: dict[str, dict[str, str]] = {
+    "heaven": {"the king's general": "the Prefect",
+               "the border commander": "the warden of the gate",
+               "the king's wizard": "the School of Measures' first reader"},
+    "hell": {"the king's general": "the Master of Hounds",
+             "the border commander": "a captain of the free companies",
+             "the king's wizard": "the Fire School's forge-master"},
+}
+
+
+def epic_templates(culture: str) -> list[dict]:
+    """The three epics as this culture's capital posts them."""
+    swap = EPIC_GIVERS.get(culture)
+    if not swap:
+        return EPIC_TEMPLATES
+    return [dict(tpl, giver=swap[tpl["giver"]]) for tpl in EPIC_TEMPLATES]
+
+
+def _ruin_place(side: str) -> dict:
+    """The placement every ruin job shares: the gate-ruin family, narrowed
+    to ONE side by the tag its Area wears, and strict."""
+    return dict(area_any=(f"{side}-ruin",), site_template="ruin",
+                domain="natural", reuse="prefer", strict=True)
+
 
 # Geographic routing for the existing quest families.  The encounter tables
 # stay exactly as calibrated; this layer selects persistent geography and a
@@ -582,9 +851,49 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "Blood in the Grove": dict(
         area_any=("forest", "hills", "pasture"),
         site_template="grove", domain="natural", reuse="never"),
+    # THE TWO GATE CITIES (2026-09-12, session 4): every one of these lands
+    # in the HUMAN countryside inside the three-day radius -- the city state
+    # is one tile, so its own work is what it asks the neighbours to do.
+    # None is strict: ordinary ground honors all eight.
+    "Escort the Healers": dict(
+        area_any=("road", "farmland", "pasture", "coast"),
+        site_template="road", domain="mixed", reuse="never"),
+    "The Lamp Thieves": dict(
+        area_any=("hills", "forest", "pasture"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Bring the Child Home": dict(
+        area_any=("road", "farmland", "settlement"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "The Prefect's Levy": dict(
+        area_any=("road", "farmland", "hills"),
+        site_template="camp", domain="mixed", reuse="never"),
+    "Bring the Wine": dict(
+        area_any=("road", "farmland", "riverside"),
+        site_template="road", domain="mixed", reuse="never"),
+    "Guard the Feast": dict(
+        area_any=("settlement",),
+        site_template="camp", domain="built", reuse="prefer"),
+    "Break the Debt-House": dict(
+        area_any=("settlement",),
+        site_template="tower", domain="built", reuse="prefer"),
+    "The Hunt of Misrule": dict(
+        area_any=("forest", "hills", "pasture", "marsh"),
+        site_template="den", domain="natural", reuse="never"),
+    # INTO THE RUINS: one Area in the world can honor each of these, so the
+    # requirement is STRICT -- no fallback to the origin's countryside, and
+    # a board with no reachable ruin never draws the template at all.
+    "Looters in the White Ruin": _ruin_place("heaven"),
+    "The Servant That Walks": _ruin_place("heaven"),
+    "The Lamp in the Glass Garden": _ruin_place("heaven"),
+    "The Register of Candor": _ruin_place("heaven"),
+    "Hounds off the Wild Ruin": _ruin_place("hell"),
+    "The Vine Pits": _ruin_place("hell"),
+    "The Kennel Master's House": _ruin_place("hell"),
+    "The Debt of a Thousand Years": _ruin_place("hell"),
 }
 
-for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES]:
+for _templates in list(TEMPLATES.values()) + [EPIC_TEMPLATES,
+                                             RUIN_TEMPLATES]:
     for _template in _templates:
         _template["place"] = dict(QUEST_PLACE_REQUIREMENTS[_template["title"]])
 
@@ -987,11 +1296,21 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
                   and (radius is None
                        or path_days(origin["tile"], a["tile"]) <= radius)]
     if not candidates:
+        if requirement.get("strict"):
+            # A STRICT family names ground only one place in the world has
+            # (the gate ruins, 2026-09-12): there is no honest fallback, and
+            # `_post_quest` is supposed to have filtered the template out
+            # before it ever got here.
+            raise ValueError(f"{sorted(wanted)}: no such ground within "
+                             f"{radius} days of {origin_key}")
         tile = world["tiles"][origin["tile"]]
         candidates = [world["areas"][tile["natural_area"]]]
     domain = requirement.get("domain")
     if domain == "natural":
-        natural = [a for a in candidates if a["kind"] == "natural"]
+        # A RUIN counts as natural ground (2026-09-12): a dead city is not
+        # somebody's settlement, and the jobs that go into one ask for the
+        # same domain as the jobs that go into a wood.
+        natural = [a for a in candidates if a["kind"] in ("natural", "ruin")]
         if natural:
             candidates = natural
     elif domain == "built":
@@ -1000,6 +1319,21 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
             candidates = built
     candidates.sort(key=lambda area: (area["tile"], area["id"]))
     return rng.choice(candidates)
+
+
+def place_reachable(world: dict, origin_key: str, requirement: dict,
+                    radius: int | None = ORDINARY_TARGET_DAYS) -> bool:
+    """Is there ground this requirement can honor inside the radius?
+
+    Only the STRICT families ask (the ruin jobs): everything else has the
+    origin Tile's own countryside as a legal fallback and is therefore
+    postable anywhere."""
+    origin = world["areas"][origin_key]
+    wanted = set(requirement.get("area_any", ()))
+    return any(wanted.intersection(a.get("tags", ()))
+               and (radius is None
+                    or path_days(origin["tile"], a["tile"]) <= radius)
+               for a in all_areas(world))
 
 
 def _reusable_site(world: dict, area: dict, requirement: dict,
@@ -1015,6 +1349,14 @@ def _reusable_site(world: dict, area: dict, requirement: dict,
         "crypt": {"crypt", "shrine"},
     }.get(template, {template})
     for site in area_sites(world, area):
+        if site.get("ruin"):
+            # A ruin's six authored Sites belong to `delve` (2026-09-12):
+            # they carry their own level, their own rooms and the ruin's own
+            # refill clock, and a posted job re-rostering one would quietly
+            # take the dungeon apart. A ruin job builds its own site in the
+            # ruin Area under its authored stem instead -- and may reuse the
+            # leftovers of an earlier one.
+            continue
         active_quests = [
             qid for qid in site.get("quest_ids", ())
             if qid not in world["quests"]
@@ -1128,6 +1470,10 @@ def build_quest(world: dict, qid: str, tpl: dict, area_key: str, level: int,
         "state_target": target_area["id"],
         "level": level,
         "skins": dict(tpl["skins"]),
+        # The side's DISPOSITION rides beside its names (sites.GATE_FEROCITY):
+        # a Marble Warden met on a board job is as relentless as one met in
+        # the ruin, and a reveler robs you either way.
+        "ferocity": dict(tpl.get("ferocity") or {}),
         "sites": site_ids,
         "site_count": len(site_ids),
         "encounters": encounters,
@@ -1215,7 +1561,11 @@ def build_delivery_quest(qid: str, tpl: dict, origin: dict, dest: dict,
 def forge_quest(world: dict, qid: str, level: int, places: int,
                 encounters: int, pool: tuple[str, ...], name: str,
                 rng: random.Random, area_key: str = "",
-                align: str = "good", proof: str = "") -> dict:
+                align: str = "good", proof: str = "",
+                site_keys: tuple[str, ...] = (),
+                skins: dict | None = None,
+                ferocity: dict | None = None,
+                desc: str = "(DM-forged)") -> dict:
     """The DM's quest creator (session.py `forge`): level, shape, and foe
     kinds in -> a quest built by the same rules as worldgen and saved beside
     them. For improvised content the board doesn't cover. `align="dark"`
@@ -1224,7 +1574,32 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
     site's roster must be dead before the job is done (2026-08-08).
 
     The shape is (places, encounters) since 2026-07-26 -- the same two
-    numbers a generated quest carries."""
+    numbers a generated quest carries.
+
+    `site_keys` forges over Sites THE WORLD ALREADY OWNS (2026-09-12, the
+    gates arc's `delve`): a ruin's authored rooms are the job, so nothing is
+    built and nothing is rolled -- the quest is the wrapper that lets the
+    ordinary room walk, the encounter XP and the loot run over them.
+    `skins` and `ferocity` dress the rosters (`sites.GATE_SKINS`)."""
+    if site_keys:
+        rooms_each = [len(world["sites"][key]["rooms"]) for key in site_keys]
+        quest = {"id": qid, "name": name, "desc": desc,
+                 "origin": area_key, "level": level,
+                 "skins": dict(skins or {}),
+                 "ferocity": dict(ferocity or {}),
+                 "sites": list(site_keys), "site_count": len(site_keys),
+                 "encounters": sum(rooms_each),
+                 "xp_total": quest_xp_total(level, sum(rooms_each)),
+                 "silver_total": 0,     # nobody pays for a delve: the ruin
+                                        # pays in what is lying in it
+                 "next": {"site": 0, "room": 0},
+                 "forced": True,
+                 "status": "open", "align": align, "epilogue": ""}
+        for key in site_keys:
+            site = world["sites"][key]
+            if qid not in site["quest_ids"]:
+                site["quest_ids"].append(qid)
+        return quest
     # Forge pins the shape, so build its world-owned places directly instead
     # of asking build_quest to roll and then discarding a second layout.
     places = max(1, places)
@@ -1248,9 +1623,10 @@ def forge_quest(world: dict, qid: str, level: int, places: int,
             new_room(world, site_id, f"{site_id}/{slug_name(rn)}", rn,
                      kinds, quest=qid)
         site_ids.append(site_id)
-    quest = {"id": qid, "name": name, "desc": "(DM-forged)",
+    quest = {"id": qid, "name": name, "desc": desc,
              "origin": area_key, "level": level,
-             "skins": {}, "sites": site_ids, "site_count": places,
+             "skins": dict(skins or {}), "ferocity": dict(ferocity or {}),
+             "sites": site_ids, "site_count": places,
              "encounters": encounters,
              "xp_total": quest_xp_total(level, encounters),
              "silver_total": quest_silver(level, encounters),
@@ -1289,6 +1665,10 @@ RULER_TITLES = {
     "andalusia": {"m": "prince", "f": "princess"},
     "umaia": {"m": "sultan", "f": "sultana"},
     "tergal": {"m": "high chief", "f": "high chief"},
+    # The two gate cities (2026-09-12): Heaven's seat is an office and Hell's
+    # is a year-long joke that is obeyed anyway.
+    "concordia": {"m": "prefect", "f": "prefect"},
+    "saturna": {"m": "lord of misrule", "f": "lady of misrule"},
 }
 SAGE_ROLES = ("loremaster", "court wizard", "keeper of records",
               "temple scholar", "star-reader")
@@ -1428,11 +1808,15 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     homeland = land_homeland(world, settlement["land"])
     tables = list(TEMPLATES[CULTURE_OF[homeland]])
     if settlement.get("capital"):
-        tables += EPIC_TEMPLATES
+        tables += epic_templates(CULTURE_OF[homeland])
     fitting = [t for t in tables
-               if template_band(t)[0] <= level <= template_band(t)[1]]
+               if template_band(t)[0] <= level <= template_band(t)[1]
+               and (not quest_place_requirement(t).get("strict")
+                    or place_reachable(world, settlement["key"],
+                                       quest_place_requirement(t)))]
     if not fitting:     # a roll above every local pool: snap to the ladder
-        fitting = [t for t in tables if "warlord" in t["pool"]] or tables
+        fitting = [t for t in tables if "warlord" in t["pool"]] or [
+            t for t in tables if not quest_place_requirement(t).get("strict")]
         lo_t, hi_t = template_band(fitting[0])
         level = max(lo_t, min(hi_t, level))
     # Prefer a template not already on this settlement's board (the ladder
@@ -1916,7 +2300,7 @@ def notice_contest(party: list, kinds: list[str],
     block above): returns (party_sees, foes_see). Each side rolls 2d6 + its
     notice stat vs NOTICE_BASE + the other side's conspicuousness."""
     watchers = [h for h in party if not h.dead]
-    specs = [FOES[k] for k in kinds]
+    specs = [foe_spec(k) for k in kinds]
     party_notice = max((h.mind for h in watchers), default=0)
     foe_notice = max(max(s.mind, s.dex) for s in specs)
     party_sees = (rng.randint(1, 6) + rng.randint(1, 6) + party_notice
@@ -1932,7 +2316,7 @@ def foes_preferred_field(kinds: list[str]) -> int:
     (melee ambushers are simply ON you, exactly the old met-blade-first)."""
     best = 0
     for k in kinds:
-        spec = FOES[k]
+        spec = foe_spec(k)
         if spec.weapon is not None and spec.weapon.range:
             best = max(best, spec.weapon.range)
         if spec.school:
@@ -2064,7 +2448,7 @@ def board_lines(world: dict,
 def roster_kinds_line(kinds: list[str], skins: dict[str, str]) -> str:
     """A compact 'what you'd face' readout for a quest's detail view."""
     from collections import Counter
-    counts = Counter(skins.get(k, FOES[k].display) for k in kinds)
+    counts = Counter(skins.get(k, foe_spec(k).display) for k in kinds)
     return ", ".join(f"{n}x {d}" if n > 1 else d for d, n in counts.items())
 
 

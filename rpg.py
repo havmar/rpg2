@@ -2671,6 +2671,14 @@ class Entity:
                                         # dress trait; armor-the-system is a
                                         # separate roadmap item)
     homeland: str = ""                  # one of the nine countries
+    blood: str = ""                     # THE NEPHILIM (2026-09-12): "" (a
+                                        # plain human), "old" (a stranded
+                                        # line), "sky" (Heaven's) or "fire"
+                                        # (Hell's). Read by make_human
+                                        # through BLOOD_FLOORS /
+                                        # BLOOD_CEILINGS / BLOOD_WARD and
+                                        # the Old Tongue; people.blood_line
+                                        # is the sheet's BLOOD row
     tongues: list[str] = field(default_factory=list)   # the languages this
                                         # person speaks (people.roll_tongues:
                                         # Latin plus the homeland's tongue).
@@ -6557,6 +6565,46 @@ HERO_POWER_RANGE = (3, 6)
 # line, so the budget rose to 11 to keep the per-stat surplus ~unchanged.
 HERO_STAT_BUDGET = 11
 
+# THE NEPHILIM (2026-09-12, the gates arc's session 3 -- rules.md's Heaven &
+# Hell add-on part 3). Half-blood is a per-character FACT, not a trait: the
+# old-blood lines descend from the stranded of the Closing, the sky-born and
+# the fire-born from the two powers that came back twenty-seven years ago.
+# Mechanically it is three floors, one ceiling and two fields, all read by
+# make_human -- nothing else in the engine branches on it, and the world's
+# reaction is dm.md's table protocol.
+#
+# The floors are the SAME mechanism the "big" trait uses: a raised floor is
+# the surplus budget landing one point further up, so a floor is worth about
+# a flat +1. Fire's Power is the exception and the only ceiling raise in the
+# game: the range moves +2 at BOTH ends (3-6 -> 5-8), which is what "max
+# Power +2" means -- the natural cap 6 is the DEX/STR frame's and Power is a
+# pool levels already buy, so nothing in the 1-20 doctrine is bent here.
+BLOOD_KINDS = ("old", "sky", "fire")
+BLOOD_FLOORS: dict[str, dict[str, int]] = {
+    "old": {"mind": 1},                 # the gift is BORN: the wild talents
+                                        # of the world are old blood without
+                                        # the word for it
+    "sky": {"dex": 1},
+    "fire": {"str": 1, "power": 2},
+}
+BLOOD_CEILINGS: dict[str, dict[str, int]] = {
+    "fire": {"power": -2},              # negative = the ceiling moves UP
+}
+BLOOD_WARD = {"sky": 1}                 # the Law in the blood: +2 to any
+                                        # possession's DC, and an ambush
+                                        # strike lands as a normal exchange
+OLD_TONGUE = "Old Tongue"               # Hell's register (writing.md); a
+                                        # fire-born grew up hearing it
+
+
+def add_blood_tongue(e: Entity) -> None:
+    """The fire-born speak the Old Tongue -- one authority, called both by
+    make_human and by people.make_character after it rolls the homeland's
+    tongues over the top."""
+    if e.blood == "fire" and OLD_TONGUE not in e.tongues:
+        e.tongues.append(OLD_TONGUE)
+
+
 # The sims' throwaway name pool (the played game draws from people.py's
 # per-homeland pools instead). The old stat epithet ("the precise") is GONE
 # (2026-07-11): it was a stat-tell in costume, and the trait system does its
@@ -6600,7 +6648,8 @@ def _starter_move(weapon: Weapon) -> str:
 
 def make_human(rng: random.Random, name: str,
                floors: dict[str, int] | None = None,
-               ceilings: dict[str, int] | None = None) -> Entity:
+               ceilings: dict[str, int] | None = None,
+               blood: str = "") -> Entity:
     """Fixed-budget generation (2026-07-13): ranges DEX/STR/MIND/POWER/CHA
     3-6, STA 5-8, HP 8-12; every character starts at the floors and receives
     exactly HERO_STAT_BUDGET surplus points, dealt by a randomly-shuffled
@@ -6625,9 +6674,22 @@ def make_human(rng: random.Random, name: str,
       the hedge-healer  healing spell r1    (+ the staff chance -- the ONLY
                                              non-wizard door into a spell)
       the herbalist     alchemy rank 1      (session C's tree, seeded)
-      the drilled       one move by weapon  (session B's system, seeded)"""
-    floors = floors or {}
-    ceilings = ceilings or {}
+      the drilled       one move by weapon  (session B's system, seeded)
+
+    THE NEPHILIM (2026-09-12): `blood` ("old"/"sky"/"fire") folds its own
+    floors and ceilings in on top of the caller's and sets the two fields
+    that are not a stat -- the sky-born's spell_ward and the fire-born's
+    Old Tongue. An unknown word raises: a half-blood the tables do not
+    know is damage, not a variant."""
+    floors = dict(floors or {})
+    ceilings = dict(ceilings or {})
+    if blood:
+        if blood not in BLOOD_KINDS:
+            raise ValueError(f"unknown blood: {blood!r}")
+        for key, step in BLOOD_FLOORS[blood].items():
+            floors[key] = floors.get(key, 0) + step
+        for key, step in BLOOD_CEILINGS.get(blood, {}).items():
+            ceilings[key] = ceilings.get(key, 0) + step
     ranges = {"dex": HERO_STAT_RANGE, "str": HERO_STAT_RANGE,
               "mind": HERO_STAT_RANGE,
               "sta": HERO_STA_RANGE, "hp": HERO_HP_RANGE,
@@ -6689,12 +6751,15 @@ def make_human(rng: random.Random, name: str,
         spells=spells,
         alchemy=alchemy,
         moves={_starter_move(weapon)} if seed == "drilled" else set(),
+        blood=blood,
+        spell_ward=BLOOD_WARD.get(blood, 0),
         pain=HERO_PAIN,
         records_wounds=True,    # heroes keep the slow channel; foes never do
                                 # (slice 3b -- the deliberate asymmetry)
         weapon=weapon,
         items=random_kit(rng),
     )
+    add_blood_tongue(e)
     if weapon.power_bonus:
         # The staff is a focus: +1 max Power while wielded (equip_weapon
         # keeps the books when weapons change hands later).
@@ -6785,6 +6850,13 @@ def progress_line(e: Entity) -> str:
     return " | ".join(parts)
 
 
+def the(name: str) -> str:
+    """`the NAME`, unless the name already carries its own article -- a
+    famous piece names itself ("the Candor bar") and "the the Candor bar"
+    is how a display gives away that it was written for catalog steel."""
+    return name if name.lower().startswith("the ") else f"the {name}"
+
+
 def fallen_weapons_line(foes: list[Entity]) -> str | None:
     """The loot gesture after a cleared fight: what steel the fallen leave
     behind, with just enough stats to decide on (the DM offers, the player
@@ -6802,8 +6874,13 @@ def fallen_weapons_line(foes: list[Entity]) -> str | None:
         return None
     bits = []
     for name, (w, count) in drops.items():
-        n = f"{count}x " if count > 1 else "a "
-        bits.append(f"{n}{name} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
+        if count > 1:
+            head = f"{count}x {name}"
+        elif name.lower().startswith("the "):
+            head = name          # a famous piece names itself
+        else:
+            head = f"a {name}"
+        bits.append(f"{head} ({w.atk_pressure:+d} atk/{w.severity:+d} sev, "
                     f"{w.value}s)")
     parts = ["Left among the dead:"]
     parts += [b + "," for b in bits[:-1]] + [bits[-1] + "."]
@@ -7795,11 +7872,11 @@ def equip_weapon(h: Entity, weapon: Weapon, log: list[str]) -> None:
     h.weapon = weapon
     h.weapon_broken = False
     h.switched = False
-    was = (f" (setting aside the {old.name})"
+    was = (f" (setting aside {the(old.name)})"
            if old is not None and old.name != weapon.name else "")
     rank = h.proficiency.get(prof_name(weapon), 0)
     drilled = f" -- already drilled with it (prof {rank})" if rank else ""
-    log.append(f"    {h.name} takes up the {weapon.name}{was}{drilled}.")
+    log.append(f"    {h.name} takes up {the(weapon.name)}{was}{drilled}.")
     if weapon.ammo in AMMO_CAPS and h.items.get(weapon.ammo, 0) <= 0:
         log.append(f"    (it shoots {weapon.ammo} -- `buy` some, or there "
                    f"is nothing to loose)")
