@@ -1,78 +1,101 @@
-=== The Restless Crypt -- the village graveyard (L5), room 1/2: graveyard ===
-  2x Skeleton -- rusted blade
+=== The Restless Crypt -- the village graveyard (L5), room 2/2: crypt steps ===
+  Skeleton 5 -- rusted blade
   DEX 4  STR 2  HP 5/5
   undead, tireless, relentless
-  2x Ghoul -- grave claws
+  3x Ghoul -- grave claws
   DEX 5  STR 3  HP 8/8
   undead, tireless, relentless
   Round 1:
-    Varro strikes before the lines meet -- First Blood! Skeleton 1 is grazed (-1 HP -> 4/5, -0 to rolls) [2 Power spent, 3 left]
-    Varro, Skeleton 1, Skeleton 2, Ghoul 3, Ghoul 4 close the distance -- the lines meet!
-    Nerva's ice bolt overwhelms Skeleton 1 -- a crippling blow! [Skeleton 1: 0/5 HP, -2 to rolls]
-        pressure: Nerva: 17 (2d6=8, +6 AIM, +2 training, +1 proficiency) vs Skeleton 1: 10 (2d6=6, +4 DEX) [ice bolt: -1 Power, 5 left]
-        severity: 8 = margin 7 +2 ice bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Skeleton 1 is SLAIN. ***
+    Varro strikes before the lines meet -- First Blood! Skeleton 5 is grazed (-1 HP -> 4/5, -0 to rolls) [2 Power spent, 3 left]
+    Varro, Skeleton 5, Ghoul 6, Ghoul 7, Ghoul 8 close the distance -- the lines meet!
+    Nerva's ice bolt overwhelms Skeleton 5 -- a crippling blow! [Skeleton 5: 0/5 HP, -2 to rolls]
+        pressure: Nerva: 21 (2d6=12, +6 AIM, +2 training, +1 proficiency) vs Skeleton 5: 10 (2d6=6, +4 DEX) [ice bolt: -1 Power, 5 left]
+        severity: 12 = margin 11 +2 ice bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Skeleton 5 is SLAIN. ***
     stamina: Nerva 7/8, Varro 8/8 | 3 tireless
   Round 2:
-    Nerva's ice bolt outmaneuvers Skeleton 2 -- a grievous injury! [Skeleton 2: 1/5 HP, -2 to rolls]
-        pressure: Nerva: 15 (2d6=6, +6 AIM, +2 training, +1 proficiency) vs Skeleton 2: 11 (2d6=7, +4 DEX) [ice bolt: -1 Power, 4 left]
-        severity: 5 = margin 4 +2 ice bolt +1 spell rank -2 soak -> grievous (-4 HP)
-    Skeleton 2 is rimed with frost (-1 DEX for this fight)
-    Varro outmaneuvers Skeleton 2 -- a crippling blow! [Skeleton 2: 0/5 HP, -2 to rolls]
-        pressure: Varro: 14 (2d6=7, +4 DEX, +2 training, +1 zweihander) vs Skeleton 2: 10 (2d6=9, +4 DEX, -1 chilled, -2 wounds)
-        severity: 11 = margin 4 +6 STR +3 zweihander -2 soak -> crippling blow (-6 HP)
-    *** Skeleton 2 is SLAIN. ***
-    (Skeleton 2 strikes even as they fall)
-    Skeleton 2 attacks Varro -- parried.
-        pressure: Skeleton 2: 6 (2d6=3, +4 DEX, -1 chilled) vs Varro: 15 (2d6=10, +4 DEX, +2 training, -1 zweihander)
-    Ghoul 3 attacks Varro -- parried.
-        pressure: Ghoul 3: 11 (2d6=6, +5 DEX) vs Varro: 16 (2d6=11, +4 DEX, +2 training, -1 zweihander)
-    Ghoul 4 slips through the press, pushing deeper (advance 2/2).
-    stamina: Nerva 6/8, Varro 7/8 | 2 tireless
+    Nerva sends ice bolt at Ghoul 6 -- warded off.
+        pressure: Nerva: 14 (2d6=5, +6 AIM, +2 training, +1 proficiency) vs Ghoul 6: 17 (2d6=12, +5 DEX) [ice bolt: -1 Power, 4 left]
+    Varro outmaneuvers Ghoul 6 -- a crippling blow! [Ghoul 6: 2/8 HP, -3 to rolls]
+        pressure: Varro: 17 (2d6=10, +4 DEX, +2 training, +1 zweihander) vs Ghoul 6: 13 (2d6=8, +5 DEX)
+        severity: 10 = margin 4 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
+    Ghoul 6 attacks Varro -- parried.
+        pressure: Ghoul 6: 7 (2d6=5, +5 DEX, -3 wounds) vs Varro: 9 (2d6=4, +4 DEX, +2 training, -1 zweihander)
+    Ghoul 7 outmaneuvers Varro -- a graze! [Varro: 11/12 HP, -0 to rolls]
+        pressure: Ghoul 7: 13 (2d6=8, +5 DEX) vs Varro: 9 (2d6=4, +4 DEX, +2 training, -1 zweihander)
+        severity: 1 = margin 4 +3 STR -6 soak -> graze (-1 HP)
+    Ghoul 8 slips through the press, pushing deeper (advance 2/2).
+    stamina: Nerva 6/8, Varro 7/8 | 3 tireless
   Round 3:
-    Nerva sends ice bolt at Ghoul 3 -- warded off.
-        pressure: Nerva: 12 (2d6=3, +6 AIM, +2 training, +1 proficiency) vs Ghoul 3: 16 (2d6=11, +5 DEX) [ice bolt: -1 Power, 3 left]
-    Varro overwhelms Ghoul 3 -- a crippling blow! [Ghoul 3: 2/8 HP, -3 to rolls]
-        pressure: Varro: 16 (2d6=9, +4 DEX, +2 training, +1 zweihander) vs Ghoul 3: 7 (2d6=2, +5 DEX)
-        severity: 15 = margin 9 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
-    Ghoul 3 attacks Varro -- parried.
-        pressure: Ghoul 3: 6 (2d6=4, +5 DEX, -3 wounds) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
-    Ghoul 4 attacks Nerva -- parried.
-        pressure: Ghoul 4: 7 (2d6=2, +5 DEX) vs Nerva: 14 (2d6=6, +5 DEX, +2 training, +1 masterwork wooden staff)
+    Nerva's ice bolt edges past Ghoul 6 -- a graze! [Ghoul 6: 1/8 HP, -3 to rolls]
+        pressure: Nerva: 14 (2d6=5, +6 AIM, +2 training, +1 proficiency) vs Ghoul 6: 12 (2d6=10, +5 DEX, -3 wounds) [ice bolt: -1 Power, 3 left]
+        severity: 2 = margin 2 +2 ice bolt +1 spell rank -3 soak -> graze (-1 HP)
+    Ghoul 6 is rimed with frost (-1 DEX for this fight)
+    Varro overwhelms Ghoul 6 -- a crippling blow! [Ghoul 6: 0/8 HP, -4 to rolls]
+        pressure: Varro: 14 (2d6=7, +4 DEX, +2 training, +1 zweihander) vs Ghoul 6: 8 (2d6=7, +5 DEX, -1 chilled, -3 wounds)
+        severity: 12 = margin 6 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
+    *** Ghoul 6 is SLAIN. ***
+    (Ghoul 6 strikes even as they fall)
+    Ghoul 6 edges past Varro, but the blow glances off -- deflected.
+        pressure: Ghoul 6: 11 (2d6=10, +5 DEX, -1 chilled, -3 wounds) vs Varro: 9 (2d6=4, +4 DEX, +2 training, -1 zweihander)
+        severity: -1 = margin 2 +3 STR -6 soak -> deflected
+    Ghoul 7 attacks Varro -- parried.
+        pressure: Ghoul 7: 13 (2d6=8, +5 DEX) vs Varro: 16 (2d6=11, +4 DEX, +2 training, -1 zweihander)
+    Ghoul 8 attacks Nerva -- parried.
+        pressure: Ghoul 8: 12 (2d6=7, +5 DEX) vs Nerva: 15 (2d6=7, +5 DEX, +2 training, +1 masterwork wooden staff)
     stamina: Nerva 5/8, Varro 6/8 | 2 tireless
   Round 4:
-    Nerva's ice bolt overwhelms Ghoul 3 -- a crippling blow! [Ghoul 3: 0/8 HP, -4 to rolls]
-        pressure: Nerva: 17 (2d6=8, +6 AIM, +2 training, +1 proficiency) vs Ghoul 3: 10 (2d6=8, +5 DEX, -3 wounds) [ice bolt: -1 Power, 2 left]
-        severity: 7 = margin 7 +2 ice bolt +1 spell rank -3 soak -> crippling blow (-6 HP)
-    *** Ghoul 3 is SLAIN. ***
-    (Ghoul 3 strikes even as they fall)
-    Ghoul 3 attacks Varro -- parried.
-        pressure: Ghoul 3: 8 (2d6=6, +5 DEX, -3 wounds) vs Varro: 17 (2d6=12, +4 DEX, +2 training, -1 zweihander)
-    Varro edges past Ghoul 4 -- a crippling blow! [Ghoul 4: 2/8 HP, -3 to rolls]
-        pressure: Varro: 16 (2d6=9, +4 DEX, +2 training, +1 zweihander) vs Ghoul 4: 14 (2d6=9, +5 DEX)
-        severity: 8 = margin 2 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
-    Ghoul 4 attacks Nerva -- parried.
-        pressure: Ghoul 4: 8 (2d6=6, +5 DEX, -3 wounds) vs Nerva: 13 (2d6=5, +5 DEX, +2 training, +1 masterwork wooden staff)
+    Nerva's ice bolt outmaneuvers Ghoul 7 -- a solid wound! [Ghoul 7: 6/8 HP, -1 to rolls]
+        pressure: Nerva: 14 (2d6=5, +6 AIM, +2 training, +1 proficiency) vs Ghoul 7: 10 (2d6=5, +5 DEX) [ice bolt: -1 Power, 2 left]
+        severity: 4 = margin 4 +2 ice bolt +1 spell rank -3 soak -> wound (-2 HP)
+    Ghoul 7 is rimed with frost (-1 DEX for this fight)
+    Varro outmaneuvers Ghoul 7 -- a crippling blow! [Ghoul 7: 0/8 HP, -4 to rolls]
+        pressure: Varro: 12 (2d6=5, +4 DEX, +2 training, +1 zweihander) vs Ghoul 7: 9 (2d6=6, +5 DEX, -1 chilled, -1 wounds)
+        severity: 9 = margin 3 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
+    *** Ghoul 7 is SLAIN. ***
+    (Ghoul 7 strikes even as they fall)
+    Ghoul 7 edges past Varro, but the blow glances off -- deflected.
+        pressure: Ghoul 7: 11 (2d6=7, +5 DEX, -1 chilled) vs Varro: 10 (2d6=5, +4 DEX, +2 training, -1 zweihander)
+        severity: -2 = margin 1 +3 STR -6 soak -> deflected
+    Ghoul 8 edges past Varro, but the blow glances off -- deflected.
+        pressure: Ghoul 8: 13 (2d6=8, +5 DEX) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
+        severity: -2 = margin 1 +3 STR -6 soak -> deflected
     stamina: Nerva 4/8, Varro 5/8 | 1 tireless
   Round 5:
     !! Nerva is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Nerva's ice bolt overwhelms Ghoul 4 -- a grievous injury! [Ghoul 4: 0/8 HP, -4 to rolls]
-        pressure: Nerva: 12 (2d6=5, +6 AIM, +2 training, +1 proficiency, -2 winded) vs Ghoul 4: 6 (2d6=4, +5 DEX, -3 wounds) [ice bolt: -1 Power, 1 left]
-        severity: 6 = margin 6 +2 ice bolt +1 spell rank -3 soak -> grievous (-4 HP)
-    *** Ghoul 4 falls. ***
-    (Ghoul 4 strikes even as they fall)
-    Ghoul 4 attacks Nerva -- parried.
-        pressure: Ghoul 4: 11 (2d6=9, +5 DEX, -3 wounds) vs Nerva: 13 (2d6=7, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded)
-    stamina: Nerva 3/8*, Varro 5/8   (* = Winded)
+    Nerva's ice bolt edges past Ghoul 8 -- a graze! [Ghoul 8: 7/8 HP, -0 to rolls]
+        pressure: Nerva: 12 (2d6=5, +6 AIM, +2 training, +1 proficiency, -2 winded) vs Ghoul 8: 10 (2d6=5, +5 DEX) [ice bolt: -1 Power, 1 left]
+        severity: 2 = margin 2 +2 ice bolt +1 spell rank -3 soak -> graze (-1 HP)
+    Ghoul 8 is rimed with frost (-1 DEX for this fight)
+    Varro outmaneuvers Ghoul 8 -- a crippling blow! [Ghoul 8: 1/8 HP, -3 to rolls]
+        pressure: Varro: 16 (2d6=9, +4 DEX, +2 training, +1 zweihander) vs Ghoul 8: 13 (2d6=9, +5 DEX, -1 chilled)
+        severity: 9 = margin 3 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
+    Ghoul 8 attacks Nerva -- parried.
+        pressure: Ghoul 8: 6 (2d6=5, +5 DEX, -1 chilled, -3 wounds) vs Nerva: 17 (2d6=11, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded)
+    stamina: Nerva 3/8*, Varro 4/8 | 1 tireless   (* = Winded)
+  Round 6:
+    Nerva's ice bolt outmaneuvers Ghoul 8 -- a solid wound! [Ghoul 8: 0/8 HP, -4 to rolls]
+        pressure: Nerva: 13 (2d6=6, +6 AIM, +2 training, +1 proficiency, -2 winded) vs Ghoul 8: 10 (2d6=9, +5 DEX, -1 chilled, -3 wounds) [ice bolt: -1 Power, 0 left]
+        severity: 3 = margin 3 +2 ice bolt +1 spell rank -3 soak -> wound (-2 HP)
+    *** Ghoul 8 falls. ***
+    (Ghoul 8 strikes even as they fall)
+    Ghoul 8 attacks Nerva -- parried.
+        pressure: Ghoul 8: 6 (2d6=5, +5 DEX, -1 chilled, -3 wounds) vs Nerva: 11 (2d6=5, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded)
+    stamina: Nerva 2/8*, Varro 4/8   (* = Winded)
     The party catches its breath (+1 STA)
-    Nerva gains 84 XP (encounter) [84/500]
-    Varro gains 84 XP (encounter) [84/500]
+    Nerva gains 84 XP (encounter) [168/500]
+    Varro gains 84 XP (encounter) [168/500]
+
+  *** THE JOB IS DONE: The Restless Crypt -- the village graveyard. Return to Aurelia at Salicetum -- due day 7: `turnin q01`. ***
+    Nerva gains 170 XP (the work done) [338/500]
+    Varro gains 170 XP (the work done) [338/500]
 
 -- the party --
-Nerva: Unhurt STA 4/8 Power 1/6
+Nerva: Unhurt STA 3/8 Power 0/6
+  (Winded -2 to rolls)
   (healing x1, stamina x1)
-Varro: Unhurt STA 6/8 Power 3/5
+Varro: Scratched STA 5/8 Power 3/5
   (healing x1, stamina x1)
-Purse 115s; day 1.
-Ahead: 1 fight(s) at the village graveyard; the work done pays 170 XP in the field, and the turn-in pays 191s, 97 XP at the giver.
-  (due day 7 -- 6 days left; quick pay, x1.15)
+Purse 115s; day 2.
+The work is done: return to Aurelia at Salicetum -- the turn-in pays 191s, 97 XP (`turnin q01`).
+  (due day 7 -- 5 days left; quick pay, x1.15)

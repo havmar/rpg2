@@ -1,19 +1,19 @@
-## turn 2 (day 1)
+## turn 3 (day 2)
 
-> doing the crypt job
+> camp, attack tomorrow
 
-Aurelia takes you up the coast road to Venice. Salicetum buries its dead outside the city wall, along with the poor of Petrapolis and Castranova -- one walled field for all three, and a hooded brotherhood to do the digging. It is an hour's walk uphill and the market noise comes over the wall most of the way.
+You sleep against the graveyard wall and nothing comes. In the morning Varro eats, checks the edge of his blade, and goes down the stair first after all.
 
-The graveyard is flat stones in rough grass, with the city stacked up the slope behind it. A stone stair goes down into the ossuary at the far end of the field. Two stones near the wall have been pushed off and left lying. Four of the dead are standing among the graves, and they do not move when you come through the gate.
+It turns twice and comes out in the ossuary: a low vaulted room with the village's bones shelved along both walls, four hundred years of them. At the near end the shelves are swept bare and the floor is ankle deep. Four more of the dead are standing in it.
 
 ```
 === The Restless Crypt ===
 the village graveyard (L5),
-room 1/2: graveyard
-2x Skeleton -- rusted blade
+room 2/2: crypt steps
+Skeleton 5 -- rusted blade
 DEX 4  STR 2  HP 5/5
 undead, tireless, relentless
-2x Ghoul -- grave claws
+3x Ghoul -- grave claws
 DEX 5  STR 3  HP 8/8
 undead, tireless, relentless
 ```
@@ -22,35 +22,41 @@ undead, tireless, relentless
 
 ```
 The party catches its breath (+1 STA)
-Nerva +84 XP (encounter) [84/500]
-Varro +84 XP (encounter) [84/500]
+Nerva +84 XP (encounter) [168/500]
+Varro +84 XP (encounter) [168/500]
+
+*** THE JOB IS DONE:
+The Restless Crypt --
+the village graveyard. ***
+Nerva +170 XP (the work done) [338/500]
+Varro +170 XP (the work done) [338/500]
 
 -- the party --
-Nerva: Unhurt STA 4/8 Power 1/6
+Nerva: Unhurt STA 3/8 Power 0/6
+  (Winded -2 to rolls)
   (healing x1, stamina x1)
-Varro: Unhurt STA 6/8 Power 3/5
+Varro: Scratched STA 5/8 Power 3/5
   (healing x1, stamina x1)
-Purse 115s; day 1.
-Ahead: 1 fight(s) at the village
-  graveyard; the work done pays 170 XP
-  in the field, and the turn-in pays
-  191s, 97 XP at the giver.
-  (due day 7 -- 6 days left; quick pay,
+Purse 115s; day 2.
+  (due day 7 -- 5 days left; quick pay,
     x1.15)
 ```
 
-Varro's zweihander is into the first skeleton before the lines meet. Your ice does most of the rest: three of the four go down to it, and Varro takes the second skeleton apart in the same round it swings at him. Neither of you is touched. By the last ghoul you are Winded and down to one Power.
+Your first bolt takes the skeleton apart on the steps. After that it is Varro's fight: he kills all three ghouls himself, one a round, while your ice does little more than slow them down. One claw gets through and barely marks him. You finish it Winded with nothing left in the Power.
 
-Aurelia waits at the gate and does not come in. Varro cleans his blade in the grass and looks at the stair. "After you," he says.
+Nothing else moves down here, and nothing down here says what raised them. The graveyard above is quiet for the first time in three nights. Varro pushes the loose bones back onto the shelves with his boot, then with his hands, and does not say anything about it.
+
+Aurelia is still at the gate. She does not go down to look. The work is done and the money is not: she settles up at Salicetum, an hour back down the coast road, and it pays 191 silver if you bring it to her while the job is still fresh.
 
 ```
-  options: down the crypt steps
-    camp -- STA and Power back
-      full, day 2 (job due day 7)
-    a bed at the Two Lions in
-      Venice, 1s a head
-    the city -- market, smith,
-      alchemist
+  options: down to Salicetum --
+    turn in to Aurelia, 191s
+    Venice -- market, smith,
+      alchemist, a bed
+    Paulina and the letter
+      (take it by day 11)
+    the board -- 2 more jobs
+      at Salicetum
 ```
 
 Where to?

@@ -1,59 +1,77 @@
 === The Restless Crypt ===
 the village graveyard (L5),
-room 1/2: graveyard
-2x Skeleton -- rusted blade
+room 2/2: crypt steps
+Skeleton 5 -- rusted blade
 DEX 4  STR 2  HP 5/5
 undead, tireless, relentless
-2x Ghoul -- grave claws
+3x Ghoul -- grave claws
 DEX 5  STR 3  HP 8/8
 undead, tireless, relentless
 Round 1:
 Varro uses First Blood!
-Skeleton 1 takes 1 dmg.
+Skeleton 5 takes 1 dmg.
 The lines meet -- steel range.
-Nerva's ice bolt overwhelms Skeleton 1,
+Nerva's ice bolt overwhelms Skeleton 5,
 deals 6 dmg!!! [5 Power left]
-Skeleton 1 is SLAIN.
+Skeleton 5 is SLAIN.
 Round 2:
-Nerva's ice bolt
-outmaneuvers Skeleton 2, deals 4 dmg!!
-[4 Power left]
-Skeleton 2 is rimed with frost.
-Varro outmaneuvers Skeleton 2,
-deals 6 dmg!!! SLAIN.
-Skeleton 2 strikes as they fall:
-Varro parries.
-Ghoul 3 attacks Varro, parried.
-Ghoul 4 slips through the press.
-Round 3:
 Nerva's ice bolt is warded off.
-Varro overwhelms Ghoul 3, deals 6 dmg!!!
-Ghoul 3 (2/8) attacks Varro, parried.
-Ghoul 4 attacks Nerva, parried.
+Varro outmaneuvers Ghoul 6,
+deals 6 dmg!!!
+Ghoul 6 (2/8) attacks Varro, parried.
+Ghoul 7 outmaneuvers Varro, deals 1 dmg.
+Ghoul 8 slips through the press.
+Round 3:
+Nerva's ice bolt edges past Ghoul 6,
+deals 1 dmg. [3 Power left]
+Ghoul 6 is rimed with frost.
+Varro (11/12) overwhelms Ghoul 6,
+deals 6 dmg!!! SLAIN.
+Ghoul 6 strikes as they fall:
+Varro deflects it.
+Ghoul 7 attacks Varro, parried.
+Ghoul 8 attacks Nerva, parried.
 Round 4:
-Nerva's ice bolt overwhelms Ghoul 3,
-deals 6 dmg!!! [2 Power left]
-Ghoul 3 is SLAIN.
-Ghoul 3 strikes as they fall:
-Varro parries.
-Varro edges past Ghoul 4, deals 6 dmg!!!
-Ghoul 4 (2/8) attacks Nerva, parried.
+Nerva's ice bolt outmaneuvers Ghoul 7,
+deals 2 dmg! [2 Power left]
+Ghoul 7 is rimed with frost.
+Varro (11/12) outmaneuvers Ghoul 7,
+deals 6 dmg!!! SLAIN.
+Ghoul 7 strikes as they fall:
+Varro deflects it.
+Ghoul 8 attacks Varro, deflected.
 Round 5:
 !! Nerva is Winded.
-Nerva's ice bolt overwhelms Ghoul 4,
-deals 4 dmg!! [1 Power left]
-Ghoul 4 falls.
-Ghoul 4 strikes as they fall:
+Nerva's ice bolt edges past Ghoul 8,
+deals 1 dmg. [1 Power left]
+Ghoul 8 is rimed with frost.
+Varro (11/12) outmaneuvers Ghoul 8,
+deals 6 dmg!!!
+Ghoul 8 (1/8) attacks Nerva, parried.
+Round 6:
+Nerva's ice bolt outmaneuvers Ghoul 8,
+deals 2 dmg! [0 Power left]
+Ghoul 8 falls.
+Ghoul 8 strikes as they fall:
 Nerva parries.
 The party catches its breath (+1 STA)
-Nerva +84 XP (encounter) [84/500]
-Varro +84 XP (encounter) [84/500]
+Nerva +84 XP (encounter) [168/500]
+Varro +84 XP (encounter) [168/500]
+
+*** THE JOB IS DONE:
+The Restless Crypt --
+the village graveyard. Return to Aurelia
+at Salicetum -- due day 7:
+`turnin q01`. ***
+Nerva +170 XP (the work done) [338/500]
+Varro +170 XP (the work done) [338/500]
 
 -- the party --
-Nerva: Unhurt STA 4/8 Power 1/6
+Nerva: Unhurt STA 3/8 Power 0/6
+  (Winded -2 to rolls)
   (healing x1, stamina x1)
-Varro: Unhurt STA 6/8 Power 3/5
+Varro: Scratched STA 5/8 Power 3/5
   (healing x1, stamina x1)
-Purse 115s; day 1.
-Ahead: 1 fight(s) at the village graveyard; the work done pays 170 XP in the field, and the turn-in pays 191s, 97 XP at the giver.
-  (due day 7 -- 6 days left; quick pay, x1.15)
+Purse 115s; day 2.
+The work is done: return to Aurelia at Salicetum -- the turn-in pays 191s, 97 XP (`turnin q01`).
+  (due day 7 -- 5 days left; quick pay, x1.15)

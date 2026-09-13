@@ -1,7 +1,7 @@
-RPG2 MAP -- day 1
+RPG2 MAP -- day 2
 the party is at Byzantium > Venice >
-  Venice > the village graveyard >
-  graveyard
+  Venice > the village graveyard > crypt
+  steps
 
             111111111122222222223
    123456789012345678901234567890
@@ -50,7 +50,7 @@ HERE: Venice (R12C14) -- Byzantium,
     job(s)
   Petrapolis (city)  6 job(s)
   Castranova (town)  5 job(s)
-  Salicetum (village)  3 job(s)
+  Salicetum (village)  2 job(s)
 
 -- Byzantium --
   [PROSPEROUS] Heaven's gate city stands
@@ -93,6 +93,5 @@ Saturna cities: Saturna R04C14*
 
 [q01] The Restless Crypt (L5) @
   Salicetum
-  - the village graveyard (L5): here,
-    room 2/2
+  - the village graveyard (L5): cleared
   - R12C14: here
