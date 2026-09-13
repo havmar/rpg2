@@ -54,18 +54,22 @@ the checked-out copy already contains the latest UI or rules changes.
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
 - `plan.md` — the sole active roadmap. Shipped work is removed from it.
-  Since 2026-09-12 it carries ONE build contract, THE GATES ARC (Heaven &
-  Hell, five sessions, design in `gates.md`), above the roadmap BEYOND
-  the fixed-Europe, tile-economy and medieval-world arcs (the spring
-  snapshot and trouble, politics and war, fantasy and magic, settlements
-  revisited, the deferred leftovers), each of which is a future design
-  conversation, none scheduled.
+  It carries NO build contract: four arcs have shipped out of it (the
+  fixed Europe map, the tile economy, the medieval world, and the gates —
+  Heaven & Hell, built whole 2026-09-12). What is left is the roadmap
+  beyond them — the spring snapshot and trouble, politics and war,
+  fantasy and magic, settlements revisited, the deferred leftovers — each
+  a future design conversation, none scheduled.
 - `develop.md` — the dev guide: workflow, file index, dev map, conventions,
   tuning levers, current balance summary.
 - `benchlog.md` — the dated tuning history (append an entry after every
   re-measurement; develop.md keeps only the current summary).
 - `designlog.md` — the dated design-session history (the reasoning trail
   behind plan.md's decisions; append after every major design session).
+- `gates.md` — THE GATES ARC's historical note: the arc shipped whole on
+  2026-09-12 in five sessions, and the file is now a map of where its
+  content went (rules.md's Heaven & Hell add-on, dm.md, develop.md,
+  designlog).
 - `archive/plan-pre-europe-2026-08-15.md` — the complete roadmap snapshot
   displaced by the Europe-map reset. It is marked historical and is not
   implementation authority; its unfinished and parked ideas return only if

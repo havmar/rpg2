@@ -732,7 +732,7 @@ for _culture in TEMPLATES:
 EPIC_TEMPLATES: list[dict] = [
     dict(title="The Dragon's Tribute",
          desc="A dragon takes food and silver from an entire valley. Kill it "
-              "and end the tribute. The general pays on its head.",
+              "and end the tribute. The pay is on its head.",
          pool=DRAKE_POOL, skins={}, proof="the dragon's head",
          sites=("the burned storehouses", "the mountain path",
                 "the dragon's cave"),
@@ -760,6 +760,30 @@ EPIC_TEMPLATES: list[dict] = [
                           "The king's wizard has stopped answering questions "
                           "about it."),
 ]
+
+
+# THE EPICS' GIVERS IN A CITY STATE (2026-09-12, the gates arc's session 5).
+# The three rows above are country-agnostic and name a human court -- the
+# king's general, the border commander, the king's wizard. A one-tile gate
+# city has no king, no border and no royal wizard, and both of them are
+# capitals, so both post all three. The same three JOBS are re-cast here
+# rather than given a table of their own: what changes is who is paying.
+EPIC_GIVERS: dict[str, dict[str, str]] = {
+    "heaven": {"the king's general": "the Prefect",
+               "the border commander": "the warden of the gate",
+               "the king's wizard": "the School of Measures' first reader"},
+    "hell": {"the king's general": "the Master of Hounds",
+             "the border commander": "a captain of the free companies",
+             "the king's wizard": "the Fire School's forge-master"},
+}
+
+
+def epic_templates(culture: str) -> list[dict]:
+    """The three epics as this culture's capital posts them."""
+    swap = EPIC_GIVERS.get(culture)
+    if not swap:
+        return EPIC_TEMPLATES
+    return [dict(tpl, giver=swap[tpl["giver"]]) for tpl in EPIC_TEMPLATES]
 
 
 def _ruin_place(side: str) -> dict:
@@ -1784,7 +1808,7 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     homeland = land_homeland(world, settlement["land"])
     tables = list(TEMPLATES[CULTURE_OF[homeland]])
     if settlement.get("capital"):
-        tables += EPIC_TEMPLATES
+        tables += epic_templates(CULTURE_OF[homeland])
     fitting = [t for t in tables
                if template_band(t)[0] <= level <= template_band(t)[1]
                and (not quest_place_requirement(t).get("strict")

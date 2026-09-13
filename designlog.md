@@ -8303,3 +8303,274 @@ enough to hold a session for; both would be cheap beside the packets.
   draft said "white walls on a plain" and the scratch playthrough printed
   it over a hills tile, which is exactly the failure the catalog rule
   about template descriptions exists to prevent.
+
+---
+
+## 2026-09-12 (E) — Session 5 of the Gates arc: the packets and the human side (the arc complete)
+
+The arc's fifth and LAST build session, off `plan.md` item 5 and
+`gates.md` section 11 in full plus the one surviving line of section 4.
+Sessions 1-4 put two dead cities on the map, a sentinel at the bottom of
+each, the half-blood in the party and two foreign colonies on the map as
+COUNTRIES. This one is the content the frame was waiting for: **what the
+two colonies DO, and what the nine make of them.** Everything section 11
+decided is built as decided; what follows records where it went, every
+**[build settles]** call, and a closing paragraph on the arc.
+
+### What shipped, and where
+
+- **The two packets, whole** (`worldsim.py`, the `CARDS` tuple's gate
+  block). Eight crisis cards a side with their admits and outlets exactly
+  as authored, plus the weather and season cards completed. Heaven: the
+  register, the removal, the cure line, the gate guarded, a stranded one,
+  the lamp thieves, the sermon, the servant loose, the clear sky, the
+  choir season. Hell: the feast spills, the debt book, the lord hanged,
+  the kennels open, a stranded one, the cages, the election, the horned
+  ones, the feast fires, the wild season. Two CHAINS on the chain rule
+  (`register-read` -> the removal; `feast-spilled` -> the debt book, each
+  successor admitting on the state and CLEARING it).
+- **Four named people** — `_CHILD_HOOK`, `_ANGEL_HOOK`, `_DEBTOR_HOOK`,
+  `_DEMON_HOOK`, in the wild talent's shape. `_authority_hook` grew a
+  `born=` callable and `_host_of(side)` reads `world["gates"]`, so all
+  four come out of the HOST country's name pool: the child on Concordia's
+  register is a village child with a village name.
+- **Four options** — `heaven/choir` (bless, healer, 40s, +2 satisfaction,
+  5 days), `heaven/measures` (book, goods, 120s), `hell/feast` (bless,
+  lodging, 25s, +2, 7 days), `hell/fire` (book, goods, 120s). Both cities
+  were selling nothing before this session; both counters are open now and
+  the two schools undercut the academy's 130s and the tower's 150s.
+- **Ten more facts** (six a side now), **four per-culture Tom lines**
+  and **one ANY_LAND fact, THE YEAR OF THE CHURCH** — the year 1027, which
+  rules.md has said since session 1 is the only date the game prints and
+  which nothing actually printed until now.
+- **Seventeen new `STATE_WORDS`** with eight `STATE_MENU` rows, five
+  `STATE_ENCOUNTERS` rows and two `STATE_MARKS` rows; `gate-watched`, the
+  session-4 placeholder, is gone.
+- **`stamp_gates`** inside `open_world`: the five standing words
+  (`hosts-heaven`, `hosts-hell`, `keeps-candor`, `keeps-libera`,
+  `pagan-host`, all in `EXTERNAL_STATES`) and the four standing facts,
+  written onto a new `land["facts"]` list that `facts_here` prints beside
+  the authored `FACTS`.
+- **`_GATE_RELATIONS` and `resolve_relations`** — the four HOST-resolved
+  rows, parked on `world["relations"]` by `open_world` and read by
+  `derived_states` through `relations_of`. `_possible_relations()` is what
+  the three import-time passes run on.
+- **The human side** — `communion/the-return-question` in both rites'
+  decks with `_return_hook`; `EXTERNAL_TENSIONS` and the
+  `church-vs-saturna` axis stamped on Hell's host where the host keeps the
+  Sun communion, with `western/the-preaching-crusade` reading it.
+- **The two crowns** — `rulers.roll_ruler(barred=, accession=,
+  puppeteers=)`, `rulers.BODILESS` / `GATE_PUPPETEERS`, two weight-0
+  `ACCESSIONS` entries, and `worldsim._crown`.
+- **`quests.epic_templates(culture)`** — the three country-agnostic epics
+  re-cast for the two gate cultures, because a one-tile state has no
+  king's general.
+- Paperwork: rules.md's **Heaven & Hell add-on part 5** and the one-line
+  pointer at the head of the Hell Pact section; dm.md's "The gates" grown
+  by seven bullets plus the owed paragraph on a party with no blood in it;
+  develop.md's Files (`gates.md` rewritten, `worldsim.py`, `rulers.py`,
+  `test_gates.py`) and a fifth gates dev-map entry; benchlog's 2026-09-12
+  (E); this entry. `gates.md` is reduced to a historical note; `plan.md`
+  loses item 5 and the whole GATES ARC section; CLAUDE.md's plan.md
+  bullet says no build contract again.
+- **39 new tests** (1195 -> 1234) in six `test_gates` classes.
+
+### The [build settles] calls
+
+1. **An option's KEY is its word.** Section 11 named both a key
+   (`heaven/choir-blessing`) and a word (`choir`), but `option_word` reads
+   the word OFF the key's suffix and the word is what the player types at
+   the counter. Two doors for one name was not worth a new field, so the
+   word won: the keys are `heaven/choir`, `heaven/measures`, `hell/feast`
+   and `hell/fire`, and the fuller phrase lives in the option's display
+   name ("the choir's blessing of order", "a place at the long table").
+2. **Both blessings give 2 and every human one gives 1.** The spec set the
+   prices and left the value and the cooldown open. Every existing blessing
+   in the game is worth one point of satisfaction; these are the gate
+   cities, and walking into one is supposed to be worth the walk, so both
+   are worth two. The cooldowns are each side's own fiction: the choir is
+   scheduled (5 days), the feast is weekly and says so in its own fact (7).
+3. **`heaven/the-gate-guarded` took the TENSION and not the
+   constitution.** The spec says "constitution QUARANTINE **or** tension
+   prefect-vs-church", and `admits` is AND across kinds and ANY-OF within
+   one, so the OR cannot be written on one card. The tension was taken
+   because it is the branch that actually reaches play: THE QUARANTINE is
+   weight 1 of 10 and would have put `gate-shut` — a state with a price
+   row, an encounter row and a relation reading it — behind a 10% roll.
+   THE QUARANTINE still says the gate is guarded, on the `world` page, as
+   a constitution's standing line; the card is the EVENT. (`hell/the-cages`
+   names both a tension and a constitution pair and is left exactly as
+   authored, because that one IS an AND with an ANY-OF inside it.)
+4. **`hell/the-horned-ones` admits on `pagan-host` alone.** The spec said
+   "`hosts-hell` AND `pagan-host`", but the card fires in SATURNA and
+   `hosts-hell` is stamped on the HOST, so Saturna could never read it —
+   and as an admit it carries nothing anyway, since some land always hosts
+   Hell. What the clause was reaching for is "the host is old-god country",
+   which is exactly `pagan-host`. So `pagan-host` is the admit, and it is
+   the one standing word stamped on BOTH ends (the host and Saturna),
+   because the card that reads it is the city's.
+5. **The five standing words are stamped in `open_world`, not in
+   `places.roll_gates`.** "At worldgen" is satisfied either way, and
+   `open_world` is where the world layer is built and where `world["gates"]`
+   is already on the world; stamping in places.py would have put world-layer
+   state vocabulary and four fact lines into the geography module. They go
+   on between the layer loop and the opening crisis draw, so a card can
+   admit on one of them on day one.
+6. **The crusade tension is authored on the WESTERN CULTURE and kept out
+   of the roll.** The three lands that can host Saturna and keep the Sun
+   communion are all western (Seraptania is in Heaven's set and can never
+   host Hell), so the culture list is exactly the right scope — but a
+   culture-wide tension is rollable, and Seraptania must never draw it.
+   `EXTERNAL_TENSIONS` is the answer, and it is `STANDING_TENSIONS`'
+   sibling and `EXTERNAL_STATES`' cousin: authored, never rolled, held only
+   where worldgen puts it. It has to be stamped before `_deck` is cut or
+   its card never enters the deck.
+7. **The reachability pass runs on `_possible_relations()`.** The
+   [decided] call is that `open_world` resolves the HOST placeholder, and
+   it does — but no world exists at import, and the two city states are
+   reached by NO authored edge once the session-4 placeholders are retired.
+   So the import-time passes run on the authored table plus each gate row
+   resolved against every land that COULD host that gate, which is exactly
+   "every edge any world's table can hold". `derived_states` reads the
+   world's own resolved table and nothing else.
+8. **The synod question is `communion/the-return-question`, not
+   `southern/`.** The file's own namespace rule says a card two lands of
+   two CULTURES draw takes a track/argument namespace, and Seraptania is
+   western; `southern/` would have been a lie about half its scope.
+   `communion/` already exists for exactly this and already holds the
+   synod. `test_worldsim`'s one-key exemption became a `communion/` prefix
+   exemption in the same pass.
+9. **Tom is authored per CULTURE, four rows.** The contract worried that
+   Thule and Tergal are "the norse culture's lands"; they are not — Thule
+   is the `norse` culture and Tergal the `steppe` culture, each worn by
+   exactly one land, so per-culture and per-land coincide for both and the
+   four lines are `western`, `southern`, `norse`, `tergal`.
+10. **The year is an ANY_LAND FACT, not a header line.** `lore_lines` is
+    the only surface a fact has, and a fact is what a lore page is made of,
+    so THE YEAR OF THE CHURCH sits with the rest of the page's colour
+    rather than being special-cased into the header. It is titled THE YEAR
+    OF THE CHURCH rather than THE YEAR because Hell's packet already owns
+    a fact called THE YEAR and both print on Saturna's page.
+11. **`heaven/the-cure-line` prices CONCORDIA's healer, not the host's.**
+    The spec says "menu healer x0.5 in the host land while it stands", but
+    a card's `menu` outlet applies to the land it fires in and the
+    infirmary is inside Concordia. The host feels the cure through the
+    relations table, which is what the table is for — the `cure-dear` edge
+    is the same axis pointing the other way.
+12. **The cards that leave a priced state carry no `menu` payload.** The
+    no-double-charging validator forbids a card pricing a term its own
+    state also prices, and the spec authored both halves for `gate-shut`
+    (healer x1.5, goods x1.3) and `feast-spilled` (lodging x0.6). The
+    prices are in `STATE_MENU`, where the spec's own state table puts them,
+    so they survive the card's clock — which is the point of a `while`
+    state having a price at all.
+13. **The lamp thieves' marks ride `hosts-heaven`.** The spec asks for
+    state marks reaching burglary and the con off that card, but the card
+    leaves no state and the state list is closed. A lamp of Concordia is
+    worth a horse in the host country every day of the campaign and not
+    only in the week the thieves are being chased, so the standing word
+    carries it. The cages ride their own `cages-open`, which is a `while`.
+    `powder` ("move the sacks at night, take the price at dawn") is this
+    game's smuggling category; there is no category called smuggling.
+14. **The posted jobs are authored inline with the spec's titles.** A card
+    embeds a `job()` and `worldsim` cannot import `quests`, so "reference by
+    template" means BY NAME: `Bring the Child Home`, `The Lamp Thieves` and
+    `The Servant That Walks` also exist on the boards' own tables, and a
+    card's copy is its own row with the same title at the table.
+15. **The add-on is part 5.** The contract called it part 4; part 4 is
+    session 4's and is about the two city states. Five parts, one a session.
+16. **`gates.md` keeps no residue.** worldsim.md's precedent is to keep
+    what the packets left undesigned, but nothing in gates.md went unbuilt
+    — every section was built by the session that owned it — and the three
+    questions the arc declined are roadmap items rather than spec residue.
+    So the file is reduced to a one-page historical note: where the content
+    went, the five sessions, and the three standing directives, which
+    outlive the build.
+17. **`accession=` rolls and discards.** Naming the two gate crowns'
+    accession could have skipped `roll_accession` and moved those lands'
+    streams for no reason; the roll is made and the named value replaces
+    it, so every other roll on a city state's sheet is what it was.
+
+### Two pre-existing tests repaired, none weakened
+
+- **`test_hookup.test_the_shop_multiplies_the_land_by_the_ground`** read
+  the LAND's term at day 0 and compared it against `local_term`, which
+  rolls the world to the party's day before it quotes. It had been passing
+  because Seraptania happened to have nothing standing on day 3; the card
+  this session added to Seraptania's deck moved its draw and the latent
+  bug surfaced. The test now rolls the world first, which is the
+  dependency stated out loud.
+- **`test_worldsim.test_the_pact_stays_out_of_the_lore`** forbade the bare
+  word `hell` anywhere in the packets' lore. That was a cheap proxy for the
+  real directive — nobody in the world knows of the PC's pact — and it
+  worked only while Hell was the pact's employer and nothing else. Hell is
+  a country on the map with a packet, a city, a ruin and hell hounds for
+  sale. The clause now forbids the pact's own vocabulary (the pact, the
+  contract, an evil god, the word from below, infernal, damned) plus the
+  sharper thing the proxy stood in for: no entry in these packets speaks to
+  or about the player at all.
+
+### What felt wrong
+
+- **`hell/the-election` is the one card in either packet that is pure
+  colour.** It fires on any day, sets the succession secure and puts the
+  new Lord's revelers on the road, and its only real consequence is the
+  succession word — which only matters if something had made it disputed.
+  It is the flavor anchor the packet doctrine asks for, and it is
+  the right answer for a city whose crown is elected for a year and a day,
+  but it is the card most likely to read as a shrug at the table.
+- **`preached-against` sits on Concordia and the relation that reads it
+  wants it on the HOST.** The sermon is preached by the host's bishops but
+  the card is Concordia's (the bishops are one of Concordia's own blocs),
+  and `_fire` can only write on the firing land. The `pulpit-against` edge
+  therefore runs off `interdict` in practice, which is a real human state
+  any Sun land can hold, and the second `when` word is authored-but-idle.
+  It is not dead data — a later host-side card could set it — but it is the
+  one row in the four where the spec's fiction and the engine's addressing
+  do not quite meet.
+- **The removal is rare.** One fire in 30 worlds over 60 played days. The
+  chain is correct and it completes, but the single most loaded scene in
+  either packet — the Pruners take a named child off the register — is the
+  thing a played campaign is least likely to see. Raising `the-register`'s
+  reach would be the lever (it is gated on the standing inner tension, so
+  it is already always in the deck; the constraint is the NORMAL band's
+  0.02 draw chance). Worth watching before touching.
+- **Nobody has played any of this.** The arc built five sessions of content
+  on a world nobody has taken past level 4, and the two packets in
+  particular are a lore page, a counter and a news line until somebody
+  walks to a gate city and stays there a season. The scratch playthrough
+  verified every surface; it verified nothing about whether the two sides
+  read as opposites over an evening.
+
+### The arc, whole
+
+Five sessions in one day, in an order forced by what boots. **Session 1**
+was the biggest and the one that made the arc playable: four sites rolled
+onto the map, two permanent rings, two dead cities built as six-Site
+dungeons apiece over the whole level ladder, and `delve` to walk into them
+with no giver and no board. **Session 2** put something at the bottom of
+each — Zohariel the Sentinel and Saar the Old Host, the first authored
+one-offs the bestiary doctrine had been promising — with the two bars Tom
+set across the gates, and eight board jobs that send ordinary people in
+after them. **Session 3** put the setting in the party: half of all player
+characters are Nephilim, and the sheet says which line. **Session 4** made
+the two live colonies COUNTRIES — eleven lands, two crowns, two priced
+counters, two quest tables — which cost the catalog's five-tier contract a
+rewrite and taught every country-keyed reader the difference between "the
+nine" and "every land". **Session 5** gave the two colonies something to
+do and the nine something to say about it.
+
+What the arc is, in one sentence: **a second, foreign axis laid across a
+historically anchored map, at every scale the game has** — a dungeon to
+walk into at level 2 and at level 17, a line of blood on the character
+sheet, two countries with prices and politics, and a standing word on
+whichever of the nine the roll landed them in.
+
+**What stays parked**, all of it now in plan.md: what one DOES to a live
+gate (the endgame the two bars point at and nothing answers); conquest by
+the two city states (they were designed to be able to take land and
+nothing builds it, which is why the crusade is a card and not a front);
+the Hell pact rewritten onto this setting or cut (rules.md now says the
+add-on outranks it and nobody has picked between the two honest answers);
+and the north's draugr and grave ghosts, still owed by the monsters &
+fauna dump — the gate skins are not them.

@@ -1780,14 +1780,14 @@ class TheEconomyFloorContent(unittest.TestCase):
         between named countries, every land reached, no edge naming a
         culture any more, and every `when` a state some card of the SOURCE
         land can actually hold."""
-        # Twenty, plus the two PLACEHOLDER edges between the two gate
-        # cities (2026-09-12, session 4): section 11's real rows run
-        # between a city and its rolled HOST and are session 5's.
-        self.assertEqual(len(worldsim.RELATIONS), 22)
+        # Twenty, and twenty only: the four GATE edges (2026-09-12,
+        # session 5) have a rolled end and live in `_GATE_RELATIONS`,
+        # resolved per world by `open_world` -- `test_gates` owns them.
+        self.assertEqual(len(worldsim.RELATIONS), 20)
         self.assertEqual(len(worldsim._RELATIONS), len(worldsim.RELATIONS))
         reached = {p for e in worldsim.RELATIONS
                    for p in (e["from"], e["to"])}
-        self.assertEqual(reached, set(places.LAND_SPECS))
+        self.assertEqual(reached, set(places.HUMAN_COUNTRIES))
         for edge in worldsim.RELATIONS:
             for side in ("from", "to"):
                 self.assertNotIn(edge[side], places.CULTURE_LANDS)
@@ -2410,7 +2410,7 @@ class ThePoliticsContent(unittest.TestCase):
         settable = {s for c in worldsim.CARDS
                     for group in ("set", "while")
                     for s in (c["outlets"].get("state") or {}).get(group, ())}
-        settable |= {e["then"] for e in worldsim.RELATIONS}
+        settable |= {e["then"] for e in worldsim._possible_relations()}
         for spec in _politics_cards():
             gated = any(spec["admits"].get(k) for k in POLITICS_KEYS)
             chained = set(spec["admits"]["states"])
@@ -2423,28 +2423,79 @@ class ThePoliticsContent(unittest.TestCase):
                    if worldsim.in_land(c, polity)]
             self.assertGreaterEqual(len(own), 3, polity)
 
-    def test_the_two_gate_packets_are_stubs_and_say_so(self) -> None:
-        """The two city states (2026-09-12, the gates arc's session 4)
-        carry the FLOOR the frame demands and no more: a card on each
-        track, a standing fact, a constitution slot, tensions with blocs
-        and one relation edge. Session 5 authors the packets; this is the
-        clause that keeps "it is a stub" a fact rather than a memory."""
-        for polity in places.CITY_STATES:
-            for track in worldsim.TRACKS:
-                own = [c for c in worldsim.CARDS
-                       if c["track"] == track and c["land"] == (polity,)]
-                self.assertEqual(len(own), 1, (polity, track))
+    def test_the_two_gate_packets_are_whole(self) -> None:
+        """The two city states' packets (2026-09-12, the gates arc's
+        session 5), as data. Session 4 shipped the FLOOR the validators
+        demand and this clause pinned the stub; the packets are now
+        gates.md section 11 entire and the same clause pins the shape:
+        eight crisis cards, one weather and one season card, four
+        constitutions, three tensions with the inner axis standing, six
+        faction edges, six facts and two priced options a side."""
+        want = {"heaven": ("concordia", "gardeners-vs-pruners"),
+                "hell": ("saturna", "feast-vs-hunger")}
+        for culture, (polity, standing) in want.items():
+            own = {track: [c for c in worldsim.CARDS
+                           if c["track"] == track and c["land"] == (polity,)]
+                   for track in worldsim.TRACKS}
+            self.assertEqual(len(own["crisis"]), 8, polity)
+            self.assertEqual(len(own["weather"]), 1, polity)
+            self.assertEqual(len(own["season"]), 1, polity)
             self.assertEqual(len(worldsim.CONSTITUTIONS[polity]), 4, polity)
+            self.assertEqual([c["weight"]
+                              for c in worldsim.CONSTITUTIONS[polity]],
+                             [6, 2, 1, 1], polity)
             self.assertEqual(len(worldsim.TENSIONS[polity]), 3, polity)
-            self.assertEqual(len(worldsim.STANDING_TENSIONS[polity]), 1,
-                             polity)
+            self.assertEqual(worldsim.STANDING_TENSIONS[polity],
+                             (standing,), polity)
             self.assertEqual(len([f for f in worldsim.FACTS
-                                  if f["land"] == (polity,)]), 1, polity)
+                                  if f["land"] == (polity,)]), 6, polity)
             self.assertEqual(len([e for e in worldsim.FACTION_EDGES
                                   if e["land"] == (polity,)]), 6, polity)
-            # ...and no OPTION at all yet: both counters are session 5's.
-            self.assertFalse([o for o in worldsim.OPTIONS
-                              if o["land"] == (polity,)], polity)
+            options = worldsim.options_of(polity)
+            self.assertEqual(len(options), 2, polity)
+            self.assertEqual({o["does"] for o in options}, {"bless", "book"},
+                             polity)
+            # every card keyed to its own side, and every one with an outlet
+            for spec in sum(own.values(), []):
+                self.assertTrue(spec["key"].startswith(culture + "/"),
+                                spec["key"])
+                self.assertTrue(spec["outlets"], spec["key"])
+
+    def test_the_two_gate_packets_carry_the_designs_own_keys(self) -> None:
+        """gates.md section 11's card list, key by key: nothing renamed,
+        nothing quietly dropped when the packets went from stub to whole."""
+        expected = {
+            "heaven": {"the-register", "the-removal", "the-cure-line",
+                       "the-gate-guarded", "a-stranded-one",
+                       "the-lamp-thieves", "the-sermon",
+                       "the-servant-loose", "clear-sky",
+                       "the-choir-season"},
+            "hell": {"the-feast-spills", "the-debt-book", "the-lord-hanged",
+                     "the-kennels-open", "a-stranded-one", "the-cages",
+                     "the-election", "the-horned-ones", "feast-fires",
+                     "the-wild-season"},
+        }
+        for culture, keys in expected.items():
+            polity = places.CITY_STATE_OF_SIDE[culture]
+            got = {c["key"].split("/", 1)[1] for c in worldsim.CARDS
+                   if c["land"] == (polity,)}
+            self.assertEqual(got, keys, culture)
+
+    def test_each_gate_packet_runs_one_chain(self) -> None:
+        """The chain rule, on the two links the packets are built round: a
+        link is a `set` state the successor admits on and CLEARS, never a
+        `while` (a track draws only while its live slot is free)."""
+        for setter, reader, word in (
+                ("heaven/the-register", "heaven/the-removal",
+                 "register-read"),
+                ("hell/the-feast-spills", "hell/the-debt-book",
+                 "feast-spilled")):
+            first = worldsim.CARDS_BY_KEY[setter]["outlets"]["state"]
+            second = worldsim.CARDS_BY_KEY[reader]
+            self.assertIn(word, first["set"])
+            self.assertNotIn(word, first.get("while", ()))
+            self.assertIn(word, second["admits"]["states"])
+            self.assertIn(word, second["outlets"]["state"]["clear"])
 
     def test_the_baseline_land_takes_the_deepest_packet(self) -> None:
         """The asymmetry doctrine, as a number: Phyrascia carries more
@@ -2645,11 +2696,7 @@ class TheLastTwoRecordKinds(unittest.TestCase):
         of its own now wears (Andalusia: the two southern facts, THE
         KNOCKERS and THE WATER COURT); Thule's packet took it to eight."""
         for polity in places.LAND_SPECS:
-            # The two city states' packets are STUBS (2026-09-12): one fact
-            # each, which `test_the_two_gate_packets_are_stubs_and_say_so`
-            # pins and session 5 grows to six.
-            floor = 1 if polity in places.CITY_STATES else 4
-            self.assertGreaterEqual(len(worldsim.facts_of(polity)), floor,
+            self.assertGreaterEqual(len(worldsim.facts_of(polity)), 4,
                                     polity)
             own = [f for f in worldsim.facts_of(polity)
                    if f["land"] == (polity,)]
@@ -2669,8 +2716,10 @@ class TheLastTwoRecordKinds(unittest.TestCase):
         edges = [e for e in worldsim.FACTION_EDGES
                  if e["land"] == ("thule",)]
         self.assertEqual(len(edges), 6)
+        # Eight since 2026-09-12 (session 5): Tom the Smith, the norse
+        # culture's own version of the figure who barred both gates.
         self.assertEqual(len([f for f in worldsim.FACTS
-                              if f["land"] == ("thule",)]), 7)
+                              if f["land"] == ("thule",)]), 8)
         self.assertEqual([o["key"] for o in worldsim.options_of("thule")],
                          ["norse/weather-witch"])
         self.assertEqual(len(worldsim.CONSTITUTIONS["thule"]), 4)
@@ -3007,12 +3056,22 @@ class TheReligionAndMagicContent(unittest.TestCase):
     def test_the_pact_stays_out_of_the_lore(self) -> None:
         """The design round's first directive: nobody in the world knows of
         the player's hell pact, nothing senses it, and no entry in these
-        packets reacts to it."""
+        packets reacts to it.
+
+        The bare word `hell` was this clause's proxy until 2026-09-12 and
+        is not one any more: the gates arc put Hell on the map as a
+        country with a packet, a city and a ruin, and rules.md's Heaven &
+        Hell add-on says the game uses the word without apology. What the
+        directive actually forbids is the PACT -- its vocabulary, its
+        employer and its machinery -- so that is what is checked, plus the
+        sharper clause the proxy was standing in for: no entry in these
+        packets speaks to or about the player at all."""
         text = " ".join(
             [e["line"] for e in worldsim.FACTS]
             + [o["line"] for o in worldsim.OPTIONS]
             + [c["outlets"].get("news", "") for c in _lore_cards()]).lower()
-        for word in ("the pact", "hell", "infernal", "damned"):
+        for word in ("the pact", "your pact", "the contract", "an evil god",
+                     "word from below", "infernal", "damned", "the player"):
             self.assertNotIn(word, text)
 
     def test_no_card_in_the_rung_is_dead_data(self) -> None:
@@ -3104,9 +3163,9 @@ class TheCardAudit(unittest.TestCase):
                 continue
             if worldsim.ANY_LAND in spec["land"]:
                 continue
-            if spec["key"] == "communion/the-synod":
-                continue        # the schism's own card, and the schism
-            #                     runs between two CROWNS of two cultures
+            if spec["key"].startswith("communion/"):
+                continue        # the two rites' own cards, and the rites
+            #                     run across two CROWNS of two cultures
             cultures = {places.CULTURE_OF[p] for p in spec["land"]}
             covered = {p for c in cultures
                        for p in places.CULTURE_LANDS[c]}

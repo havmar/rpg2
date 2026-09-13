@@ -4165,6 +4165,11 @@ stays flat and concrete.
 
 ## The Hell Pact (2026-07-19, second slice — the dark-quests session)
 
+> **The setting authority is the Heaven & Hell add-on** (parts 1–5,
+> 2026-09-12). This section is the OLD frame and is kept exactly as it is,
+> because the pact carries the crime content and nothing in the gates arc
+> has to fit it; where the two disagree, the add-on wins.
+
 The frame, settled by the designer the same day the first slice shipped:
 **the PC is not a neutral adventurer but a low-ranking employee of
 Hell** — a mortal human (not an imp; this settles
@@ -5772,7 +5777,10 @@ later sessions and are not here yet.
 > ("an evil god", "the gods of Light") is the OLD frame, kept as it is
 > because the pact carries the crime content and nothing here has to fit
 > it. Where the two disagree, this add-on wins. A later sitting decides
-> whether the pact is rewritten onto this setting or cut.
+> whether the pact is rewritten onto this setting or cut. The add-on runs
+> to **part 5** (2026-09-12): the setting and the ruins, the two sentinels
+> and the ruin jobs, the Nephilim, the two city states, and the two
+> world-layer packets with the human side's answer to them.
 
 ## The timeline (three dates, and the game prints one of them)
 
@@ -6316,3 +6324,125 @@ legend's GATES group, which now names them for what they are — *Concordia
 R18C26 (Heaven, city state in Umaia)*. Their permanent `gate-city` ring
 still stands on the tile and its land neighbours, with its patrols on the
 road; the ring is not a danger multiplier (part 1) and never was.
+
+---
+
+# Heaven & Hell — Add-on, part 5 (2026-09-12, the gates arc's session 5)
+
+Parts 1–4 put two dead cities on the map, a sentinel at the bottom of each,
+the half-blood in the party and two foreign colonies on the map as
+countries. This part is the last: **what the two colonies DO, and what the
+nine make of them.** It is the arc's content half — the two world-layer
+packets whole, the standing facts the map stamps on whichever countries the
+gates landed in, and the human side's answer — and with it the arc is
+complete.
+
+## What the packets became
+
+Each city carries a full country packet: four constitutions, three
+tensions, six faction edges, six standing facts, two priced services,
+eight crisis cards, a weather card and a season card. The two are built as
+**opposites on purpose**. Heaven's trouble is administrative — a list is
+posted, a child is taken, the gate is shut, a bishop preaches, a made thing
+walks off. Hell's is appetite — the feast comes over the wall, a debt is
+collected, a lord is hanged, the kennels open, the market puts people in
+cages. Neither deck is the villain's and the table plays both.
+
+**The two chains** are the spine of each side. Heaven's: THE REGISTER IS
+READ leaves the list standing, and A CHILD IS TAKEN admits on it, clears
+it, and posts *Bring the Child Home*. Hell's: THE FEAST SPILLS OVER THE
+WALL leaves the feast out, and THE DEBT-HOUSE COLLECTS admits on it, clears
+it, and posts *The Year Owed*. Both run again from the top.
+
+**Four people the packets NAME and keep.** A card cannot read the party, so
+what the world does about half-bloods reaches the table as four people it
+names once and then keeps for the rest of the campaign: **the child off the
+register**, **the hermit in the hills** who turns out to be an angel a
+thousand years native, **the debtor who sold a year**, and **the old woman
+of the fen** who has run the same feast for forty generations. All four are
+people of the HOST country and carry the host's names: a half-blood on
+Concordia's list is a village child, which is exactly what makes the list
+frightening.
+
+**What the two cities sell.** Concordia: **the choir's blessing of order**
+(40s at the healer's counter, every companion steadier, once in five days)
+and **a term at the School of Measures** (120s, the ice school's first
+diagrams to anyone with the gift, and it writes down who came). Saturna:
+**a place at the long table** (25s at the bed's price, the party eats and
+drinks until morning, once in seven days) and **a term at the Fire School**
+(120s, the same teaching and nothing in writing). Both schools undercut
+every human teaching door in the game — the academy's 130s, the tower
+wizard's 150s — which is the era line arriving at a price: the technology
+is through the gates.
+
+## The five standing words
+
+Worldgen stamps five state words that are facts about WHERE the four gates
+landed, and nothing ever takes them off:
+
+| word | on | what it does |
+|---|---|---|
+| `hosts-heaven` | Concordia's donor country | the healer x0.9 — the cure leaks out |
+| `hosts-hell` | Saturna's donor country | a bed x0.9 — so does the feast |
+| `keeps-candor` | the country Candor stands in | colour, and the DM's page |
+| `keeps-libera` | the country Libera stands in | colour, and the DM's page |
+| `pagan-host` | Hell's host AND Saturna, when the host is Thule or Tergal | THE GROVE KNOWS ITS OWN admits on it |
+
+The two host words are the cheapest thing on the map that says a foreign
+power is HERE: the party feels it at a counter, every day, in a country it
+has not yet connected to the gate. `hosts-heaven` also puts **a lamp of
+Concordia** into the host's burglary and con tables for the whole campaign.
+
+Four standing FACTS go with them, on the same lands' lore pages: THE GATE
+CITY on each host (*Concordia stands on ground that was Byzantium's
+twenty-seven years ago*), THE WHITE RUIN on Candor's keeper and THE WILD
+RUIN on Libera's.
+
+## The four relations
+
+The world's relations table gains four edges that cannot be authored,
+because their ends are rolled. Two run OUT of the cities and two run INTO
+them:
+
+| from | what | to | when the source holds | the target wears |
+|---|---|---|---|---|
+| Concordia | the cure | its host | the gate is shut, a child was taken | `cure-dear` — the healer x1.3 |
+| Saturna | the feast | its host | the feast spilled, the cages are open | `feast-abroad` — a bed x0.7, revelers in the wilds |
+| the host | the bishops | Concordia | interdict, the pulpit is against the gate | `pulpit-against` — the shelf x1.2 |
+| the host | the hunt | Saturna | the hunt is up, the country is at war | `hounds-out` — hounds on the road |
+
+A power that lands on somebody's country is felt by the country and answers
+to it. Every derived word reaches a price or a road.
+
+## The human side
+
+- **The synod asks what came back.** One card in the two rites' decks, on
+  the same derived word the schism runs on. Which rite welcomes the Return
+  is not an opinion but an ADDRESS: the rite that has Concordia standing on
+  its own ground says the god's own country has come back and the saint's
+  work is finished; the other says it is an invasion wearing the god's
+  face. Like the synod itself, it does not split the church.
+- **Tom, one line a culture.** The western church keeps SAINT TOM AND THE
+  RETURN (he shut the door on hell, and the sermons have got careful); the
+  old rite keeps SAINT TOM OF THE TWO DOORS (he shut two, and the second
+  was not hell's); Thule keeps TOM THE SMITH (who worked one season and
+  then had nothing more to do); Tergal keeps TOM WHO SEWED THE SKY. They
+  disagree and none of them knows the others'.
+- **The crusade.** Where Hell's host is a Sun-communion land — Phyrascia,
+  Teutonia or Vellisclavia — that country gains a standing tension, the
+  bishops against the feast town, and one card: A CRUSADE IS PREACHED
+  AGAINST THE FEAST, with men on the gate road carrying staves who are not
+  pilgrims. It is a card and not a war. The standing wars are still not
+  rolled over the city states; taking land is a later arc.
+- **The two crowns read as an angel and a demon.** Both draw the same human
+  ruler vocabulary every other crown draws — a Prefect may be cruel,
+  cultivated, devout or a puppet — minus the six words about a decaying
+  mortal body, and neither accession is rolled: the Prefect **was sent
+  through the gate to hold this side of it** and the Lord of Misrule **was
+  carried round the hollow on the long table**.
+
+## The year
+
+**It is the year 1027**, by the Church's count from the Closing. It is the
+only date the game ever prints and it prints on the lore page of every
+land, as a standing fact, beside whatever else that land believes.

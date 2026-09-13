@@ -3327,3 +3327,99 @@ routes 7`, and a scratch playthrough that walked into both cities.
 
 Test suite: **1195 OK** (1178 before, +17 — fourteen in `test_gates`'s new
 `TheTakeover`, two in `test_places`, one in `test_worldsim`).
+
+---
+
+## 2026-09-12 (E) — the gates arc's session 5: the packets and the human side
+
+The arc's last session is CONTENT over machinery the world layer already
+had, so the sweeps that measure worldgen were expected not to move, and
+did not. What is new to measure is whether the authored content actually
+FIRES, and at what rate.
+
+**`python bench_worldgen.py` (100 seeds, 37s) is identical to 2026-09-12
+(D), line for line.** Census 4.0 / 21.7 / 101.1 / 399.5 / 90.7, total
+617.0, 1,571,381 souls, 69.8 free, 50.2 manors. Trade 59.2 routes, 115.2
+land tiles on a road, 26.4 ports, 25.6 sea-lane tiles, 32.3 crossroads,
+Falun unfed in 100/100. Wars 60/51/51/50/47/41%, 2.00 crowns take the
+cross, Andalusia independent 52%, 6.0 countries at war, 47.0 marks, scars
+4.79, occupations 5.83. Harvest coverage 18.2%, 5.2 regions, size 11.3,
+the drought guarantee 100/100, trouble within 5 days 87%. The gates
+histogram is also unchanged (Candor 70% preferred over 65 tiles, Libera
+73% over 58, Concordia 63% over 65, Saturna 74% over 63; separation mean
+11.8 min 4, capital gap mean 3.5 min 2). That is the expected result and
+it is the point of running it: this session touched the LAYER, not the
+ground, and `stamp_gates` and the crusade stamp consume no rng at all.
+The only stream that moved is the two city states' own decks (and the
+crusade host's, which gained one card), which bench_worldgen does not
+read.
+
+**Do the new cards fire? `worldsim.py`-equivalent sweep, 30 worlds x 60
+days, both city states:**
+
+```
+  11  hell/the-feast-spills        6  heaven/the-register
+   7  hell/the-kennels-open        6  heaven/the-cure-line
+   6  hell/the-election            6  heaven/the-sermon
+   4  hell/the-lord-hanged         5  heaven/the-lamp-thieves
+   4  hell/the-debt-book           5  heaven/the-gate-guarded
+   3  hell/the-cages               2  heaven/a-stranded-one
+   5  hell/a-stranded-one          1  heaven/the-removal
+   2  hell/the-horned-ones
+  30  hell/feast-fires            30  heaven/clear-sky
+  30  hell/the-wild-season        30  heaven/the-choir-season
+```
+
+Every crisis card of both packets fired at least twice over 30 worlds;
+the weather and season cards fire in every world, which is what a 0.4 and
+a 0.3 chance on an otherwise empty track means for a one-card deck. **Both
+chains complete**: `feast-spilled` 11 -> `the-debt-book` 4, `register-read`
+6 -> `the-removal` 1. The removal is the rarest thing in either packet at
+60 days because it needs the register to go up first and then a second
+crisis draw on a NORMAL-band city, which is the right shape for the card
+that takes a named child.
+
+**Over a longer horizon (20 worlds x 300 days)** every card the 60-day
+sweep left thin comes through: `the-debt-book` 16, `the-removal` 11,
+`the-servant-loose` 10, `the-horned-ones` 4. The two human-side cards are
+as rare as the card they sit beside: `communion/the-synod` 4,
+`communion/the-return-question` 1 (both ride the derived `schism-near`,
+which needs one of six states standing in Byzantium or Seraptania), and
+`western/the-preaching-crusade` 4 in 4 of 20 worlds — it needs Hell's host
+to be a Sun-communion land, which is 17 of 30 worlds, and then a draw.
+
+**Where the four gates land, as hosts and keepers** (the 30-world sweep,
+the number that now matters most because five standing states and four
+facts hang off it): Heaven's host is Umaia 18, Byzantium 6, Seraptania 5,
+Andalusia 1; Hell's is Vellisclavia 13, Thule 12, Teutonia 3, Phyrascia 1,
+Tergal 1. So **`pagan-host` stands in about 43% of worlds** (Thule or
+Tergal) and the crusade tension in about 57%.
+
+**Sanity runs, all clean:** `worldsim.py --seed 1/3/7/11 --days 60`;
+`bench_worldgen.py` full; `quests.py --seed 1 --demo` (Concordia posts THE
+PREFECT'S LEVY at L18 under Chokmiel the Prefect, Saturna GUARD THE FEAST
+at L5 under Rina the Lord of Misrule); `rulers.py --seed 1 --count 8` and
+`--lesser`. A scratch playthrough walked into Concordia with `gate-shut`
+standing: `service` printed both counters at the shut gate's prices (the
+choir's blessing 60s = 40 x 1.5, the school 156s = 120 x 1.3), `prices`
+showed the land's x1.30 shelf and x1.50 healer over the ground's own rows,
+and `world` printed *state: Heaven's gate city stands on this ground* on
+Byzantium with *derived: the cure has gone dear* under it.
+
+**The two gate crowns, after the `rulers` narrowing** (seeds 1-3): the
+Prefect came out traditionalist/ambitious/lavish, brilliant/zealot/lavish
+and welcoming/striking/bold, appointed every time; the Lord of Misrule
+sleepless/zealot/cultivated, delusions/merciful/zealot and
+tireless/spell-fearing/dull, acclaimed every time. Compare session 4's
+report: "crippled, zealot, cultivated, with a brother behind the throne".
+Six words out of a 357-word die is the whole of the change and the sheets
+read right now.
+
+Test suite: **1234 OK** (1195 before, +39 — thirty-six in `test_gates`'s
+six new classes, three in `test_worldsim`, where one stub clause became
+three). Two pre-existing tests were repaired rather than weakened:
+`test_hookup.test_the_shop_multiplies_the_land_by_the_ground` read a day-0
+land against a day-3 counter and now rolls the world first, and
+`test_places.test_the_world_layer_owes_every_country_a_deck` asks the
+reachability question of `_possible_relations()` because the only edges
+that reach a city state have a rolled end.

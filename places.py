@@ -1546,6 +1546,13 @@ def _new_land_record(polity: str, spec: dict, world_seed: int | None,
         # The nine take it from `HISTORICAL_CAPITAL_TILES`; the two city
         # states take it from `roll_gates`, which is why it opens None.
         "capital_tile": HISTORICAL_CAPITAL_TILES.get(polity),
+        # THE LAND'S OWN FACTS (2026-09-12, the gates arc's session 5): the
+        # standing lore this WORLD put on this land, beside the authored
+        # `worldsim.FACTS` its culture carries. Only the gate roll writes
+        # here so far -- the four host and keeper lines, which cannot be
+        # authored at import because the four gates are rolled -- and the
+        # lore page prints both lists.
+        "facts": [],
         "areas": [], "tiles": [], "settlement_slots": [],
         "features": [], "states": [], "sequences": {},
     }

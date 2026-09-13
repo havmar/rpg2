@@ -205,6 +205,12 @@ CROWNLESS_TOTAL = sum(row["weight"] for row in VOCABULARY.values()
 # state is the most card-rich single fact about any crown.
 
 ACCESSIONS: tuple[tuple[str, int, str], ...] = (
+    # The last two NEVER ROLL (weight 0) and are named instead: the two gate
+    # cities' crowns are not human dynasties, and a Prefect who "came to it
+    # by birth, and nobody argued" is the one line on the page that gives
+    # the game away (2026-09-12, the gates arc's session 5).
+    ("appointed", 0, "was sent through the gate to hold this side of it"),
+    ("acclaimed", 0, "was carried round the hollow on the long table"),
     ("inherited", 55, "came to it by birth, and nobody argued"),
     ("elected", 12, "was elected to it, and the losers remember"),
     ("minority", 10, "came to it as a child, under a council"),
@@ -323,15 +329,48 @@ def roll_succession(rng: random.Random, traits, accession: str) -> str:
     return _weighted(rng, weights)
 
 
+# WHAT AN ANGEL AND A DEMON CANNOT BE (2026-09-12, the gates arc's session
+# 5). The vocabulary is a measured HUMAN dataset and it serves every land,
+# which is deliberate -- a Prefect may be cruel, cultivated, devout, a
+# zealot, a drunkard or a puppet, and a pool that is not a stereotype is the
+# whole point. What it may NOT be is a decaying mortal body or a travelling
+# feudal household, and until session 5 Saturna's Lord of Misrule was coming
+# out crippled with a brother behind the throne. These six words come out of
+# the die before the first draw for the two gate crowns and for nobody else.
+BODILESS = frozenset((
+    "sickly", "crippled", "falling-sickness", "failing mind",
+    "eats nothing", "itinerant",
+))
+# ...and the hand behind a throne that has no court behind it.
+GATE_PUPPETEERS = {
+    "heaven": ("the choir", "the register", "the elder beyond the gate",
+               "the Pruners' first reader", "the infirmary's warden"),
+    "hell": ("the Hunger", "the Master of Hounds", "the debt-house",
+             "the elder that came through with him",
+             "the captain who counted the votes"),
+}
+
+
 def roll_ruler(rng: random.Random, *, crown: bool = True,
-               draws: int | None = None) -> dict:
+               draws: int | None = None,
+               barred: frozenset[str] | tuple[str, ...] = (),
+               accession: str | None = None,
+               puppeteers: tuple[str, ...] = PUPPETEERS) -> dict:
     """One rolled authority: the flat `traits` list, derived `heart`, the
     succession and accession circumstances, and the two companion fields
     that only exist when their trait does (`puppeteer`, `origins`).
 
     A crown draws CROWN_DRAWS off the full pool; a lesser named authority a
-    card creates draws LESSER_DRAWS off the crown-less one."""
+    card creates draws LESSER_DRAWS off the crown-less one.
+
+    `barred` takes words out of the die before the first draw, `accession`
+    names the circumstance instead of rolling it (the roll is still made, so
+    a caller that names one does not move the stream), and `puppeteers` is
+    the list a `puppet` draws its hand from. All three exist for the two
+    gate cities and are the ordinary human defaults everywhere else."""
     live = pool(crown)
+    for word in barred:
+        live.pop(word, None)
     traits: list[str] = []
     for _ in range(CROWN_DRAWS if draws is None and crown
                    else LESSER_DRAWS if draws is None else draws):
@@ -342,12 +381,14 @@ def roll_ruler(rng: random.Random, *, crown: bool = True,
         _strike(live, word, traits)
     sheet = {"traits": traits, "heart": heart_of(traits), "crown": crown}
     if "puppet" in traits:
-        sheet["puppeteer"] = rng.choice(PUPPETEERS)
+        sheet["puppeteer"] = rng.choice(puppeteers)
     origins = {t: rng.choice(ORIGIN_STAMPS) for t in traits
                if t in AFFLICTIONS and rng.random() < ORIGIN_CHANCE}
     if origins:
         sheet["origins"] = origins
-    sheet["accession"] = roll_accession(rng)
+    rolled = roll_accession(rng)        # rolled even when one is NAMED, so
+                                        # naming one moves no other draw
+    sheet["accession"] = rolled if accession is None else accession
     sheet["succession"] = roll_succession(rng, traits, sheet["accession"])
     return sheet
 

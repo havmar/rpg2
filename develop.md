@@ -231,30 +231,19 @@ a pointer: what the file is, how it's run, where its docs are.
   authored-vs-generated boundary, the Room-content schema and the
   seed/reveal/mutation rules, which all still hold; read `rules.md` and
   this file for what the world actually is.
-- `gates.md` — **THE GATES ARC's design reference** (2026-09-12): the
-  Heaven & Hell setting (the timeline, the two powers and their inner
-  axes, the pagan coding, Tom, the tongue and the two name rows), the
-  four rolled sites and their placement rule, the ruins as dungeons,
-  the foe skin tables and pools, the two sentinels, the Nephilim, the
-  two one-tile city states, the two world-layer packets and the human
-  side, and the five session contracts plan.md points at. A spec
-  companion in worldsim.md's shape: a section is CUT when its session
-  lands and its result goes to the permanent docs. Section 0 records the
-  standing directives (the pact is a gimmick the arc ignores; the
-  low-band-only principle is set aside; conquest later). **Sections 1-3, 5,
-  6's ruin half, 7 and 8 are CUT** (2026-09-12, session 1): they are
-  rules.md's Heaven & Hell add-on part 1, dm.md's "The gates" and
-  writing.md's two name rows. **Section 9, section 4's relics and stone,
-  and section 14's "Into the ruins" table are CUT** (2026-09-12, session
-  2): they are rules.md's add-on part 2 and dm.md's "The gates" again.
-  **Section 12, the Nephilim, is CUT** (2026-09-12, session 3): it is
-  rules.md's add-on part 3, dm.md's "The gates" and "The player
-  character". **Section 6's city half, section 10 and section 14's two
-  city tables are CUT** (2026-09-12, session 4): they are rules.md's add-on
-  part 4, dm.md's "The gates" and "The nine countries". What remains is
-  session 5 -- section 11 in full (its head now marks which rows the STUB
-  packets already carry), the one line of section 4 (a Tom fact per
-  culture on the lore page), and section 11's human side.
+- `gates.md` — **THE GATES ARC's historical note** (2026-09-12). It was
+  the arc's design reference, a spec companion in worldsim.md's shape, and
+  every one of its sections was CUT as the session that built it landed.
+  The arc shipped whole in five sessions on 2026-09-12, so the file is now
+  a one-page map of where its content went: rules.md's Heaven & Hell
+  add-on parts 1-5, dm.md's "The gates", writing.md's two name rows,
+  develop.md's Files and five dev-map entries, benchlog's five entries and
+  designlog's 2026-09-12 (the design) and (A)-(E). Unlike `worldsim.md` it
+  keeps NO undesigned residue -- nothing in it went unbuilt, and the three
+  questions the arc declined (the live-gate endgame, conquest by the city
+  states, the pact's fate) are roadmap items in `plan.md`. What the note
+  does keep is the three standing DIRECTIVES the arc stood on, because they
+  outlive the build.
 - `worldsim.md` — **the world-simulation content resource & framework**
   (2026-08-05, THE WORLD & NPC SIMULATION thread), since the build's
   last rung (2026-08-11) the thread's RESIDUE file. It opens with a
@@ -660,6 +649,25 @@ a pointer: what the file is, how it's run, where its docs are.
   country, and session 1's "the city tiles are still ordinary tiles"
   clause is deleted -- it was the hook, and this is the session that
   spent it.
+  **Session 5 added six classes** (2026-09-12): `TheStandingGateStates`
+  (the five words on the right four lands and on nobody else over an
+  eight-seed sweep, no card able to set one, the two host words reaching a
+  counter, `pagan-host` on both ends or on neither over 24 seeds, the four
+  host facts on the right pages, and the year 1027 on every lore page and
+  on no other), `TheResolvedRelations` (the placeholder in the authored
+  table and nowhere in `RELATIONS`, every end resolving to a real land in
+  twelve worlds, each row running between a city and its OWN host, every
+  land reached, every derived word reaching a price or a road, a shut gate
+  felt at the host's healer, the spilled feast putting revelers on the
+  host's ground, and the `gate-watched` placeholder retired),
+  `TheHumanSide` (the synod question in both rite decks, its news naming
+  the rites by ADDRESS over six worlds, the crusade tension only on a Sun
+  host and never rollable over 400 draws, its card only in that host's
+  deck, and Tom's four versions one per land), `TheGateCityCounters`,
+  `TheTwoChains` (both chains driven end to end -- the state set, the
+  successor admitting, the state cleared, the person named ONCE and kept,
+  the quest posted, the prices moving, and the crime layer reached) and
+  `TheGateCrowns`.
 - `test_quest_geography.py` — **the LOCAL QUEST GEOGRAPHY contract suite**
   (2026-08-15), six parts in build order. *Sparse ordinary boards*: the
   activity roll's measured 100/60/25 over 9000 slot identities, its
@@ -902,6 +910,16 @@ a pointer: what the file is, how it's run, where its docs are.
   `roll_accession`, `SUCCESSIONS` / `roll_succession`, which reads the
   traits and the accession through `SUCCESSION_READS` / `ACCESSION_READS`),
   and the readouts (`trait_phrase` / `accession_line` / `ruler_lines`).
+  **Three narrowing arguments** (2026-09-12, the gates arc's session 5):
+  `roll_ruler(barred=, accession=, puppeteers=)`. The vocabulary is a
+  measured HUMAN dataset and it still serves every land, which is
+  deliberate; what the two gate crowns may not be is a decaying mortal
+  body or a travelling feudal household, so `BODILESS` (six words) comes
+  out of the die before the first draw, `GATE_PUPPETEERS` replaces the
+  court behind the throne, and `ACCESSIONS` gained two weight-0 entries
+  (`appointed`, `acclaimed`) that never roll and are NAMED instead.
+  `accession=` still rolls and discards, so a caller that names one does
+  not move the stream. `worldsim._crown` is the only caller.
   It imports NOTHING from the rest of the game — `worldsim.py` keeps the
   rolled sheet on the land layer and `quests.py` casts the face that wears
   it. `python rulers.py --seed 1 --count 8` (add `--lesser` for the two-draw
@@ -1168,6 +1186,38 @@ a pointer: what the file is, how it's run, where its docs are.
   `sky_tile` reads `places.capital_tile(world, polity)` now that a capital
   is a per-world fact, and `_validate_countries`' capital clause moved with
   it into `places._validate_countries`.
+  **THE TWO PACKETS ARE WHOLE AND THE GATES REACH THE NINE** (2026-09-12,
+  the gates arc's session 5, rules.md's Heaven & Hell add-on part 5). The
+  stubs grew into gates.md section 11 entire: eight crisis cards, one
+  weather and one season card a side; six facts a side and two OPTIONS a
+  side (`heaven/choir` / `heaven/measures`, `hell/feast` / `hell/fire` --
+  the key's suffix IS the word the player types, which is what
+  `option_word` reads); seventeen new `STATE_WORDS` with their `STATE_MENU`
+  and `STATE_ENCOUNTERS` rows and two `STATE_MARKS` rows. Four cards NAME
+  somebody through `_authority_hook`, which grew a `born=` callable so the
+  child, the hermit, the debtor and the old woman come out of the HOST
+  country's name pool rather than the city's (`_host_of`). The parts that
+  cannot be authored at import, because the four gate ends are ROLLED:
+  **`_GATE_RELATIONS`** (four rows carrying the `HOST` placeholder),
+  `resolve_relations` / `relations_of` / `_possible_relations` --
+  `open_world` parks the resolved table on `world["relations"]` and
+  `derived_states` reads it, while the three import-time passes
+  (reachability, the state tables, the country audit) run on
+  `_possible_relations()`, every gate row against every land that could
+  host it; **`stamp_gates`** with `GATE_STANDING` / `GATE_FACTS` /
+  `gate_land` (five standing words in `EXTERNAL_STATES` and four standing
+  facts, written onto `land["facts"]`, which `facts_here` and so the lore
+  page read beside the authored `FACTS`); **`EXTERNAL_TENSIONS`** and
+  `_crusade_host` / `SUN_HOSTS` / `PAGAN_HOSTS` (the crusade axis is
+  authored on the western culture and stamped only on Hell's host, never
+  rollable); and **`_crown`** / `GATE_ACCESSION`, which draws the two gate
+  crowns off `rulers.BODILESS` and `rulers.GATE_PUPPETEERS` with the
+  accession named. The human side is two cards:
+  `communion/the-return-question` (both rites' decks, `_return_hook` reads
+  which rite has Concordia on its ground) and
+  `western/the-preaching-crusade`. `fact()` gained four per-culture Tom
+  lines and one ANY_LAND fact, THE YEAR OF THE CHURCH -- the one date the
+  game prints, and it prints on the lore page.
   `python worldsim.py --seed 1 --days 60` dumps a rolled world (the
   eyeball check; since 2026-08-22 it settles the wars to the same day).
 - `test_worldsim.py` — **the world & NPC simulation build's contract suite**
@@ -2215,7 +2265,9 @@ python -m unittest -v test_ground.py  # the ground, the laws and the sky
 python -m unittest -v test_rolled_world.py # the harvest and the census
 python -m unittest -v test_trade.py   # mines, goods and the trade network
 python -m unittest -v test_hookup.py  # the read surface + the League
-python -m unittest -v test_gates.py   # the gates: ruins, delve, bosses, bars
+python -m unittest -v test_gates.py   # the gates: ruins, delve, bosses,
+                                      # bars, the packets, the human side
+python session.py lore concordia      # ...and the two gate cities' pages
 python session.py delve               # the gate ruin's six places
 python econmap.py character           # what each Tile is CALLED
 python econmap.py routes 7            # one built world's trade network
@@ -2981,6 +3033,48 @@ mechanic *does* and *why* is rules.md's job.
   in the two registers, and `people.HUMAN_HOMELANDS` / `HUMAN_TONGUES` —
   the birth roll and the Byzantine's second tongue are the NINE.
   `test_gates.TheTakeover` is the contract.
+- **The gates: the two packets and the human side** (2026-09-12, THE
+  GATES ARC's session 5, the LAST — rules.md's Heaven & Hell add-on part
+  5, dm.md's "The gates", designlog 2026-09-12 (E)) — the arc's content
+  half and the end of it. Almost all of it is authored rows in
+  `worldsim.py` (see Files); what is MACHINERY is the four things a rolled
+  gate forces, and each is worth knowing before touching the world layer:
+  1. **The relations table is per-world now.** `RELATIONS` is still the
+     twenty authored human edges, but the four rows that reach the two
+     city states run between a city and its rolled HOST, so they live in
+     `_GATE_RELATIONS` with a `HOST` placeholder. `open_world` calls
+     `resolve_relations(world)` FIRST and parks the answer on
+     `world["relations"]`; `derived_states` reads it through
+     `relations_of`, which is strict. Import-time validation cannot see a
+     world, so the three passes that need the whole table
+     (`_validate_reachability`, `_validate_state_tables`,
+     `_validate_countries`) call `_possible_relations()` — every gate row
+     against every land that could host that gate.
+  2. **Worldgen writes standing states and standing facts.** `stamp_gates`
+     runs inside `open_world`, between the layer loop and the opening
+     crisis draw, so a card can admit on one of its words on day one. The
+     five words are in `EXTERNAL_STATES` (worldgen produces them, no card
+     does, nothing takes them off); the four facts go on
+     `land["facts"]` — a new list on `places._new_land_record` — which
+     `worldsim.facts_here` prints beside the authored `FACTS`. If you add
+     a per-world fact to anything, that is the road.
+  3. **A tension can be stamped rather than rolled.** `EXTERNAL_TENSIONS`
+     is `STANDING_TENSIONS`' sibling: authored in a culture's list, taken
+     out of `roll_tensions`' pool and out of the rollable-count check, and
+     held only where `open_world` puts it. `church-vs-saturna` is the one
+     so far. It must be stamped BEFORE `_deck` is cut or its card never
+     enters the deck.
+  4. **A crown can be narrowed.** `rulers.roll_ruler` grew `barred=` /
+     `accession=` / `puppeteers=`; `worldsim._crown` is the one caller
+     that uses them, for the two gate cities, off `rulers.BODILESS` and
+     `rulers.GATE_PUPPETEERS`. `accession=` still ROLLS and discards, so
+     naming one does not move the stream.
+  Two smaller things in the same pass: `quests.epic_templates(culture)`
+  re-casts the three country-agnostic epics' givers for the two gate
+  cultures (a one-tile state has no king's general), and
+  `worldsim._authority_hook` grew `born=` so a card can name a person of
+  another land. `test_gates`'s six new classes are the contract and
+  benchlog's 2026-09-12 (E) entry the measurement.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,

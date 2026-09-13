@@ -564,6 +564,11 @@ class TheTileMenu(unittest.TestCase):
         world = quests.generate_world(1)
         paris = _settlement(world, "Paris")
         state = _standing_in(world, paris)
+        # `local_term` rolls the world to the party's day before it quotes,
+        # so the LAND's half has to be read on the same day or this test
+        # compares a day-0 land against a day-3 counter (found 2026-09-12,
+        # when a card added to Seraptania's deck moved its day-3 draw).
+        worldsim.roll_world(world, state["clock"].day)
         land = worldsim.term(world, paris["land"], "lodging")
         self.assertAlmostEqual(session.local_term(state, "lodging"),
                                land * 1.10)

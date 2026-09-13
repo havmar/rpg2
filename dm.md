@@ -878,6 +878,71 @@ Hell add-on is the setting; this is how it plays at the table.
     the gate or walked in as a convert; no PC, companion or recruit is ever
     from one. If the party asks where somebody is from, the answer is the
     other side of the gate and it is said plainly.
+- **Both cities have a full deck now** (2026-09-12, session 5), and what
+  they do reaches the neighbours before the party ever walks in. Read the
+  news. Heaven's eight are administrative: the register goes up on the
+  Prefecture wall, a child comes off it, the infirmary opens to everybody
+  or the gate shuts against everybody, a bishop preaches, a marble servant
+  walks off with a crate. Hell's eight are appetite: the feast comes over
+  the wall, the debt-house collects, the free companies hang the Lord, the
+  kennels open, the wild market puts people in cages, the long table
+  elects. Play each as a thing that happened to a village, not as a move in
+  a war.
+  - **Four people are NAMED once and kept.** The child off the register,
+    the hermit in the hills who has been walled into one cell for longer
+    than the villages have existed, the debtor whose year is written in the
+    book, and the old woman of the fen who has run the same feast for forty
+    generations. The script rolls each name once and keeps it on the land;
+    use the name every time and never re-invent the person. All four are
+    from the HOST country and carry its names, which is the point: the
+    register is a list of village children.
+  - **Both sides split on every one of them, and neither side is the good
+    one.** The Pruners want the hermit brought in and the Gardeners want
+    the hermit left alone; the Hunger wants the old woman and the Feast
+    wants her where she is. The job the board posts is one side hiring the
+    party. Say who is paying and let the player weigh it.
+  - **The counters are open.** In Concordia, `service choir` buys a sung
+    rite of order that steadies the whole party, and `service measures`
+    buys a term at the School — the ice school's first diagrams to anybody
+    with the gift, and they write down who came. In Saturna, `service
+    feast` buys a place at the long table (the cheapest good night in the
+    game) and `service fire` a term at the Fire School, the same teaching
+    with nothing written down. Both schools are cheaper than any human
+    door. Play the difference: Heaven charges you and files you; Hell
+    charges you less and you owe something nobody has named yet.
+  - **The host country wears the gate all campaign.** Whichever of the nine
+    the roll cut Concordia out of has a cheaper healer than it should, and
+    Saturna's host a cheaper bed. Both host countries carry a standing fact
+    on their lore page — *Concordia stands on ground that was ours
+    twenty-seven years ago* — and both ruin-keeping countries carry theirs.
+    Read `lore` for the country the party is in before framing the first
+    scene there; the gate may be the thing the locals will not shut up
+    about.
+  - **The church argues about it.** The synod that already argues about the
+    death-face now also argues about the Return, and which rite welcomes it
+    is a matter of geography: the rite that has Concordia on its own ground
+    says the god's country has come back, and the other calls it an
+    invasion wearing the god's face. Where Hell landed in a Sun-communion
+    country, a bishop preaches a crusade against the feast town and the men
+    walking the gate road with staves are not pilgrims. None of it splits
+    the church and none of it becomes a war.
+  - **1027 is the only date the game prints**, and it prints on the lore
+    page. If the party asks what year it is, that is the answer, and the
+    answer is the Church's count from the day Tom shut the gates. Every
+    culture keeps its own Tom and they disagree; the lore page of the
+    country the party is standing in says which one is told there.
+- **A party with no blood in it** (the other half of the campaigns). The
+  Nephilim material is not a requirement for the arc to play. A fully human
+  party walks into the same scenes from outside them, and that is a
+  different and equally good game: nobody in Concordia is unfailingly
+  polite to them, nobody in Saturna greets them as kin and charges double,
+  and nothing that happens to the child on the register could have happened
+  to them. Play them as WITNESSES with a free hand. They are the only
+  people in the scene neither power is measuring, which makes them the ones
+  both sides will hire, and it means the choice about the child or the
+  hermit or the old woman is made on what they think is right rather than
+  on what they are. Do not compensate by inventing a half-blood connection.
+  The scene is already about somebody.
 - **Do not promise the endgame.** What one would DO to a live gate is not
   designed. The party can reach the bottom, take the bar, and the ruin
   goes quiet. Say nothing about what comes next.

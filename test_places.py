@@ -743,7 +743,11 @@ class TheNineCountries(unittest.TestCase):
                                  and worldsim.in_land(c, polity)],
                                 (polity, track))
             self.assertTrue(worldsim.FACTS_BY_LAND[polity], polity)
-            self.assertTrue([e for e in worldsim.RELATIONS
+            # ...over every edge any world can hold: the four GATE rows
+            # have a rolled end (2026-09-12, the gates arc's session 5) and
+            # are the only edges that reach the two city states, so the
+            # reachability question is asked of the resolvable table.
+            self.assertTrue([e for e in worldsim._possible_relations()
                              if polity in (e["from"], e["to"])], polity)
             # ...and a capital Tile, which is a PER-WORLD fact since
             # 2026-09-12 and is checked on a built world by
