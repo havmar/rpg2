@@ -786,9 +786,14 @@ class TheOpeningQuest(unittest.TestCase):
             quest = world["quests"][world["opening_quest"]]
             start = world["areas"][world["start_area"]]
             target = world["areas"][quest["target_area"]]
+            # The opening is never a ruin job (2026-09-13): it stays inside
+            # the ORDINARY radius, whatever the ruin family may reach.
             self.assertLessEqual(
                 places.path_days(start["tile"], target["tile"]),
-                _target_radius(quest), seed)
+                quests.ORDINARY_TARGET_DAYS, seed)
+            self.assertNotIn(quest["name"],
+                             {t["title"] for t in quests.RUIN_TEMPLATES},
+                             seed)
             self.assertTrue(quest["sites"], seed)
             for site_id in quest["sites"]:
                 self.assertIn(site_id, world["sites"], seed)

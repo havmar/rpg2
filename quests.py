@@ -1890,12 +1890,18 @@ def release_quest_places(world: dict, quest: dict) -> None:
 
 def _post_quest(world: dict, settlement: dict, rng: random.Random,
                 used_people: set[str] | None = None,
-                day: int = 0, forced_level: int | None = None) -> dict:
+                day: int = 0, forced_level: int | None = None,
+                ruins: bool = True) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the homeland's table (the capital also draws the epics)
     among those whose band contains the roll. Since 2026-07-26 the posting is
-    stamped with the day and a window (`stamp_quest_clock`)."""
+    stamped with the day and a window (`stamp_quest_clock`).
+
+    `ruins=False` keeps the ruin jobs off this one posting: the OPENING
+    hook (2026-09-13) is framed at the job's doorstep, and a gate ruin six
+    days out through its own danger ring is somewhere a career walks to,
+    not where one starts."""
     tier = settlement_tier(settlement)
     lo, hi = SETTLEMENT_KINDS[tier][1]
     level = forced_level if forced_level is not None else rng.randint(lo, hi)
@@ -1907,7 +1913,8 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     # table (2026-09-13): the board draws them, the land's wilderness does
     # not. The `strict` filter below is what keeps them to the handful of
     # boards inside RUIN_TARGET_DAYS of a ruin.
-    tables += ruin_templates(world)
+    if ruins:
+        tables += ruin_templates(world)
     fitting = [t for t in tables
                if template_band(t)[0] <= level <= template_band(t)[1]
                and (not quest_place_requirement(t).get("strict")
@@ -2189,7 +2196,7 @@ def generate_world(seed: int | None = None, start_level: int = 1) -> dict:
 
     start = world["areas"][world["start_area"]]
     opening = _post_quest(world, start, rng, used_people,
-                          forced_level=start_level)
+                          forced_level=start_level, ruins=False)
     world["opening_quest"] = opening["id"]
     # Only ACTIVE boards open with work (2026-08-15): a settlement whose
     # board-activity roll came up empty is a settlement with nothing to
