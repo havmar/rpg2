@@ -799,14 +799,18 @@ Hell add-on is the setting; this is how it plays at the table.
   `give HERO the Candor bar` puts it in a hand. Let the moment be small:
   the party is holding the thing that has held the gate shut.
 - **The ruin jobs are the board's half of this.** A settlement within
-  three days of a ruin can post work into it: looters on Candor's
-  terraces, a marble servant standing in a churchyard, the lamp in the
-  glass garden, Concordia's register -- hell hounds off the feast-hall,
-  the vine pits' vintage, Saturna's kennel book, a man's year written in
-  the old counting house. These are ORDINARY jobs with a giver and a
-  turn-in, unlike a `delve`, and they go to their own side's ruin. Play
-  the giver as a local with a local problem: nobody in these scenes is
-  thinking about the gate.
+  **six days** of a ruin can post work into it -- further than ordinary
+  work travels, because there are only two ruins in the world and the
+  country round them is thin: looters on Candor's terraces, a marble
+  servant standing in a churchyard, the lamp in the glass garden,
+  Concordia's register -- hell hounds off the feast-hall, the vine pits'
+  vintage, Saturna's kennel book, a man's year written in the old
+  counting house. These are ORDINARY jobs with a giver and a turn-in,
+  unlike a `delve`, and they go to their own side's ruin. Play the giver
+  as a local with a local problem: nobody in these scenes is thinking
+  about the gate. Once a ruin is SEALED its four come off the boards for
+  good; if the party has been taking that side's work, say so at the next
+  board -- the quiet is theirs.
 - **Tom's stone** is a wayside shrine in the western and southern
   countryside: an upright bar of grey stone, wax stubs, coins pressed
   into the turf, a worn track and a beggar's bowl. Sell a burial or a
