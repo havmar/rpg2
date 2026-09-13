@@ -25,6 +25,13 @@ multiplying the road, the day afield and the night camped.
 *The delve*: forging over authored rooms, the field tranche and no
 turn-in, the thirty-day refill, and the deepest Site sealing the ruin.
 
+...and since the 2026-09-13 review, *the seams*: the eight ruin jobs
+offered at the BOARD and on no culture's table (so the nine lands' roads
+are the pre-arc roads, pinned kind for kind), the ruin family's own
+six-day radius, a sealed ruin's work coming off the boards, the two
+capital rows banded like the epics they are called, and the two tables'
+own housekeeping.
+
 `python -m unittest -v test_gates.py`
 """
 
@@ -547,12 +554,13 @@ class TheTakeover(unittest.TestCase):
 
     def test_the_two_tables_land_in_the_human_countryside(self):
         """The city is the capital and the only board in its country, so
-        its four rows are what it posts -- and every one of them lands on
-        ordinary ground within the three-day radius."""
+        its four rows, the epics and any ruin job in reach are what it
+        posts -- and every one of its OWN four lands on ordinary ground
+        within the three-day radius."""
         built = quests.generate_world(7)
         for key, titles in (("concordia", ("Escort the Healers",
                                            "The Lamp Thieves",
-                                           "Bring the Child Home",
+                                           "The Child off the Register",
                                            "The Prefect's Levy")),
                             ("saturna", ("Bring the Wine", "Guard the Feast",
                                          "Break the Debt-House",
@@ -567,11 +575,12 @@ class TheTakeover(unittest.TestCase):
                 self.assertFalse(place.get("strict"), title)
             seat = next(s for s in quests.settlements_by_land(built)[key])
             rng = random.Random(9)
+            drawable = (table
+                        + [t["title"] for t in quests.EPIC_TEMPLATES]
+                        + [t["title"] for t in quests.RUIN_TEMPLATES])
             for _ in range(6):
                 quest = quests._post_quest(built, seat, rng)
-                self.assertIn(quest["name"],
-                              table + [t["title"]
-                                       for t in quests.EPIC_TEMPLATES])
+                self.assertIn(quest["name"], drawable)
 
     def test_the_two_epics_are_the_city_s_own_and_nobody_else_s(self):
         """Capital-only by construction: the two EPIC rows sit on their own
@@ -583,6 +592,45 @@ class TheTakeover(unittest.TestCase):
             self.assertIn(wearing[0], ("heaven", "hell"))
             self.assertNotIn(title, [t["title"]
                                      for t in quests.EPIC_TEMPLATES])
+
+    def test_the_two_epics_are_banded_like_epics(self):
+        """"EPIC" is a band, not a word on a card. Both rows shipped with a
+        pool that reached down to a cutthroat and a wolf, so a levy against
+        a raiders' hold and a once-a-year hunt for a horned giant were
+        posting at level 2 -- with a cutthroat roster. The floor is the one
+        the country-agnostic epics stand on."""
+        floor = quests.EPIC_BAND_FLOOR
+        self.assertEqual(floor, quests.template_band(
+            next(t for t in quests.EPIC_TEMPLATES
+                 if t["title"] == "The Dragon's Tribute"))[0])
+        for title in ("The Prefect's Levy", "The Hunt of Misrule"):
+            tpl = next(t for table in quests.TEMPLATES.values()
+                       for t in table if t["title"] == title)
+            lo, hi = quests.template_band(tpl)
+            self.assertEqual(lo, floor, title)
+            self.assertEqual(hi, rpg.LEVEL_CAP, title)
+            self.assertEqual(tpl["min_level"], floor, title)
+
+    def test_neither_epic_is_ever_posted_below_the_floor(self):
+        """The band read at the board, over both cities and a long run of
+        postings: the two never come up under a party that could not be
+        asked to take them."""
+        built = quests.generate_world(7)
+        epics = {"The Prefect's Levy", "The Hunt of Misrule"}
+        seen = set()
+        for key in places.CITY_STATES:
+            seat = quests.settlements_by_land(built)[key][0]
+            rng = random.Random(3)
+            for level in range(1, rpg.LEVEL_CAP + 1):
+                for _ in range(4):
+                    quest = quests._post_quest(built, seat, rng,
+                                               forced_level=level)
+                    if quest["name"] in epics:
+                        seen.add(quest["name"])
+                        self.assertGreaterEqual(quest["level"],
+                                                quests.EPIC_BAND_FLOOR,
+                                                quest["name"])
+        self.assertEqual(seen, epics)
 
 
 # =========================================================================== #
@@ -1379,19 +1427,24 @@ class TheSealNeedsABody(unittest.TestCase):
 # =========================================================================== #
 
 class TheRuinTemplates(unittest.TestCase):
-    """gates.md section 14, "Into the ruins": eight jobs on every table."""
+    """gates.md section 14, "Into the ruins": eight jobs every board can
+    draw -- and, since 2026-09-13, that no culture's TABLE carries."""
 
     def setUp(self):
         self.built = played(1)
 
-    def test_the_eight_are_on_every_cultures_table(self):
+    def test_the_eight_are_offered_to_every_board_and_owned_by_no_table(self):
         self.assertEqual(len(quests.RUIN_TEMPLATES), 8)
         titles = [tpl["title"] for tpl in quests.RUIN_TEMPLATES]
         self.assertEqual(len(set(titles)), 8)
+        offered = [tpl["title"] for tpl in quests.ruin_templates(self.built)]
+        self.assertEqual(offered, titles)
+        # ...and on NOBODY's table: a culture's table is what feeds
+        # `wild_pool`, and the eight are board work, not wilderness.
         for culture, table in quests.TEMPLATES.items():
-            posted = [tpl["title"] for tpl in table]
             for title in titles:
-                self.assertIn(title, posted, culture)
+                self.assertNotIn(title, [tpl["title"] for tpl in table],
+                                 culture)
         for title in titles:
             self.assertNotIn(title,
                              [t["title"] for t in quests.EPIC_TEMPLATES])
@@ -1471,6 +1524,91 @@ class TheRuinTemplates(unittest.TestCase):
             random.Random(3), radius=None)
         self.assertEqual(picked["kind"], "ruin")
 
+    def test_the_family_reaches_six_days_and_the_ordinary_rules_three(self):
+        """The ruin jobs carry their own radius on their requirement
+        (2026-09-13). Two pieces of ground in the world honor them and
+        neither can move, so three days left most boards unable to post one
+        at all; six is the lever that made the family reachable."""
+        self.assertEqual(quests.RUIN_TARGET_DAYS, 6)
+        self.assertGreater(quests.RUIN_TARGET_DAYS,
+                           quests.ORDINARY_TARGET_DAYS)
+        for tpl in quests.RUIN_TEMPLATES:
+            place = quests.quest_place_requirement(tpl)
+            self.assertEqual(place["radius"], quests.RUIN_TARGET_DAYS,
+                             tpl["title"])
+            self.assertEqual(
+                quests.requirement_radius(place,
+                                          quests.ORDINARY_TARGET_DAYS),
+                quests.RUIN_TARGET_DAYS, tpl["title"])
+        # ...and no other family took the widening with them.
+        for table in list(quests.TEMPLATES.values()) + [quests.EPIC_TEMPLATES]:
+            for tpl in table:
+                self.assertNotIn(
+                    "radius", quests.quest_place_requirement(tpl),
+                    tpl["title"])
+        # `radius=None` is the forced families lifting the rule, and it
+        # still wins over a family's own number.
+        self.assertIsNone(quests.requirement_radius(
+            quests.quest_place_requirement(quests.RUIN_TEMPLATES[0]), None))
+
+    def test_a_board_between_four_and_six_days_out_can_post_one(self):
+        """The measured point of the widening: boards that stand four to
+        six days from a ruin post its work now and posted none before."""
+        gained = 0
+        for seed in range(1, 12):
+            built = world(seed)
+            for side, gate in (("heaven", "candor"), ("hell", "libera")):
+                place = quests._ruin_place(side)
+                was = {k: v for k, v in place.items() if k != "radius"}
+                tile = built["gates"][gate]["tile"]
+                for settlement in quests.settlements(built):
+                    days = places.path_days(
+                        built["areas"][settlement["key"]]["tile"], tile)
+                    if quests.ORDINARY_TARGET_DAYS < days \
+                            <= quests.RUIN_TARGET_DAYS:
+                        self.assertTrue(quests.place_reachable(
+                            built, settlement["key"], place))
+                        self.assertFalse(quests.place_reachable(
+                            built, settlement["key"], was))
+                        gained += 1
+        self.assertTrue(gained, "no board sits in the widened ring")
+
+    def test_a_sealed_ruin_stops_being_posted_and_its_twin_does_not(self):
+        """A ruin seals when the deepest Site's boss is dead, and the day
+        goes on the gate record. Nothing comes out of a sealed city, so the
+        boards round it stop posting work into it -- and the OTHER side's
+        four go on being posted, because the other gate is still open."""
+        built = played(1)
+        self.assertIsNone(built["gates"]["candor"].get("sealed_day"))
+        self.assertEqual(len(quests.ruin_templates(built)), 8)
+        built["gates"]["candor"]["sealed_day"] = 41
+        offered = [tpl["title"] for tpl in quests.ruin_templates(built)]
+        self.assertEqual(len(offered), 4)
+        for tpl in quests.RUIN_TEMPLATES:
+            side = quests.template_ruin_side(tpl)
+            self.assertIn(side, ("heaven", "hell"), tpl["title"])
+            self.assertEqual(tpl["title"] in offered, side == "hell")
+        built["gates"]["libera"]["sealed_day"] = 60
+        self.assertEqual(quests.ruin_templates(built), [])
+
+    def test_a_board_near_a_sealed_ruin_posts_no_more_of_its_work(self):
+        """The seal reaching the board, not only the helper: a settlement
+        that had been posting Candor jobs stops."""
+        built = played(1)
+        place = quests._ruin_place("heaven")
+        near = [s for s in quests.settlements(built)
+                if quests.place_reachable(built, s["key"], place)]
+        if not near:            # seed 1 need not seat a board in reach
+            self.skipTest("no board within reach of Candor in this world")
+        heaven_titles = {tpl["title"] for tpl in quests.RUIN_TEMPLATES
+                         if quests.template_ruin_side(tpl) == "heaven"}
+        built["gates"]["candor"]["sealed_day"] = 41
+        rng = random.Random(5)
+        for settlement in near:
+            for _ in range(12):
+                quest = quests._post_quest(built, settlement, rng, day=42)
+                self.assertNotIn(quest["name"], heaven_titles)
+
     def test_a_board_out_of_range_never_offers_one(self):
         far = min(
             (s for s in quests.settlements(self.built)),
@@ -1515,8 +1653,8 @@ class TheRuinTemplates(unittest.TestCase):
         self.assertEqual(quest["ferocity"], sites.GATE_FEROCITY["hell"])
 
     def test_a_board_near_a_ruin_can_post_one(self):
-        """The sweep: over forty worlds the eight reach a board, and only
-        boards inside the three-day radius carry them."""
+        """The sweep: over two dozen worlds the eight reach a board, and
+        only boards inside the ruin family's own radius carry them."""
         titles = {tpl["title"] for tpl in quests.RUIN_TEMPLATES}
         seen = set()
         for seed in range(1, 25):
@@ -1532,8 +1670,152 @@ class TheRuinTemplates(unittest.TestCase):
                     self.assertEqual(target["kind"], "ruin")
                     self.assertLessEqual(
                         places.path_days(origin["tile"], target["tile"]),
-                        quests.ORDINARY_TARGET_DAYS)
+                        quests.RUIN_TARGET_DAYS)
         self.assertTrue(seen)
+
+
+# =========================================================================== #
+# WHAT THE ARC MAY NOT TOUCH: THE LANDS' OWN WILDERNESS
+# =========================================================================== #
+
+class TheWildernessTheArcMustNotWiden(unittest.TestCase):
+    """`wild_pool` is the union of a CULTURE's quest-template pools, so
+    anything put on a table is also put on that land's roads. The arc's
+    eight ruin jobs were on every table for a day and the cost was exactly
+    that: all nine human lands rolled one identical twenty-three-kind pool,
+    and a dragon could come down a Phyrascian road a fortnight from any
+    ruin. The eight are drawn at the BOARD now; these are the pre-arc
+    tables, pinned kind for kind."""
+
+    # Ordered (level, name) -- see `wild_pool`. The SETS are the pre-arc
+    # tables; the order is this game's canonical one and is asserted too,
+    # because a seeded world's road table has to reproduce.
+    PHYRASCIA = ("archer", "cutthroat", "wolf", "bruiser", "skeleton",
+                 "dire wolf", "hexer", "soldier", "ghoul", "pyromancer",
+                 "veteran", "wight", "champion", "blademaster", "warlord")
+    THULE = ("archer", "cutthroat", "wolf", "bruiser", "skeleton",
+             "dire wolf", "hexer", "soldier", "ghoul", "ogre", "pyromancer",
+             "veteran", "troll", "wight", "champion", "giant", "blademaster",
+             "warlord")
+    TERGAL = ("archer", "cutthroat", "boar", "bruiser", "dire wolf", "hexer",
+              "soldier", "bear", "ogre", "pyromancer", "veteran", "troll",
+              "champion", "wyvern", "giant", "drake", "blademaster",
+              "dragon", "warlord")
+
+    def test_the_four_pinned_lands_roll_what_they_rolled_before_the_arc(self):
+        self.assertEqual(quests.wild_pool("phyrascia"), self.PHYRASCIA)
+        self.assertEqual(quests.wild_pool("byzantium"), self.PHYRASCIA)
+        self.assertEqual(quests.wild_pool("thule"), self.THULE)
+        self.assertEqual(quests.wild_pool("tergal"), self.TERGAL)
+        # The three the arc put on a Phyrascian road, named:
+        for kind in ("ogre", "troll", "giant", "wyvern", "drake", "dragon"):
+            self.assertNotIn(kind, quests.wild_pool("phyrascia"), kind)
+
+    def test_the_nine_human_lands_do_not_share_one_pool(self):
+        """The tell that the tables have been widened is every land rolling
+        the same list. They do not: the steppe has the beasts and the
+        drakes, the north has the giant-kin, and the west and south share
+        one table because they share one ladder and no monsters."""
+        human = [land for land in quests.HOMELANDS
+                 if land not in places.CITY_STATES]
+        self.assertEqual(len(human), 9)
+        pools = {quests.wild_pool(land) for land in human}
+        self.assertEqual(len(pools), 3)
+        self.assertNotEqual(quests.wild_pool("tergal"),
+                            quests.wild_pool("phyrascia"))
+        self.assertNotEqual(quests.wild_pool("thule"),
+                            quests.wild_pool("phyrascia"))
+        self.assertEqual(quests.wild_pool("andalusia"),
+                         quests.wild_pool("phyrascia"))
+
+    def test_a_lands_roads_hold_only_what_its_own_culture_posts(self):
+        """The rule under the pins: the board may DRAW a template the
+        culture does not carry -- the epics, the eight ruin jobs -- and
+        neither reaches the wilderness."""
+        drawable = quests.RUIN_TEMPLATES + quests.EPIC_TEMPLATES
+        for land in quests.HOMELANDS:
+            roaming = set(quests.wild_pool(land))
+            table = set()
+            for tpl in quests.TEMPLATES[places.CULTURE_OF[land]]:
+                table.update(tpl["pool"])
+            self.assertEqual(roaming, table, land)
+            for tpl in drawable:
+                self.assertNotIn(tpl["title"],
+                                 [t["title"] for t
+                                  in quests.TEMPLATES[places.CULTURE_OF[land]]])
+
+    def test_the_two_city_states_roll_their_own_tables(self):
+        """The two have no pre-arc value -- they did not exist. Their one
+        tile keeps the donor's GROUND, but what walks on it is what their
+        own four rows hold: Concordia's marble-clad ladder, Saturna's
+        ladder plus the hunt's giant-kin and drakes. Pinned so the next
+        edit to either table has to mean it."""
+        self.assertEqual(
+            quests.wild_pool("concordia"),
+            ("archer", "cutthroat", "bruiser", "soldier", "veteran",
+             "champion", "blademaster", "warlord"))
+        self.assertEqual(
+            quests.wild_pool("saturna"),
+            ("archer", "cutthroat", "bruiser", "dire wolf", "soldier",
+             "ogre", "veteran", "troll", "champion", "wyvern", "giant",
+             "drake", "dragon"))
+
+    def test_the_pool_is_ordered_and_not_hash_ordered(self):
+        """Level order with a name tiebreak: a set's own iteration order is
+        string-hash order, which moves between processes, and the road's
+        table is part of a seeded world."""
+        for land in quests.HOMELANDS:
+            pool = quests.wild_pool(land)
+            self.assertEqual(
+                list(pool),
+                sorted(pool, key=lambda k: (sites.FOES[k].level, k)), land)
+            self.assertEqual(len(set(pool)), len(pool), land)
+
+
+class TheTablesThemselves(unittest.TestCase):
+    """Housekeeping the arc's four new tables have to keep, pinned after
+    the 2026-09-13 review found both faults on the gate cities' rows."""
+
+    def _every_template(self) -> list[dict]:
+        rows = [t for table in quests.TEMPLATES.values() for t in table]
+        return rows + quests.EPIC_TEMPLATES + quests.RUIN_TEMPLATES
+
+    def test_no_title_is_used_twice_anywhere_a_board_draws(self):
+        """`_post_quest` prefers a template not already on this board BY
+        TITLE, so two rows sharing one title quietly crowd each other out.
+        The card-posted jobs are the other half of the surface: worldsim
+        cannot import quests and authors its own copies inline, and one of
+        them -- the removal card's *Bring the Child Home* -- collided with
+        Concordia's own row until that row was renamed."""
+        for culture, table in quests.TEMPLATES.items():
+            titles = [tpl["title"] for tpl in table]
+            self.assertEqual(len(set(titles)), len(titles), culture)
+        posted = {outlet["post"]["title"] for spec in worldsim.CARDS
+                  for outlet in [spec["outlets"].get("quest")]
+                  if outlet and outlet.get("post")}
+        heaven = {tpl["title"] for tpl in quests.TEMPLATES["heaven"]}
+        hell = {tpl["title"] for tpl in quests.TEMPLATES["hell"]}
+        self.assertIn("Bring the Child Home", posted)
+        self.assertNotIn("Bring the Child Home", heaven | hell)
+        self.assertIn("The Child off the Register", heaven)
+
+    def test_no_pool_names_the_same_row_twice(self):
+        """A pool is drawn from with `rng.choice`, so a doubled row is a
+        silent weighting -- and never the one the author meant."""
+        for tpl in self._every_template():
+            self.assertEqual(len(set(tpl["pool"])), len(tpl["pool"]),
+                             tpl["title"])
+            for kind in tpl["pool"]:
+                self.assertIn(kind, sites.FOES, tpl["title"])
+
+    def test_every_drawable_row_has_a_place_requirement(self):
+        """The eight ruin jobs left `TEMPLATES` in 2026-09-13; the
+        requirement loop has to keep reaching them."""
+        for tpl in self._every_template():
+            self.assertIn(tpl["title"], quests.QUEST_PLACE_REQUIREMENTS)
+            self.assertTrue(tpl.get("place"), tpl["title"])
+            self.assertEqual(tpl["place"],
+                             quests.QUEST_PLACE_REQUIREMENTS[tpl["title"]])
 
 
 class TomsStone(unittest.TestCase):
