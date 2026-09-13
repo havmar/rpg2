@@ -2117,6 +2117,12 @@ class TheCardPostedJobs(unittest.TestCase):
             jobs = {job["title"]: job for job in self._gate_jobs(side)}
             self.assertEqual(set(jobs), set(titles), side)
             for title, job in jobs.items():
+                if title == "The Lamp Thieves":
+                    # Hill thieves with Concordia's lamps, no gate skins:
+                    # the one job of the nine whose foes are not the
+                    # power's own people, so no gate disposition.
+                    self.assertFalse(job["ferocity"], title)
+                    continue
                 self.assertEqual(job["ferocity"],
                                  dict(sites.GATE_FEROCITY[side]), title)
 

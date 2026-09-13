@@ -2544,7 +2544,8 @@ CARDS = (
              "Six lamps of Concordia were stolen off a cart. The thieves "
              "are camped in the hills and the lamps show at night, which "
              "is the whole of the tracking problem.",
-             pool=_TOUGHS, ferocity=GATE_FEROCITY["heaven"],
+             pool=_TOUGHS,       # hill thieves, not Heaven's people: the
+                                 # ONE gate job with no gate disposition
              proof="the lamps",
              sites=("the thieves' camp",),
              giver="the Market of Lamps",
