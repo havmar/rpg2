@@ -919,7 +919,8 @@ def in_land(spec: dict, polity: str) -> bool:
 def job(title: str, desc: str, *, pool: tuple[str, ...],
         sites: tuple[str, ...], giver: str, epilogue: str,
         failure_epilogue: str, places: int = 1,
-        skins: dict | None = None, align: str = "good") -> dict:
+        skins: dict | None = None, ferocity: dict | None = None,
+        proof: str = "", at: str = "", align: str = "good") -> dict:
     """A card's POSTED JOB -- an ordinary quest template (`quests.TEMPLATES`
     shape), authored on the card that puts it up. It goes through
     `quests.build_quest` like every other posting, so a card's work has real
@@ -928,11 +929,26 @@ def job(title: str, desc: str, *, pool: tuple[str, ...],
 
     The level is the settlement's own band, clamped into the pool's
     (`template_band`), exactly as a rolled posting is -- the card decides
-    what the work IS, never how hard it is."""
+    what the work IS, never how hard it is.
+
+    `skins` and `ferocity` dress the roster exactly as they do on an
+    authored template (`sites.GATE_SKINS` / `sites.GATE_FEROCITY`): the
+    name is fiction, the mercy class is the mechanic, and a Warden met on
+    a board job is as relentless as one met in the ruin. `proof` is the
+    token the giver pays on -- the final site's roster must be dead.
+
+    `at` is the one thing a card's job has that a template's does not: the
+    land whose boards carry it. "host" posts the job on the HUMAN country
+    the card's gate city was cut out of, which is where the work actually
+    is -- a city state has one board and the trouble is outside it. Empty
+    is the ordinary case: the job is posted where the card stands."""
+    if at not in ("", "host"):
+        raise ValueError(f"{title}: no such posting address: {at}")
     return {"title": title, "desc": desc, "pool": tuple(pool),
             "sites": tuple(sites), "giver": giver, "epilogue": epilogue,
             "failure_epilogue": failure_epilogue, "places": places,
-            "skins": dict(skins or {}), "align": align}
+            "skins": dict(skins or {}), "ferocity": dict(ferocity or {}),
+            "proof": proof, "at": at, "align": align}
 
 
 def relation(source: str, target: str, kind: str, *,
@@ -1102,11 +1118,15 @@ _CONSTITUTIONS: dict[str, tuple[dict, ...]] = {
                      "no first among them at all: every fjord its own "
                      "jarl, and the law stops at the next headland"),
     ),
-    # THE TWO GATE CITIES (2026-09-12, the gates arc's session 4). Both
-    # packets are STUBS on purpose: the frame each one owes -- four
-    # constitutions, its tensions and their blocs, a card on each track, a
-    # standing fact -- authored off gates.md section 11's real content so
-    # session 5 extends them rather than replacing them.
+    # THE TWO GATE CITIES (2026-09-12, the gates arc's sessions 4 and 5).
+    # Both packets are WHOLE: four constitutions each, three tensions with
+    # the inner axis standing, six faction edges, six standing facts, two
+    # priced services, eight crisis cards, a weather card and a season
+    # card. The four constitutions below are each city's own government,
+    # weighted 6/2/1/1 like every other land's, and the two rare ones are
+    # the faction that lost the argument winning it: THE QUARANTINE is the
+    # Pruners holding Concordia, THE LONG FEAST the Hunger holding
+    # Saturna. A card reads each of those two by name.
     "heaven": (
         constitution("hierarchy", "THE HIERARCHY", 6,
                      "ranks all the way up; the Prefect answers to the "
@@ -1804,8 +1824,11 @@ def _return_hook(world: dict, polity: str, day: int,
     host = world["gates"]["concordia"]["cut_from"]
     keeps = CULTURE_OF[host]
     other = "western" if keeps == "southern" else "southern"
+    # Both rite words OPEN a sentence in the news line, so they are handed
+    # over capitalized: "The old rite, which has Concordia ...".
     return {"host": world["lands"][host]["name"],
-            "hosting": _RITE_WORDS[keeps], "other": _RITE_WORDS[other]}
+            "hosting": _RITE_WORDS[keeps].capitalize(),
+            "other": _RITE_WORDS[other].capitalize()}
 
 
 CARDS = (
@@ -2447,6 +2470,7 @@ CARDS = (
              "wardens at the post will not hand the child over and will "
              "not say why. The mother is paying what she has.",
              pool=_TOUGHS, skins=GATE_SKINS["heaven"],
+             ferocity=GATE_FEROCITY["heaven"], at="host",
              sites=("the warden's post",),
              giver="the mother from the host village",
              epilogue="The child is home. The register has one name "
@@ -2454,6 +2478,22 @@ CARDS = (
              failure_epilogue="The post is shut and the child is inside "
                               "the walls. The mother walks up to the "
                               "gate every morning."),
+             "dark": job(
+             "Deliver the Child",
+             "The Gardeners took the child back out of Concordia in the "
+             "night and have it in a house on the host road. The Pruners "
+             "pay for the child returned to the register, and the "
+             "Gardeners are standing in front of the door.",
+             pool=_TOUGHS, skins=GATE_SKINS["heaven"],
+             ferocity=GATE_FEROCITY["heaven"], at="host", align="dark",
+             sites=("the hidden house",),
+             giver="a Pruner of the Prefecture",
+             epilogue="The child is inside the walls and the name is back "
+                      "on the register. The mother is still at the gate "
+                      "every morning.",
+             failure_epilogue="The Gardeners moved the child again, out "
+                              "of the country. The register carries a "
+                              "name nobody can find."),
              "pay": 1.20}),
     card("heaven/the-cure-line", "The infirmary opens to all", "heaven",
          tension=("gardeners-vs-pruners",), days=(20, 35),
@@ -2482,6 +2522,7 @@ CARDS = (
              "the cell is the escort's problem: three villages have said "
              "out loud that the hermit is not going anywhere.",
              pool=_TOUGHS, skins=GATE_SKINS["heaven"],
+             ferocity=GATE_FEROCITY["heaven"],
              sites=("the hill road", "the walled cell"), places=2,
              giver="a Gardener of Concordia", align="good",
              epilogue="The hermit is escorted down the hill, and is "
@@ -2503,19 +2544,40 @@ CARDS = (
              "Six lamps of Concordia were stolen off a cart. The thieves "
              "are camped in the hills and the lamps show at night, which "
              "is the whole of the tracking problem.",
-             pool=_TOUGHS, sites=("the thieves' camp",),
+             pool=_TOUGHS,       # hill thieves, not Heaven's people: the
+                                 # ONE gate job with no gate disposition
+             proof="the lamps",
+             sites=("the thieves' camp",),
              giver="the Market of Lamps",
              epilogue="Six lamps back on the counter. The hills are dark "
                       "again.",
              failure_epilogue="The lamps are sold and scattered. "
                               "Somebody four countries off is paying a "
                               "horse apiece for them.")}),
+    card("heaven/the-gate-guarded-by-law",
+         "The quarantine shuts the gate", "heaven",
+         constitution=("quarantine",), days=(20, 40),
+         news="The Pruners hold the city and the quarantine is the law "
+              "here now: wardens on the gate facing IN as well as out, "
+              "nothing through it either way, and the road up to the "
+              "walls turned back a mile out.",
+         state={"while": ("gate-shut",)}),
+    # THE SERMON IS THE HOST'S CARD (2026-09-13). It was Concordia's, which
+    # made it the only setter of `preached-against` -- a state the relation
+    # row `pulpit-against` reads on the HOST, so the row ran on `interdict`
+    # alone and the pulpit half of it never fired. A bishop preaching
+    # against the gate is the host country's own trouble anyway: it is
+    # posted from the host's pulpit, and the pilgrims walk the host's
+    # roads. `hosts-heaven` is the gate on it, so exactly one land in every
+    # world draws it. The key keeps its `heaven/` namespace: it is the
+    # Heaven gate's card wherever it is drawn, and it stays beside the
+    # packet it argues with.
     card("heaven/the-sermon", "The bishop preaches against the gate",
-         "heaven", tension=("prefect-vs-church",), days=(20, 40),
-         news="The host's bishop preached against the gate on Sunday and "
-              "called it an invasion wearing the god's face. The question "
-              "goes to the synod. Pilgrims are walking up the gate road "
-              "with staves and singing.",
+         _HUMAN, states=("hosts-heaven",), days=(20, 40),
+         news="The bishop preached against the gate on Sunday and called "
+              "it an invasion wearing the god's face. The question goes "
+              "to the synod. Pilgrims are walking up the gate road with "
+              "staves and singing.",
          state={"while": ("preached-against",)},
          encounter={"kinds": ("cutthroat", "bruiser", "archer"),
                     "where": "wilds",
@@ -2536,6 +2598,7 @@ CARDS = (
              "with a crate on its shoulder. It does not answer. Break it "
              "or lead it home; the city will take either.",
              pool=_UNDEAD, skins=GATE_SKINS["heaven"],
+             ferocity=GATE_FEROCITY["heaven"],
              sites=("the churchyard",),
              giver="the Prefecture's clerk",
              epilogue="The servant is back inside the walls, or in "
@@ -2571,9 +2634,10 @@ CARDS = (
              "The Year Owed",
              "A village sold a year of a man's life at Saturna's feast "
              "and wants it back. The book is in the debt-house and the "
-             "collectors are already on the road. Burn the book, or walk "
-             "in front of it and collect.",
+             "collectors are already on the road. Burn the book before "
+             "they reach the village.",
              pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"],
              sites=("the debt-house",),
              giver="the village that sold the year", align="good",
              epilogue="The book is burned. The man walks out a year "
@@ -2581,6 +2645,21 @@ CARDS = (
              failure_epilogue="The collectors got there first. The year "
                               "is paid and the village has stopped "
                               "counting how many it has left."),
+             "dark": job(
+             "Collect the Year",
+             "The debt-house pays for the year collected and does not "
+             "ask how. Another crew out of Saturna is on the same road "
+             "after the same man, and the book only pays once.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"], align="dark",
+             sites=("the collectors' road",),
+             giver="the debt-house's clerk",
+             epilogue="The year is collected. The man walked to Saturna "
+                      "between two of the debt-house's people and the "
+                      "book is closed.",
+             failure_epilogue="The other crew reached him first. The "
+                              "debt-house paid them and has stopped "
+                              "answering its door."),
              "pay": 1.20}),
     card("hell/the-lord-hanged", "The free company hangs a lord", "hell",
          tension=("lord-vs-captains",), days=(20, 40),
@@ -2596,6 +2675,7 @@ CARDS = (
              "captains dead, and until one of those happens nothing "
              "moves on that road.",
              pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"], at="host",
              sites=("the road camp",),
              giver="a captain of the free companies",
              epilogue="The lord's men are off the road. The captains pay "
@@ -2615,6 +2695,7 @@ CARDS = (
              "and has taken two carters. Kill the pack. The collars are "
              "Saturna's and the Master of Hounds wants them back.",
              pool=_BEASTS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"],
              sites=("the road's bad mile",),
              giver="the Master of Hounds",
              epilogue="The collars are back on the kennel wall. The road "
@@ -2638,6 +2719,7 @@ CARDS = (
              "Hunger's people are already at the causeway. Stand at one "
              "end of it or the other.",
              pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"],
              sites=("the causeway", "the feast house"), places=2,
              giver="the fen village's headman", align="good",
              epilogue="The Hunger's people go back down the causeway "
@@ -2647,6 +2729,21 @@ CARDS = (
                               "of the Hunger's people. The fen village "
                               "held its feast anyway and it was not the "
                               "same."),
+             "dark": job(
+             "Bring Her In",
+             "The Hunger pays for the old woman of the fen brought in "
+             "alive. The Feast has sent its own people to the fen to "
+             "stop it, and they are on the road before the causeway.",
+             pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"], align="dark",
+             sites=("the fen road", "the old woman's door"), places=2,
+             giver="a steward of the Hunger",
+             epilogue="The old woman walks down the causeway to Saturna. "
+                      "The fen village held its feast anyway and it was "
+                      "not the same.",
+             failure_epilogue="The Feast's people hold the fen road and "
+                              "the old woman is still laying her table. "
+                              "The Hunger does not pay twice."),
              "pay": 1.25}),
     card("hell/the-cages", "The wild market sells people", "hell",
          tension=("feast-vs-hunger",),
@@ -2662,6 +2759,7 @@ CARDS = (
              "Saturna's wild market, sold for a year each. The keepers "
              "are the Hunger's own. Open the cages and walk them out.",
              pool=_TOUGHS, skins=GATE_SKINS["hell"],
+             ferocity=GATE_FEROCITY["hell"],
              sites=("the wild market",),
              giver="a Feast captain who wants the Hunger embarrassed",
              align="good",
@@ -4624,7 +4722,11 @@ MAGIC_CARDS = (
     # -- land-agnostic: the gift, and what the world does about it --------- #
     # The talent CHAIN, and the one that runs in every land: a gift with no
     # theory behind it goes off, and the trade that answers is the next card.
-    card("magic/wild-talent", "The wild talent", ANY_LAND,
+    # The gift and the trade that answers it are the NINE's (scoped
+    # 2026-09-13): a peasant born with a talent and a witch-hunt posted
+    # over him are both facts about a countryside with villages in it, and
+    # neither reads at a one-tile city state where nobody is born.
+    card("magic/wild-talent", "The wild talent", _HUMAN,
          chance=0.10, without=("talent-loose", "hunt-up"), days=None,
          hook=_TALENT_HOOK,
          news="A peasant called {talent} blew a man apart in a market "
@@ -4647,7 +4749,7 @@ MAGIC_CARDS = (
                               "worse frightened. The next market it walks "
                               "into will hear about it."),
              "pay": 1.30}),
-    card("magic/the-hunt", "The hunt is posted", ANY_LAND,
+    card("magic/the-hunt", "The hunt is posted", _HUMAN,
          states=("talent-loose",), days=(12, 20),
          news="Witchhunting is a trade, not a holy office, and one is "
               "posted: a named target, a price by the head, and specialists "
@@ -5047,8 +5149,12 @@ _GATE_RELATIONS = (
     relation(HOST, "concordia", "the bishops",
              when=("interdict", "preached-against"), then="pulpit-against",
              because="the host's pulpit"),
+    # `at-war` was the second word here and is gone (2026-09-13): worldgen
+    # stamps it on every belligerent and nothing ever clears it, so in half
+    # of all worlds this row stood from day one as a standing fact rather
+    # than as an answer to anything. A relation reads an EVENT.
     relation(HOST, "saturna", "the hunt",
-             when=("hunt-up", "at-war"), then="hounds-out",
+             when=("hunt-up",), then="hounds-out",
              because="the host's men on the road"),
 )
 
@@ -6573,21 +6679,49 @@ def board_pay(world: dict, polity: str) -> float:
     return pay
 
 
+def _card_jobs(spec: dict) -> list[dict]:
+    """The jobs one live card is putting up, each with the key a board
+    dedupes on. Most cards put up one. A card with a DARK TWIN puts up two
+    (2026-09-13): the same trouble with two employers, one paying to fix it
+    and one paying to finish it, and the player picks whose money he takes.
+    The twin carries its own key so one board can hold both."""
+    outlet = spec["outlets"].get("quest") or {}
+    pay = float(outlet.get("pay", 1.0))
+    out = []
+    for word in ("post", "dark"):
+        posted = outlet.get(word)
+        if posted:
+            out.append({"key": spec["key"] if word == "post"
+                        else f"{spec['key']}/dark",
+                        "card": spec["name"], "job": posted, "pay": pay})
+    return out
+
+
 def board_postings(world: dict, polity: str) -> list[dict]:
     """The jobs the live cards are PUTTING UP here -- the card key (so a
     board never carries two copies of one card's work), the authored
     template, and the premium the card pays over the going rate.
 
+    Two cards' work is posted somewhere else (2026-09-13): a job marked
+    `at="host"` goes on the boards of the HUMAN country its gate city was
+    cut out of, not on the city's own single board, because that is where
+    the trouble is -- the Pruners take a village child, the free companies
+    hang a lord, and both of those are read off a board down the road. So
+    this land's own live cards hand over everything EXCEPT their host-side
+    work, and a country that hosts a gate city also carries what that city
+    sends out.
+
     Nothing is posted here: the board posts it, when it next refills, at a
     settlement of its own choosing (`quests.refresh_settlement_board`)."""
-    out = []
-    for spec in live_cards(world, polity):
-        posted = (spec["outlets"].get("quest") or {}).get("post")
-        if posted:
-            out.append({"key": spec["key"], "card": spec["name"],
-                        "job": posted,
-                        "pay": float(spec["outlets"]["quest"].get("pay",
-                                                                  1.0))})
+    out = [posting for spec in live_cards(world, polity)
+           for posting in _card_jobs(spec)
+           if posting["job"]["at"] != "host"]
+    for city in CITY_STATE_OF_SIDE.values():
+        if _gate_host(world, city) != polity:
+            continue
+        out.extend(posting for spec in live_cards(world, city)
+                   for posting in _card_jobs(spec)
+                   if posting["job"]["at"] == "host")
     return out
 
 
@@ -7048,9 +7182,10 @@ def shelter_roll(rng: random.Random) -> dict | None:
 # Validation (the authored content has to be legal at import time)
 # --------------------------------------------------------------------------- #
 
-QUEST_KEYS = ("post", "pay", "slots", "reprice")
+QUEST_KEYS = ("post", "dark", "pay", "slots", "reprice")
 JOB_KEYS = ("title", "desc", "pool", "sites", "giver", "epilogue",
-            "failure_epilogue", "places", "skins", "align")
+            "failure_epilogue", "places", "skins", "ferocity", "proof",
+            "at", "align")
 ENCOUNTER_KEYS = ("kinds", "where", "as", "skins", "chance", "ferocity")
 
 
@@ -7065,24 +7200,44 @@ def _validate_quest(key: str, spec: dict) -> None:
             raise ValueError(f"{key}: {name} out of range: {spec[name]}")
     if "slots" in spec and not isinstance(spec["slots"], int):
         raise ValueError(f"{key}: slots is a whole number of postings")
-    posted = spec.get("post")
-    if posted is None:
-        return
-    if not isinstance(posted, dict):
-        raise ValueError(f"{key}: a posted job is a template -- see job()")
-    missing = [k for k in JOB_KEYS if k not in posted]
-    if missing:
-        raise ValueError(f"{key}: the posted job wants {missing}")
-    if not posted["pool"]:
-        raise ValueError(f"{key}: the posted job draws from no pool")
-    for kind in posted["pool"] + tuple(posted["skins"]):
-        if kind not in FOES:
-            raise ValueError(f"{key}: no such foe row: {kind}")
-    if not posted["sites"]:
-        raise ValueError(f"{key}: the posted job has nowhere to happen")
-    if posted["places"] > len(posted["sites"]):
-        raise ValueError(f"{key}: the posted job wants more places than it "
-                         f"names sites")
+    if spec.get("dark") is not None and spec.get("post") is None:
+        raise ValueError(f"{key}: a dark twin with no job beside it -- the "
+                         f"pair is the point")
+    for word in ("post", "dark"):
+        posted = spec.get(word)
+        if posted is None:
+            continue
+        if not isinstance(posted, dict):
+            raise ValueError(f"{key}: a posted job is a template -- see "
+                             f"job()")
+        missing = [k for k in JOB_KEYS if k not in posted]
+        if missing:
+            raise ValueError(f"{key}: the posted job wants {missing}")
+        stray = set(posted) - set(JOB_KEYS)
+        if stray:
+            raise ValueError(f"{key}: not a job term: {sorted(stray)}")
+        if not posted["pool"]:
+            raise ValueError(f"{key}: the posted job draws from no pool")
+        for kind in (posted["pool"] + tuple(posted["skins"])
+                     + tuple(posted["ferocity"])):
+            if kind not in FOES:
+                raise ValueError(f"{key}: no such foe row: {kind}")
+        if not posted["sites"]:
+            raise ValueError(f"{key}: the posted job has nowhere to happen")
+        if posted["places"] > len(posted["sites"]):
+            raise ValueError(f"{key}: the posted job wants more places than "
+                             f"it names sites")
+    # THE TWO EMPLOYERS (2026-09-13): a card that offers a choice offers a
+    # REAL one -- opposite aligns, and two sites that cannot be mistaken
+    # for each other on the board.
+    twin = spec.get("dark")
+    if twin is not None:
+        if {spec["post"]["align"], twin["align"]} != {"good", "dark"}:
+            raise ValueError(f"{key}: the two employers are one good and "
+                             f"one dark")
+        if set(spec["post"]["sites"]) & set(twin["sites"]):
+            raise ValueError(f"{key}: the two jobs share a site stem and "
+                             f"would collide on the board")
 
 
 def _validate_menu(key: str, spec: dict) -> None:

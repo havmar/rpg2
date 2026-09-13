@@ -8574,3 +8574,143 @@ the Hell pact rewritten onto this setting or cut (rules.md now says the
 add-on outranks it and nobody has picked between the two honest answers);
 and the north's draugr and grave ghosts, still owed by the monsters &
 fauna dump — the gate skins are not them.
+
+## 2026-09-13 — The gates review: the seams, fixed
+
+THE GATES ARC shipped whole on 2026-09-12 across five sessions. The next
+day a read-only review checked the built arc against the design as it
+stood at `32cdb60` — the plan, the seams with the older machinery, the
+bugs — and the same sitting then fixed everything it found. The review's
+worksheet (`gates_review.md`, since deleted) ranked the findings; this
+entry is the record of what was wrong, what was decided, and where each
+fix went. The plan itself was implemented as written: every session's
+contract shipped and every section of the design is in code or docs.
+What was wrong was where the new content met the quest, encounter, room
+and recruit machinery, plus a few card clauses that never fired.
+
+### The bugs, and where the fixes went
+
+- **A boss killed in a fight the party then broke off was never
+  counted.** `refresh_foes_after_retreat` drops the dead from a
+  remembered room, so on the return trip `mark_boss_dead` saw no body,
+  the bar never dropped, and the depth refilled a month later with a
+  second Sentinel and a second bar. `session.finish_encounter`'s
+  unresolved branch and `cmd_retreat`'s escape branch now call
+  `mark_boss_dead` and `record_drops` before the roster is remembered,
+  and print the fallen line when a one-off actually fell. The armory
+  learns it too: `weapons.claim_armory_entry` marks the piece taken.
+  `ruin_site_rosters` appends the boss only while `boss_dead` is False,
+  so no reopened quest can respawn one either.
+- **Card-posted gate jobs had no mercy class.** `worldsim.job()` could not
+  carry `ferocity`, so the nine packet jobs fielded Wardens at the row
+  default. `job()` gained `ferocity`, `proof` and `at`; `JOB_KEYS` is a
+  closed set the validator enforces; every gate-side job carries
+  `GATE_FEROCITY[side]` except The Lamp Thieves, whose foes are hill
+  thieves and not Heaven's people.
+- **Every land's wilderness had become one 23-kind list.** The eight ruin
+  templates sat on every culture's table and `wild_pool` is the union of
+  a culture's template pools, so a dragon could roll on a Phyrascian
+  road. `quests.ruin_templates(world)` offers them at posting time
+  instead (`_post_quest`), the wild pools are byte-identical to the
+  pre-arc tree, and `wild_pool` sorts by (level, name) — its level ties
+  had been set-iteration order, a different tuple every process.
+- **The ruin jobs were unreachable in most worlds.** Strict placement
+  inside the ordinary three-day radius found a posting settlement near
+  Candor in 38% of worlds and near Libera in 27%. `RUIN_TARGET_DAYS` = 6
+  (`requirement_radius`, a per-requirement radius) puts them at 90% and
+  77% (benchlog 2026-09-13). The opening posting never draws one
+  (`_post_quest(..., ruins=False)`): a gate ruin six days out through its
+  own danger ring is somewhere a career walks to.
+- **The four-room deepest site overpaid.** `cmd_delve` forged four
+  encounters against XP readers clamped at three. `ENCOUNTER_MULT` runs
+  1-4 now (2.8 continues the series), the four readers clamp at 4, and
+  `RUIN_SHARES[4]` sums to `ROOM_SHARES[3]`'s 2.10; the quote and the pay
+  reconcile and no roster changed.
+- **A refill left the party's room records and the routed flag.**
+  `cmd_delve` drops the site's `state["rooms"]` keys where it refills;
+  `refill_ruin_site` resets `routed`. Loose-end rows are deliberately
+  kept: they are story records about foes who left, and nothing
+  re-enters a room from them.
+- **Recruits in a gate city were born there** ("concordia m, speaks Latin
+  and Phyrascian"). `session.recruit_homeland`: a face hired in Concordia
+  or Saturna is born in the land the city was cut from — the humans of
+  the city, the converts and the debtors the packets are about.
+- **`go SITE` walked into a depth without a delve**; `cmd_go` now skips a
+  Site carrying a `ruin` record and points at `delve`.
+- **The `border` tag was stale after the takeover** (28/40 city tiles and
+  84 neighbours wrong): `places._refresh_border` runs for the taken tile
+  and its neighbours inside `_city_takeover`, tile tags and the natural
+  Area's copy both.
+- **A sealed ruin kept posting jobs.** `world["gates"][key]["sealed_day"]`
+  is written by `close_ruin_site`; `ruin_templates` drops a sealed
+  side's four.
+- **Two relation rows read a `when` that never or always held.** The
+  sermon is the HOST's card now (`_HUMAN`, admits `hosts-heaven`), so
+  `pulpit-against` reads a state the host actually gets; `hounds-out`
+  reads `hunt-up` alone, `at-war` being a standing fact from day 0 in
+  half of all worlds.
+- **A Concordia that rolled QUARANTINE without `prefect-vs-church` could
+  never see `gate-shut`.** `admits` is AND across kinds and an OR group
+  would change what deck membership means in five readers, so a second
+  card, `heaven/the-gate-guarded-by-law`, keys on the constitution with
+  the same outlets.
+- **The two `magic/*` any-land cards reached the city decks**; both are
+  `_HUMAN` now. **The synod line** opened sentences in lower case; the
+  rite words are capitalised where they open one.
+- **Bosses came out numbered** ("Zohariel the Sentinel 10"); a `BOSSES`
+  kind gets its display name bare, and `_named_dead` now records the kill
+  as the named kill it is.
+- Smaller: a done delve leaves `accepted`; ruin Site tags no longer read
+  `ruin, ruin`; the ruin Area has its own seed purpose instead of sharing
+  settlement slot 01's; `look` leads with the gate line like `tile`;
+  `_validate_countries` checks a city state holds its gate's tile and was
+  cut from that gate's set; the two EPIC city rows band (9, 20) through
+  `min_level` / `EPIC_BAND_FLOOR`; `TEMPLATES["heaven"]`'s mother's job is
+  "The Child off the Register" so it no longer shares a title with the
+  removal card's; `LADDER_POOL[:5] + ("soldier",)` deduped; the stale
+  "STUBS on purpose" comment in worldsim.py rewritten; `bench_worldgen`
+  and `bench_quests` read the land record's capital and count the ruin
+  rows once.
+
+### The design calls made in the sitting
+
+- **The dark outlets are BUILT, both at once.** The design had three cards
+  post a good job OR a dark one; the build had posted only the good.
+  Each card now posts both (`_card_jobs`, the `dark` verb, the twin keyed
+  `<card>/dark`): Bring the Child Home / Deliver the Child, The Year Owed
+  / Collect the Year, The Old Feast / Bring Her In — two givers, opposite
+  aligns, disjoint stems, the same pool and skins because the roster is
+  the OTHER faction of the same power. The player picks an employer,
+  which is the three-employers shape the wild talent already had.
+- **The removal and the lord-hanged jobs post on the HOST's boards**
+  (`at="host"`, honoured by `board_postings`), as the design said; land-
+  scoped like every other card's job rather than "the nearest town".
+- **A posted job still never takes the dungeon apart.** The design's
+  `reuse: "prefer"` onto the six authored Sites was reversed in session 2
+  for a reason that holds (the two systems never write the same room);
+  the review recorded it as a build decision and it stands.
+- **The Lamp Thieves keep the hill thieves' own mercy class** — the one
+  gate job whose foes are not the power's people.
+- **Fire blood's "max Power +2"** stays the whole range moving; the Old
+  Host's 16 / drilled +2 body stays inside the tuning allowance.
+
+### What stays open
+
+- `lord-hanged` has no relation reader: a relation's `when` reads the
+  SOURCE's states and `hounds-out` runs out of the host, so the design's
+  "the host's relation edge reads it" needs a row out of Saturna that
+  reads right, and none does yet.
+- A gate city's own countryside pool is its templates' union (Concordia
+  the ladder, Saturna the ladder plus hounds, giant-kin and drakes); the
+  design's "the tile keeps the donor's ground" could argue for the
+  donor's pool instead. `wild_pool` takes a homeland and no world, so it
+  is a signature change if wanted. The ring's own table fires first on
+  the one tile either way.
+- The balance note stands as a dm.md line: the ruins are a full party's
+  work (a duo wiped in THE CHOIR HALL at L5, an L20 duo lost the plaza's
+  last room), the bench targets being duo-baseline over three rooms.
+
+Test suite **1297 OK** (1234 before). The paperwork: rules.md's
+Heaven & Hell add-on parts 1, 2, 4 and 5 where the rules changed, dm.md's
+"The gates", develop.md's Files, tunables and the four gates dev-map
+entries, benchlog 2026-09-13.

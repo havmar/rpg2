@@ -750,7 +750,11 @@ Hell add-on is the setting; this is how it plays at the table.
   `delve SITE` opens one. There is no giver, no board slot and no turn-in
   -- the party walks in, fights the rooms, and the field pay lands when the
   last one falls. A cleared place refills thirty days later; the deepest
-  one, once what holds it is dead, never does.
+  one, once what holds it is dead, never does. A ruin is a FULL PARTY'S
+  work: the bench targets are duo-baseline and a Site stacks three rooms
+  with no town in between, so a pair is at the edge everywhere in one -- a
+  two-person party wiped in THE CHOIR HALL at level 5, and a two-person
+  level-20 party lost the gate plaza's last room.
 - **Narrate a ruin as a dead city, not as a cave.** Candor is white stone,
   glass, geometry and lamps that still burn; the things in it are MADE --
   marble that walks, a servant with a broken arm still carrying. Libera is
@@ -799,14 +803,18 @@ Hell add-on is the setting; this is how it plays at the table.
   `give HERO the Candor bar` puts it in a hand. Let the moment be small:
   the party is holding the thing that has held the gate shut.
 - **The ruin jobs are the board's half of this.** A settlement within
-  three days of a ruin can post work into it: looters on Candor's
-  terraces, a marble servant standing in a churchyard, the lamp in the
-  glass garden, Concordia's register -- hell hounds off the feast-hall,
-  the vine pits' vintage, Saturna's kennel book, a man's year written in
-  the old counting house. These are ORDINARY jobs with a giver and a
-  turn-in, unlike a `delve`, and they go to their own side's ruin. Play
-  the giver as a local with a local problem: nobody in these scenes is
-  thinking about the gate.
+  **six days** of a ruin can post work into it -- further than ordinary
+  work travels, because there are only two ruins in the world and the
+  country round them is thin: looters on Candor's terraces, a marble
+  servant standing in a churchyard, the lamp in the glass garden,
+  Concordia's register -- hell hounds off the feast-hall, the vine pits'
+  vintage, Saturna's kennel book, a man's year written in the old
+  counting house. These are ORDINARY jobs with a giver and a turn-in,
+  unlike a `delve`, and they go to their own side's ruin. Play the giver
+  as a local with a local problem: nobody in these scenes is thinking
+  about the gate. Once a ruin is SEALED its four come off the boards for
+  good; if the party has been taking that side's work, say so at the next
+  board -- the quiet is theirs.
 - **Tom's stone** is a wayside shrine in the western and southern
   countryside: an upright bar of grey stone, wax stubs, coins pressed
   into the turf, a worn track and a beggar's bowl. Sell a burial or a

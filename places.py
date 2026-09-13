@@ -1505,7 +1505,13 @@ def generic_room_contents(room_id: str, room_name: str, site_name: str,
 
 def _new_area_record(spec: dict, polity: str, tile: dict,
                      world_seed: int | None, index: int,
-                     source: str = "authored") -> dict:
+                     source: str = "authored",
+                     purpose: str = "area") -> dict:
+    """One Area record on a Tile. `purpose` names the FAMILY the index
+    counts within: the natural Area and the settlement slots share the
+    "area" line (1, then slot index + 1), and a ruin asks for its own so
+    the ruin and slot 01 on the same Tile cannot be handed the same seed
+    (2026-09-13)."""
     aid = spec["id"]
     is_settlement = spec["kind"] == "settlement"
     tags = list(spec["tags"])
@@ -1520,7 +1526,7 @@ def _new_area_record(spec: dict, polity: str, tile: dict,
         "culture": CULTURE_OF[polity], "homeland": polity,
         "role": spec["role"], "description": spec["description"],
         "source": source, "template": aid,
-        "seed": stable_seed(world_seed, tile["id"], "area", index),
+        "seed": stable_seed(world_seed, tile["id"], purpose, index),
         "known": is_settlement, "visited": False,
         "sites": [], "quests": [], "tags": list(dict.fromkeys(tags)),
         "features": [], "states": [], "used_natural_sites": [],
@@ -2737,8 +2743,11 @@ RUIN_SITES = {
 
 # The deepest Site walks FOUR rooms and `quests.ROOM_SHARES` is keyed to the
 # three a generated job can span, so the gate's own curve is authored here:
-# the same rising shape, the same ~2-reference-encounter total, one more step.
-RUIN_SHARES = {4: (0.42, 0.54, 0.66, 0.88)}
+# the same rising shape over one more step, summing to 2.10 -- the same
+# ~2-reference-encounter roster budget ROOM_SHARES[3] spends (2026-09-13: it
+# summed to 2.50, a fifth more roster than any other job of its level, on a
+# comment that claimed the same total).
+RUIN_SHARES = {4: (0.35, 0.45, 0.55, 0.75)}
 
 RUIN_LINES = {
     "candor": "Candor is white stone under a thousand years of weather: "
@@ -2828,7 +2837,7 @@ def _ruin_area(world: dict, spec: dict, tile: dict) -> dict:
         "description": RUIN_LINES[key],
     }
     area = _new_area_record(area_spec, tile["country"], tile,
-                            world["seed"], 2)
+                            world["seed"], 1, purpose="ruin-area")
     # Famous: everybody has heard of the white ruin, and nobody has to
     # explore a Tile to find a dead city standing on it.
     area["known"] = True
@@ -2853,6 +2862,10 @@ def _build_ruin_sites(world: dict, spec: dict, area: dict) -> None:
         site = new_site(world, area["id"], site_id, site_spec["name"],
                         site_spec["level"], known=True, template="ruin",
                         domain="ruin")
+        # A Site is tagged [template, domain] and a ruin is both, so the
+        # pair collapses to the one word rather than reading ['ruin',
+        # 'ruin'] wherever tags are printed (2026-09-13).
+        site["tags"] = list(dict.fromkeys(site["tags"]))
         site["description"] = RUIN_SITE_LINES[key]
         site["ruin"] = {"gate": key, "side": spec["side"], "index": index,
                         "level": site_spec["level"], "pool": list(pool),
@@ -2879,7 +2892,11 @@ def ruin_site_rosters(world: dict, site: dict) -> list[tuple[str, list[str]]]:
                              shares=RUIN_SHARES.get(len(rooms)))
     for index, kinds in authored.get("add", {}).items():
         built[index][1].extend(kinds)
-    if record["boss"]:
+    if record["boss"] and not record["boss_dead"]:
+        # There is ONE Sentinel and one Old Host, and one bar apiece. A
+        # depth whose boss is dead never seats another, whatever refills or
+        # re-forges the Site: the roster below it is the ring's, and the
+        # thing that held the gate is gone (2026-09-13).
         built[-1][1].append(record["boss"])
     return built
 
@@ -2904,7 +2921,15 @@ def roll_gates(world: dict) -> None:
         tile = rng.choices(candidates, weights)[0]
         taken.append(tile)
         record = {"side": spec["side"], "kind": spec["kind"],
-                  "tile": tile["id"]}
+                  "tile": tile["id"],
+                  # The day the ruin was SEALED -- the bar off the gate and
+                  # the boss dead (`close_ruin_site`). None while anything
+                  # still comes out of it, and the one fact outside the
+                  # ruin's own Sites that says it does not: the boards read
+                  # it before they post another job into a dead ruin
+                  # (2026-09-13). A city gate never seals, and its record
+                  # carries the key at None for the life of the world.
+                  "sealed_day": None}
         # A ruin's country KEEPS it; a city's country loses the tile in
         # session 4, which is why the two words are different.
         record["keeper" if spec["kind"] == "ruin" else "cut_from"] = \
@@ -2925,6 +2950,29 @@ def roll_gates(world: dict) -> None:
             _build_ruin_sites(world, spec, area)
         else:
             _city_takeover(world, spec, tile)
+
+
+def _refresh_border(world: dict, tile: dict) -> None:
+    """Recompute one Tile's `border` tag -- and the natural Area's copy of
+    it, since an Area is stamped with the tile tags standing at the moment
+    it is built.
+
+    The worldgen pass that first writes `border` runs BEFORE the gates, so
+    the tile a city state takes (and every tile around it) kept the answer
+    from when it still flew the donor's flag: 28 of 40 city tiles and 84
+    neighbours read as inland when they had just become a frontier. It is a
+    TILE_FIT_TAGS word -- settlement fitting reads it -- so it has to be
+    true after the takeover, not before it."""
+    want = any(world["tiles"][nid]["country"] != tile["country"]
+               for nid in tile["neighbors"])
+    tag_lists = [tile["tags"]]
+    tag_lists += [world["areas"][aid]["tags"] for aid in tile["areas"]
+                  if world["areas"][aid]["kind"] == "natural"]
+    for tags in tag_lists:
+        if want and "border" not in tags:
+            tags.append("border")
+        while not want and "border" in tags:
+            tags.remove("border")
 
 
 def _city_takeover(world: dict, spec: dict, tile: dict) -> None:
@@ -2955,6 +3003,11 @@ def _city_takeover(world: dict, spec: dict, tile: dict) -> None:
         world["lands"][donor]["areas"].remove(aid)
         world["lands"][key]["areas"].append(aid)
     world["lands"][key]["capital_tile"] = tile["id"]
+    # A new country is a new frontier: the tile and everything around it
+    # learn that they border one now (2026-09-13).
+    _refresh_border(world, tile)
+    for nid in tile["neighbors"]:
+        _refresh_border(world, world["tiles"][nid])
 
 
 # --- the readers ----------------------------------------------------------- #
@@ -3020,6 +3073,10 @@ def refill_ruin_site(world: dict, site: dict, day: int) -> None:
     record["refills"] += 1
     record["cleared_day"] = None
     record["quest"] = None
+    # A fresh roster was never driven off: the rout mark belongs to the
+    # fight that earned it, and without this the Site's banner said "driven
+    # off, not slain" at every later clear it ever had (2026-09-13).
+    site["routed"] = False
     for (name, kinds), room_id in zip(ruin_site_rosters(world, site),
                                       site["rooms"]):
         room = world["rooms"][room_id]
@@ -3043,6 +3100,7 @@ def close_ruin_site(world: dict, site: dict, day: int) -> list[str]:
     tile = world["tiles"][world["areas"][site["area"]]["tile"]]
     for other in gate_ring(world, tile):
         clear_state(world, other, "gate-ruin", day=day)
+    world["gates"][record["gate"]]["sealed_day"] = day
     return [f"The ring around {GATE_BY_KEY[record['gate']]['name']} goes "
             f"quiet -- nothing comes out of the ruin any more."]
 
@@ -3061,6 +3119,8 @@ def _validate_gates(world: dict) -> None:
         record = gates[key]
         if (record["side"], record["kind"]) != (spec["side"], spec["kind"]):
             raise ValueError(f"{key}: the record disagrees with the spec")
+        if record["sealed_day"] is not None:
+            raise ValueError(f"{key}: a rolled gate is not sealed yet")
         # After the takeover (session 4) a LIVE city's tile belongs to the
         # city state, and the country it came out of is on the record.
         home = (record["cut_from"] if record["kind"] == "city"
@@ -3476,6 +3536,18 @@ def _validate_countries(world: dict) -> None:
         if held[0] not in ceded:
             raise ValueError(f"{key}: {held[0]} is not a rolled gate-city "
                              f"tile")
+        record = world["gates"][key]
+        if held[0] != record["tile"]:
+            raise ValueError(f"{key}: it holds {held[0]}, not the tile its "
+                             f"own gate record stands on ({record['tile']})")
+        # ...and OF THE RIGHT SET (2026-09-13): heaven's city is cut out of
+        # a heaven land and hell's out of a hell land, which is placement
+        # rule 1 and the one thing "one tile, and it is a gate tile" does
+        # not say.
+        if record["cut_from"] not in GATE_BY_KEY[key]["lands"]:
+            raise ValueError(f"{key}: cut out of {record['cut_from']}, "
+                             f"which is not in its set "
+                             f"{list(GATE_BY_KEY[key]['lands'])}")
     _validate_town_names(town_tiles)
     for country in COUNTRIES:
         tid = capital_tile(world, country)

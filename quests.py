@@ -165,6 +165,19 @@ QUEST_REFILL_PER_DAY = 1     # new jobs a settlement posts per day once its
 QUEST_RUMOR_DAYS = 3         # how far word of open work travels
 ORDINARY_TARGET_DAYS = 3     # how far an ordinary job's target may sit from
                              # the settlement that posted it
+RUIN_TARGET_DAYS = 6         # ...and how far the GATE RUINS reach (2026-09-13).
+                             # A family may raise the ordinary radius with a
+                             # `radius` on its place requirement. Only the
+                             # ruin jobs do, and they have to: there are
+                             # exactly TWO pieces of ground in the world that
+                             # honor them, both barred from capitals and their
+                             # ring and drawn toward slow country, so at three
+                             # days a board that can post a Candor job existed
+                             # in 17 of 40 worlds and a Libera job in 12. At
+                             # six it is 37 and 28 (benchlog 2026-09-13). The
+                             # radius is the one honest lever: the ruins
+                             # cannot move and the countryside cannot be
+                             # asked to grow settlements around them.
 
 
 def threat_value(kind: str) -> float:
@@ -306,6 +319,15 @@ GIANTKIN_POOL = ("ogre", "troll", "giant")
 SPIDER_POOL = ("great spider",)
 DRAKE_POOL = ("wyvern", "drake", "dragon")
 
+# THE EPIC FLOOR (2026-09-13). "EPIC" is a band, not a label: the three
+# country-agnostic epics only reach a board when the capital's roll comes up
+# in the drake band, and `template_band` derives that from DRAKE_POOL's
+# weakest row. A row the design CALLS epic but whose pool reaches down to a
+# wolf is not epic at all -- it just posts at level 2 with a wolf roster --
+# so such a row declares `min_level=EPIC_BAND_FLOOR` and `template_band`
+# honors it (the two gate cities' capital rows are the only ones today).
+EPIC_BAND_FLOOR = max(1, min(FOES[k].level for k in DRAKE_POOL) - 1)
+
 # THE GATE POOLS (2026-09-12, the gates arc): what comes out of the two ruins
 # and what stands in the two gate cities. Heaven's things are MADE, so its
 # ruin is the undead rows and the giant-kin wearing marble; Hell's are BRED,
@@ -313,6 +335,10 @@ DRAKE_POOL = ("wyvern", "drake", "dragon")
 # purpose -- a garrison is a garrison, and what differs is the name over it
 # (`sites.GATE_SKINS`). The stranded angel of Candor's fifth site is a
 # `champion` placed by that site's authored roster, never out of the pool.
+# The two CITY pools have no template of their own: `worldsim` spends them
+# through `TILE_STATE_ENCOUNTERS`, which hand-copies the kinds because
+# worldsim cannot import quests -- `test_gates` pins that mirror to these
+# four names, so the pools live here and the copy stays honest.
 HEAVEN_RUIN_POOL = UNDEAD_POOL + GIANTKIN_POOL
 HEAVEN_CITY_POOL = BANDIT_POOL + LADDER_POOL[3:] + MAGUS_POOL
 HELL_RUIN_POOL = WOLF_POOL + BEAST_POOL + GIANTKIN_POOL + DRAKE_POOL
@@ -640,11 +666,15 @@ TEMPLATES["heaven"] = [
          failure_epilogue="The lamps are sold and scattered. Somebody four "
                           "countries off is paying a horse apiece for "
                           "them."),
-    dict(title="Bring the Child Home",
+    # The title is NOT the removal card's (2026-09-13): `worldsim` posts a
+    # "Bring the Child Home" of its own off `heaven/the-removal`, and two
+    # rows with one title confuse `_post_quest`'s not-already-on-this-board
+    # preference. Same job, said the way Concordia's clerks would say it.
+    dict(title="The Child off the Register",
          desc="The Pruners took a child off the register to Concordia. The "
               "mother wants the child back. The wardens at the post will "
               "not hand it over.",
-         pool=LADDER_POOL[:5] + ("soldier",),
+         pool=LADDER_POOL[:5],
          skins=dict(GATE_SKINS["heaven"]),
          ferocity=dict(GATE_FEROCITY["heaven"]), align="good",
          sites=("the warden's post",),
@@ -654,10 +684,16 @@ TEMPLATES["heaven"] = [
          failure_epilogue="The post is shut and the child is inside the "
                           "walls. The mother walks to the gate every "
                           "morning."),
+    # THE CITY'S EPIC (banded 2026-09-13). Capital-only holds by
+    # construction -- there is no second board in Concordia -- but the row
+    # shipped on the whole ladder and posted at level 2 with a cutthroat
+    # roster, which is not what a levy is. The pool starts at the veterans
+    # and `min_level` puts the floor where the other epics' is.
     dict(title="The Prefect's Levy",
          desc="The Prefect wants the raiders who burned a lamp-cart made "
               "an example of. Muster with the wardens and take the hold.",
-         pool=LADDER_POOL, skins=dict(GATE_SKINS["heaven"]),
+         pool=LADDER_POOL[4:], skins=dict(GATE_SKINS["heaven"]),
+         min_level=EPIC_BAND_FLOOR,
          ferocity=dict(GATE_FEROCITY["heaven"]), places=2,
          sites=("the muster field", "the raiders' hold"),
          giver="the Prefect",
@@ -705,11 +741,15 @@ TEMPLATES["hell"] = [
          failure_epilogue="The books are still written and the collectors "
                           "came early. The elder is owed to somebody now "
                           "as well."),
+    # ...and Saturna's, banded the same day and for the same reason: the
+    # fiction names a horned giant off Libera, so the pool is the giant-kin
+    # and the drakes rather than the whole wild ruin down to the wolves.
     dict(title="The Hunt of Misrule",
          desc="Once a year the feast hunts something that hunts back. This "
               "year it is a horned giant off Libera. Ride with the "
               "hounds.",
-         pool=HELL_RUIN_POOL, skins=dict(GATE_SKINS["hell"]),
+         pool=GIANTKIN_POOL + DRAKE_POOL, skins=dict(GATE_SKINS["hell"]),
+         min_level=EPIC_BAND_FLOOR,
          ferocity=dict(GATE_FEROCITY["hell"]), places=2,
          sites=("the hunt's yard", "the quarry's ground"),
          giver="the Master of Hounds",
@@ -721,11 +761,39 @@ TEMPLATES["hell"] = [
 ]
 
 
-# ...and the eight ruin jobs go on EVERY culture's table, the two gate
-# cities' included: what comes out of Candor and Libera is everybody's
-# problem (the three-day radius is what keeps the table local).
-for _culture in TEMPLATES:
-    TEMPLATES[_culture].extend(dict(_template) for _template in RUIN_TEMPLATES)
+# ...and the eight ruin jobs are offered to EVERY culture's board, the two
+# gate cities' included: what comes out of Candor and Libera is everybody's
+# problem, and the target radius is what keeps the table local.
+#
+# They are deliberately NOT in `TEMPLATES` (2026-09-13). They were, and it
+# widened every land's WILDERNESS: `wild_pool` is the union of a culture's
+# template pools, so eight rows carrying the giant-kin and the drakes put a
+# dragon on a Phyrascian road far from any ruin and left all nine lands
+# rolling the same twenty-three kinds. What a land's ROADS hold and what its
+# BOARDS post are two different questions. `_post_quest` appends these to
+# the tables it draws from, exactly where it appends the epics, and
+# `wild_pool` never sees them.
+def ruin_templates(world: dict) -> list[dict]:
+    """The eight, minus any side whose ruin has been SEALED (2026-09-13).
+
+    A ruin seals when the deepest Site's boss is dead and `world["gates"]`
+    stamps the day. Nothing comes out of a sealed city, so nobody posts work
+    into one -- and a board that had been posting Candor jobs all campaign
+    stops, which is how the seal is FELT by a player who never walks back."""
+    sealed = {record["side"] for record in world["gates"].values()
+              if record["kind"] == "ruin"
+              and record.get("sealed_day") is not None}
+    return [tpl for tpl in RUIN_TEMPLATES
+            if template_ruin_side(tpl) not in sealed]
+
+
+def template_ruin_side(tpl: dict) -> str | None:
+    """Which ruin a template's placement asks for, read off the side word
+    its requirement names -- the same word the ruin Area wears."""
+    for tag in quest_place_requirement(tpl).get("area_any", ()):
+        if tag.endswith("-ruin"):
+            return tag[:-len("-ruin")]
+    return None
 
 # Country-agnostic top-band work -- only the capital posts these, and only when
 # the roll comes up high (template_band gates them to the drake band).
@@ -788,9 +856,11 @@ def epic_templates(culture: str) -> list[dict]:
 
 def _ruin_place(side: str) -> dict:
     """The placement every ruin job shares: the gate-ruin family, narrowed
-    to ONE side by the tag its Area wears, and strict."""
+    to ONE side by the tag its Area wears, strict, and reaching further than
+    ordinary work does (`RUIN_TARGET_DAYS` -- see the constant)."""
     return dict(area_any=(f"{side}-ruin",), site_template="ruin",
-                domain="natural", reuse="prefer", strict=True)
+                domain="natural", reuse="prefer", strict=True,
+                radius=RUIN_TARGET_DAYS)
 
 
 # Geographic routing for the existing quest families.  The encounter tables
@@ -861,7 +931,7 @@ QUEST_PLACE_REQUIREMENTS: dict[str, dict] = {
     "The Lamp Thieves": dict(
         area_any=("hills", "forest", "pasture"),
         site_template="camp", domain="mixed", reuse="never"),
-    "Bring the Child Home": dict(
+    "The Child off the Register": dict(
         area_any=("road", "farmland", "settlement"),
         site_template="camp", domain="mixed", reuse="never"),
     "The Prefect's Levy": dict(
@@ -995,9 +1065,17 @@ SETTLEMENT_KINDS = {         # (quest slots, level band)
 def template_band(tpl: dict) -> tuple[int, int]:
     """The level range a template can be posted at, derived from its pool:
     one below its weakest row (count-scaling reaches down) to two above its
-    strongest (the same rule reaches up), clamped to 1..LEVEL_CAP."""
+    strongest (the same rule reaches up), clamped to 1..LEVEL_CAP.
+
+    A template may RAISE that floor with `min_level` (2026-09-13): a row
+    whose fiction is a one-a-year hunt for a horned giant has no business
+    posting at level 2 just because its pool also holds a wolf. The floor
+    never passes the ceiling -- a `min_level` above the pool's own reach
+    would silence the row instead of banding it."""
     levels = [FOES[k].level for k in tpl["pool"]]
-    return max(1, min(levels) - 1), min(LEVEL_CAP, max(levels) + 2)
+    hi = min(LEVEL_CAP, max(levels) + 2)
+    lo = max(1, min(levels) - 1)
+    return min(max(lo, tpl.get("min_level", 1)), hi), hi
 
 
 def xp_to_cap(level: int = 1) -> int:
@@ -1273,6 +1351,20 @@ def quest_place_requirement(tpl: dict) -> dict:
     return dict(tpl.get("place") or _fallback_place_requirement(tpl))
 
 
+def requirement_radius(requirement: dict, radius: int | None) -> int | None:
+    """How far THIS family's target may sit (2026-09-13). The caller's
+    radius is the ordinary rule; a requirement may name its own and the
+    ruin jobs do (`RUIN_TARGET_DAYS`).
+
+    `radius=None` is the forced families LIFTING the rule outright and
+    always wins: a delve, a card job or the DM's `forge` places itself by
+    its own content and is not to be pulled back to six days because the
+    template it borrows carries a number."""
+    if radius is None:
+        return None
+    return requirement.get("radius", radius)
+
+
 def _select_quest_area(world: dict, origin_key: str, requirement: dict,
                        rng: random.Random,
                        radius: int | None = ORDINARY_TARGET_DAYS) -> dict:
@@ -1289,6 +1381,7 @@ def _select_quest_area(world: dict, origin_key: str, requirement: dict,
     The candidate set is assembled in stable Tile/Area order before the
     quest's own rng picks from it, so placement is deterministic off the
     seed and never off dict or hash order."""
+    radius = requirement_radius(requirement, radius)
     origin = world["areas"][origin_key]
     wanted = set(requirement.get("area_any", ()))
     candidates = [a for a in all_areas(world)
@@ -1328,6 +1421,7 @@ def place_reachable(world: dict, origin_key: str, requirement: dict,
     Only the STRICT families ask (the ruin jobs): everything else has the
     origin Tile's own countryside as a legal fallback and is therefore
     postable anywhere."""
+    radius = requirement_radius(requirement, radius)
     origin = world["areas"][origin_key]
     wanted = set(requirement.get("area_any", ()))
     return any(wanted.intersection(a.get("tags", ()))
@@ -1796,12 +1890,18 @@ def release_quest_places(world: dict, quest: dict) -> None:
 
 def _post_quest(world: dict, settlement: dict, rng: random.Random,
                 used_people: set[str] | None = None,
-                day: int = 0, forced_level: int | None = None) -> dict:
+                day: int = 0, forced_level: int | None = None,
+                ruins: bool = True) -> dict:
     """Roll one quest onto a settlement's board: level uniform in the
     settlement band (displayed straight; too easy and too hard both happen),
     template drawn from the homeland's table (the capital also draws the epics)
     among those whose band contains the roll. Since 2026-07-26 the posting is
-    stamped with the day and a window (`stamp_quest_clock`)."""
+    stamped with the day and a window (`stamp_quest_clock`).
+
+    `ruins=False` keeps the ruin jobs off this one posting: the OPENING
+    hook (2026-09-13) is framed at the job's doorstep, and a gate ruin six
+    days out through its own danger ring is somewhere a career walks to,
+    not where one starts."""
     tier = settlement_tier(settlement)
     lo, hi = SETTLEMENT_KINDS[tier][1]
     level = forced_level if forced_level is not None else rng.randint(lo, hi)
@@ -1809,6 +1909,12 @@ def _post_quest(world: dict, settlement: dict, rng: random.Random,
     tables = list(TEMPLATES[CULTURE_OF[homeland]])
     if settlement.get("capital"):
         tables += epic_templates(CULTURE_OF[homeland])
+    # The ruin jobs are OFFERED here rather than carried on the culture's
+    # table (2026-09-13): the board draws them, the land's wilderness does
+    # not. The `strict` filter below is what keeps them to the handful of
+    # boards inside RUIN_TARGET_DAYS of a ruin.
+    if ruins:
+        tables += ruin_templates(world)
     fitting = [t for t in tables
                if template_band(t)[0] <= level <= template_band(t)[1]
                and (not quest_place_requirement(t).get("strict")
@@ -2090,7 +2196,7 @@ def generate_world(seed: int | None = None, start_level: int = 1) -> dict:
 
     start = world["areas"][world["start_area"]]
     opening = _post_quest(world, start, rng, used_people,
-                          forced_level=start_level)
+                          forced_level=start_level, ruins=False)
     world["opening_quest"] = opening["id"]
     # Only ACTIVE boards open with work (2026-08-15): a settlement whose
     # board-activity roll came up empty is a settlement with nothing to
@@ -2277,13 +2383,22 @@ def rumor_lines(world: dict, nearby: list[tuple[dict, int]],
 
 def wild_pool(homeland: str) -> tuple[str, ...]:
     """What roams a land's wilderness: the union of every foe pool its
-    CULTURE's quest templates draw from, deduplicated, level-sorted."""
+    CULTURE's quest templates draw from, deduplicated, level-sorted.
+
+    The templates a board can DRAW but the culture does not carry -- the
+    epics, the eight ruin jobs -- are deliberately not here: a wilderness is
+    what a land holds, not what its capital is willing to pay for.
+
+    Ordered by (level, name) since 2026-09-13. A level tie used to come out
+    in set-iteration order, which is string-hash order, which moves between
+    processes -- so the road's own table was the one piece of a seeded world
+    that did not reproduce."""
     if homeland not in HOMELANDS:
         raise KeyError(f"unknown homeland: {homeland}")
     kinds: set[str] = set()
     for tpl in TEMPLATES[CULTURE_OF[homeland]]:
         kinds.update(tpl["pool"])
-    return tuple(sorted(kinds, key=lambda k: FOES[k].level))
+    return tuple(sorted(kinds, key=lambda k: (FOES[k].level, k)))
 
 
 def roll_wild_level(rng: random.Random) -> int:

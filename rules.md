@@ -1405,10 +1405,13 @@ permanent ability, silver buys staying power** — never the reverse.
   the attrition rework). There are **two deliberate ladders** in `rpg.py` —
   do not unify them:
   - **The quest ladder — the game.** A generated quest is 1-3 encounters
-    (below); its whole pay is
+    (below) and a gate ruin's deepest Site is four; its whole pay is
     `quest_xp_total(L, enc) = 44 × (L + 1) × ENCOUNTER_MULT[enc]` XP and
     `quest_silver(L, enc) = 18 × L × ENCOUNTER_MULT[enc]` silver, with
-    `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2}`. The multiplier rises
+    `ENCOUNTER_MULT = {1: 1.0, 2: 1.6, 3: 2.2, 4: 2.8}` — the 4 is the
+    delve's and nothing else reaches it (2026-09-13: the four-room job had
+    been paying four THREE-encounter shares against a total quoted at
+    three). The multiplier rises
     **sub-linearly** on purpose: the fixed overhead of a job — the trip out,
     the giver, the turn-in — is paid once whether you fight once or three
     times, so three fights are worth more than one but nothing like three
@@ -2714,7 +2717,12 @@ anchors the formulas were fitted to.
   set is assembled in Tile/Area order before the quest's rng picks from it,
   so placement is deterministic off the seed. The forced families (story
   waves, hell's assignments, deliveries, the DM's `forge`) are placed by
-  their own content and may lift the radius outright.
+  their own content and may lift the radius outright. Since 2026-09-13 a
+  family may also name **its own radius** on its place requirement, which
+  raises the ordinary three for that family alone; exactly one does — the
+  gate ruins' eight jobs reach six days, for the reason the Heaven & Hell
+  add-on gives. Lifting the radius outright still wins over a family's
+  number: a forced job places itself by its content either way.
 - **Local content remains deliberately compact:** the system provides a
   direct premise, a persistent destination, concrete Room roles and contents,
   and the fights. Local quests are formulaic pieces (a culture × themed foe
@@ -3634,8 +3642,10 @@ no half-edge position exists: an edge is atomic.
   complete current record: ID, template/source, seed, all facts/reveal flags,
   children, links, occupants, quest attachments, and used natural-Site
   inventory.
-- **`go NAME`** moves from an area into a known site, from a site to one of
-  its known rooms, **or across to a known sibling Area on the same Tile** —
+- **`go NAME`** moves from an area into a known site (a gate ruin's six
+  depths excepted: they are `delve`'s, and `go` says so), from a site to one
+  of its known rooms, **or across to a known sibling Area on the same
+  Tile** —
   the town and the countryside around it are one 30x60 km map cell, so
   crossing between them costs no day either. (`travel NAME` for a place on
   the current Tile does the same thing and says so.) Entering a Site reveals
@@ -5950,16 +5960,19 @@ the ruin's own pool and are deterministic per seed; one body is placed by
 hand rather than by the pool — a stranded angel keeps the cells of Candor's
 Prefecture.
 
-**`delve SITE`** is the way in: a known Site of the ruin the party is
-standing in, opened without a giver. It forges a job on the spot over the
+**`delve SITE`** is the way in, and the only one: a known Site of the ruin
+the party is standing in, opened without a giver (`go` names a depth and
+points back here). It forges a job on the spot over the
 Site's authored rooms, and the ordinary room walk, fights, encounter XP and
 loot follow. **Clearing pays the FIELD tranche of a job at that level and
 no turn-in**, because there is nobody down there to turn it in to; what
 else the ruin pays is what is lying in it. A cleared Site **refills after
 30 days** with a re-rolled roster over the same rooms — the ring feeds it.
 The **deepest Site never refills** once what holds it is dead: the bar is
-gone, the ruin's whole `gate-ruin` ring clears that day, and the ground
-goes quiet.
+gone, the ruin's whole `gate-ruin` ring clears that day, the gate record is
+dated with the day it sealed, and the ground goes quiet. A dead one is
+never seated again either, by refill or by a re-forged job: there is one
+Sentinel, one Old Host, and one bar apiece for the life of the world.
 
 ## The foes of the gates
 
@@ -6114,12 +6127,19 @@ bearing in the vine pits; Saturna's Master of Hounds wanting the kennel
 book; a man from Saturna whose year is written in the old counting house
 and can be burned there.
 
-Three rules shape where they appear:
+Five rules shape where they appear:
 
 - **Only boards near a ruin post them.** A job's trouble sits within
-  three days of the board that posts it, and there are exactly two ruins
-  in the world, so the handful of settlements around Candor and Libera
-  carry this work and nobody else does.
+  **six days'** road of the board that posts it, and there are exactly
+  two ruins in the world, so the handful of settlements around Candor and
+  Libera carry this work and nobody else does.
+- **Six days, not the ordinary three** (2026-09-13). This family is the
+  one exception to the ordinary target radius, and it is not a taste
+  call: the two ruins cannot move, they are barred from capitals and
+  their ring, and the weighted draw puts them in slow country, so at
+  three days a settlement able to post a Candor job existed in 38% of
+  worlds and a Libera job in 27% -- in most campaigns these eight simply
+  did not exist. At six it is 90% and 77% (benchlog 2026-09-13).
 - **A Heaven job can only land in Candor and a Hell job only in Libera.**
   The ruin Area wears its own side's word, and each job asks for that
   word by name.
@@ -6127,6 +6147,17 @@ Three rules shape where they appear:
   Sites belong to `delve`; a board job builds its own place inside the
   ruin under the name the job gives it, and may reuse what an earlier one
   left. The two systems never write to the same room.
+- **A sealed ruin stops paying for work** (2026-09-13). When the deepest
+  Site's boss is dead the gate is sealed and the day is written down;
+  nothing comes out of that city afterwards, so no board posts its four
+  again. The other side's four go on being posted: two gates, two clocks.
+
+These eight are the only quest family that is NOT on a culture's quest
+table. A table is also what a land's WILDERNESS is drawn from, and the
+gate ruins' rosters -- the giant-kin, the drakes, the marble undead --
+have no business on an ordinary country road a fortnight from any ruin.
+Boards draw the eight the way a capital draws the epics: offered at the
+posting, never carried by the land.
 
 ---
 
@@ -6302,20 +6333,30 @@ to heal you.
 
 The city is its country's capital and its only board, so it posts the full
 five ordinary slots over the whole ladder, its own culture's quest table
-plus the country-agnostic epics, and — like every board within three days
+plus the country-agnostic epics, and — like every board within six days
 of a ruin — the eight ruin jobs. Its own table is four rows a side, and
 every one of them lands **in the human countryside within three days'
 road**: a one-tile state's work is what it asks the neighbours to do,
 which is how a gate city is felt long before the player walks into it.
 
-- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *Bring the
-  Child Home* — the mother whose child went onto the register — and, as
-  its epic, *The Prefect's Levy*.
+- **Concordia** posts *Escort the Healers*, *The Lamp Thieves*, *The Child
+  off the Register* — the mother whose child went onto the register — and,
+  as its epic, *The Prefect's Levy*.
 - **Saturna** posts *Bring the Wine*, *Guard the Feast*, *Break the
   Debt-House* and, as its epic, *The Hunt of Misrule*.
 
 The two epics are capital-only by construction rather than by a flag:
-there is no second board in either country to post them at.
+there is no second board in either country to post them at. They are also
+**banded like epics** (2026-09-13): both shipped on pools that reached
+down to a cutthroat and a wolf, so a levy against a raiders' hold and a
+once-a-year hunt for a horned giant were posting at level 2. A template
+may now raise its own floor (`min_level`), and these two stand on the same
+floor the country-agnostic epics do — the bottom of the drake band.
+
+The city's own *Child off the Register* is deliberately NOT called *Bring
+the Child Home*. That title belongs to the job the removal card posts, and
+the board prefers a template it is not already showing **by title**: two
+rows under one name would have quietly shadowed each other.
 
 ## On the map
 
@@ -6343,16 +6384,41 @@ Each city carries a full country packet: four constitutions, three
 tensions, six faction edges, six standing facts, two priced services,
 eight crisis cards, a weather card and a season card. The two are built as
 **opposites on purpose**. Heaven's trouble is administrative — a list is
-posted, a child is taken, the gate is shut, a bishop preaches, a made thing
-walks off. Hell's is appetite — the feast comes over the wall, a debt is
-collected, a lord is hanged, the kennels open, the market puts people in
-cages. Neither deck is the villain's and the table plays both.
+posted, a child is taken, the gate is shut, a made thing walks off. Hell's
+is appetite — the feast comes over the wall, a debt is collected, a lord is
+hanged, the kennels open, the market puts people in cages. Neither deck is
+the villain's and the table plays both.
+
+The gate shuts two ways, because a card's admitting conditions are AND
+across kinds: THE GATE IS GUARDED FROM BOTH SIDES is the Prefect's quarrel
+with the bishops, and THE QUARANTINE SHUTS THE GATE is the same shut gate
+as the law of a Concordia the Pruners hold. A city that rolled one and not
+the other still sees it.
 
 **The two chains** are the spine of each side. Heaven's: THE REGISTER IS
 READ leaves the list standing, and A CHILD IS TAKEN admits on it, clears
 it, and posts *Bring the Child Home*. Hell's: THE FEAST SPILLS OVER THE
 WALL leaves the feast out, and THE DEBT-HOUSE COLLECTS admits on it, clears
 it, and posts *The Year Owed*. Both run again from the top.
+
+**Three cards offer two employers.** A card's job is ordinary board work,
+and on three of them the same trouble is posted twice with opposite money
+behind it: the player picks who he works for, and the dark half is dark
+work in the full sense — it pays the silver premium and every XP it pays
+is sin.
+
+| the card | the good job | the dark job |
+|---|---|---|
+| A CHILD IS TAKEN | *Bring the Child Home* — the mother pays | *Deliver the Child* — the Pruners pay to have the Gardeners' hidden child put back on the register |
+| THE DEBT-HOUSE COLLECTS | *The Year Owed* — burn the book | *Collect the Year* — collect it for the debt-house, against a rival crew after the same man |
+| A STRANDED DEMON IS FOUND | *The Old Feast* — leave her be | *Bring Her In* — bring her to the Hunger |
+
+**Where a card's job is posted.** A card puts its work up on the boards of
+the land it stands over — except where the trouble is plainly somewhere
+else. *Bring the Child Home* / *Deliver the Child* and *The Lord's Men* are
+posted in the HOST COUNTRY: a village child taken through a door in the
+Prefecture, and a hanged lord's men living off the host road, are both read
+off a board down the road rather than off the city's own single board.
 
 **Four people the packets NAME and keep.** A card cannot read the party, so
 what the world does about half-bloods reaches the table as four people it
@@ -6409,10 +6475,18 @@ them:
 | Concordia | the cure | its host | the gate is shut, a child was taken | `cure-dear` — the healer x1.3 |
 | Saturna | the feast | its host | the feast spilled, the cages are open | `feast-abroad` — a bed x0.7, revelers in the wilds |
 | the host | the bishops | Concordia | interdict, the pulpit is against the gate | `pulpit-against` — the shelf x1.2 |
-| the host | the hunt | Saturna | the hunt is up, the country is at war | `hounds-out` — hounds on the road |
+| the host | the hunt | Saturna | the hunt is up | `hounds-out` — hounds on the road |
 
 A power that lands on somebody's country is felt by the country and answers
 to it. Every derived word reaches a price or a road.
+
+Both rows into the cities read an EVENT in the host, never a standing
+fact. THE BISHOP PREACHES AGAINST THE GATE is therefore the host's own
+card — a bishop of the host country, admitted by `hosts-heaven`, so
+exactly one land in every world draws it — and the hunt row reads the
+posted witch-hunt alone: `at-war` is stamped at worldgen and never
+cleared, so reading it would have put hounds on Saturna's road in half of
+all worlds from day one.
 
 ## The human side
 

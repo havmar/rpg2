@@ -174,10 +174,9 @@ a pointer: what the file is, how it's run, where its docs are.
 - `rules.md` — **the ruleset: the source of truth for mechanics and the
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
-- `plan.md` — **the sole active roadmap**; since 2026-09-12 it carries
-  one build contract, THE GATES ARC (design in `gates.md`) -- ONE session
-  now, sessions 1, 2, 3 and 4 having shipped the same day.
-  Before that it carried none. Three whole arcs have shipped out of it: the
+- `plan.md` — **the sole active roadmap**; it carries NO build contract.
+  Four whole arcs have shipped out of it, THE GATES ARC (design in
+  `gates.md`, now a historical note) whole on 2026-09-12; before it: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
   Local Quest Geography, Europe MVP Closure); THE TILE ECONOMY ARC across
@@ -1671,8 +1670,9 @@ a pointer: what the file is, how it's run, where its docs are.
   `forge_quest` grew `site_keys=` / `skins=` / `ferocity=` / `desc=` -- with
   `site_keys` it forges over Sites THE WORLD ALREADY OWNS and builds
   nothing, which is what `delve` needs.
-  **INTO THE RUINS** (2026-09-12, the arc's session 2): `RUIN_TEMPLATES`,
-  eight authored jobs appended to EVERY culture's table, and `_ruin_place`
+  **INTO THE RUINS** (2026-09-12, the arc's session 2; reworked at the
+  seams 2026-09-13): `RUIN_TEMPLATES`, eight authored jobs OFFERED to
+  every board and carried on NO culture's table, and `_ruin_place`
   behind their eight `QUEST_PLACE_REQUIREMENTS` rows -- `area_any` is the
   ONE side word (`heaven-ruin` / `hell-ruin`), which is the whole of the
   "a Heaven job cannot land in Libera" rule, plus a new requirement flag
@@ -1689,6 +1689,27 @@ a pointer: what the file is, how it's run, where its docs are.
   three readers that can meet an authored roster (`notice_contest`,
   `foes_preferred_field`, `roster_kinds_line`) go through
   `sites.foe_spec` instead of `FOES`.
+  **The three seams the 2026-09-13 review found, all in this file.**
+  (1) The eight were `TEMPLATES[culture].extend(...)`-ed onto all eleven
+  tables, and a culture's table is exactly what `wild_pool` unions: every
+  land's wilderness widened to one identical 23-kind pool and a dragon
+  could come down a Phyrascian road. They are out of `TEMPLATES` now and
+  `_post_quest` appends `ruin_templates(world)` where it appends the epics
+  -- offered at the board, invisible to the wilderness. `wild_pool` also
+  sorts by (level, NAME): the level-tie order used to be set-iteration
+  order, i.e. string-hash order, i.e. different every process.
+  (2) `RUIN_TARGET_DAYS` = 6 and a `radius` field on the place
+  requirement, read by `requirement_radius` inside both
+  `_select_quest_area` and `place_reachable` (a caller's `radius=None`
+  still wins -- that is a forced family lifting the rule). At the ordinary
+  3 the family was unpostable in most worlds; see benchlog 2026-09-13 and
+  `bench_worldgen.py --only ruins`.
+  (3) `ruin_templates(world)` drops a side whose gate record carries a
+  non-None `sealed_day`, off `template_ruin_side` (the requirement's own
+  side word). Also here: `template_band` honors an optional `min_level`
+  (`EPIC_BAND_FLOOR`, the bottom of the drake band) so a row the design
+  calls EPIC is banded like one -- the two gate cities' capital rows both
+  shipped posting at L2.
   `python quests.py
   [--seed N] [--demo]` prints a generated world's board and cast.
 - `karma.py` — **the villain layer** (2026-07-19, rules.md's Karma &
@@ -2102,7 +2123,9 @@ a pointer: what the file is, how it's run, where its docs are.
   charged twice), `discover_area` is gone from `explore` (which now works
   the current Tile's own countryside, walking out of a settlement for
   free), `cmd_go` gained the sibling-Area step, `cmd_look` leads with the
-  TILE and prints the four roads out with their day costs, `_cast_teleport`
+  TILE -- behind the gate line, where there is one (2026-09-13), as the
+  `tile` brief always has -- and prints the four roads out with their day
+  costs, `_cast_teleport`
   charges `places.path_days` (and finally matches a settlement by NAME
   again — the tile-scoped Area keys had broken the old key-substring
   match), and the hell-task road estimate in `cmd_take` reads the same
@@ -2118,12 +2141,18 @@ a pointer: what the file is, how it's run, where its docs are.
   **THE DELVE** (2026-09-12, the gates arc's session 1): `cmd_delve` and
   `ruin_site_lines` (the ruin's six places, their levels and whether
   anything is in them), the delve branch in `_close_site` -- the FIELD
-  tranche, no turn-in, `places.close_ruin_site` on the way out -- and its
-  line in `tally_lines`; `tile_danger(state)` multiplying `_road_roll`,
+  tranche, no turn-in, `places.close_ruin_site` on the way out, and since
+  2026-09-13 the taken-list removal, since a delve has no turn-in to come
+  off it at -- and its line in `tally_lines`; the refill inside `cmd_delve`
+  dropping the party's own `state["rooms"]` records for that Site (they
+  outrank the ring's fresh roster in `reclaim_room`) and `cmd_go` refusing
+  a Site that carries a `ruin` record and naming `delve` instead;
+  `tile_danger(state)` multiplying `_road_roll`,
   `cmd_explore` and `cmd_camp`; the tile-first lookup in `wild_event` with
   `ferocity` threaded through `fight_wild_encounter` / `_spawn_wild_foes`
-  and the stored sighting; the gate line and the dungeon list in
-  `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark legend.
+  and the stored sighting; the gate line (which LEADS the page) and the
+  dungeon list in `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark
+  legend.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -2274,6 +2303,8 @@ python econmap.py routes 7            # one built world's trade network
 python bench_worldgen.py              # the five worldgen sweeps (100 seeds)
 python bench_worldgen.py --seeds 500  # ...at the pins
 python bench_worldgen.py --only gates # where the four gate sites land
+python bench_worldgen.py --only ruins # ...and whether the eight ruin jobs
+                                      # can be posted at all
 python session.py tile [COORD]        # the DM's page behind one Tile
 python -m unittest -v test_quest_geography.py  # boards, rumors, radii
 python -m unittest -v test_worldsim.py # the world-sim build's contracts
@@ -2340,7 +2371,9 @@ mechanic *does* and *why* is rules.md's job.
   `QUEST_ENCOUNTER_SHARE` / `QUEST_TURNIN_SHARE` — this is the GAME's pay,
   split three ways since 2026-08-08 (encounters / field / turn-in), and
   `quest_clear_xp` is the REMAINDER so the three always sum to
-  `quest_xp_total` exactly — and the site-FIXTURE
+  `quest_xp_total` exactly; `ENCOUNTER_MULT` and all five readers run 1-4
+  since 2026-09-13, where 4 is the gate ruin's deepest Site and nothing
+  else (a POSTING is still 1-3 -- `quests.ROOM_SHARES` is the proof) — and the site-FIXTURE
   ladder `site_xp_total` / `site_encounter_xp` /
   `site_clear_xp` / `site_silver` with their `SITE_XP_PER_LEVEL` /
   `ENCOUNTER_XP_SHARE` / `SILVER_PER_SITE_LEVEL` knobs, which now serves only
@@ -2392,7 +2425,10 @@ mechanic *does* and *why* is rules.md's job.
   `quests.route_days`, `build_delivery_quest`, `session._cast_teleport`
   and `cmd_take`'s hell-task road estimate — now calls `places.path_days`.
   So do the two LOCAL QUEST GEOGRAPHY radii (2026-08-15): `QUEST_RUMOR_DAYS`
-  and `ORDINARY_TARGET_DAYS`, both 3, both in `quests.py`.
+  and `ORDINARY_TARGET_DAYS`, both 3, both in `quests.py` — and, since
+  2026-09-13, `RUIN_TARGET_DAYS` = 6, the one family that raises the
+  ordinary target radius (it declares `radius` on its place requirement;
+  `requirement_radius` is the single reader).
 - **The exchange** — `Entity.pressure` (the opposed roll with its full
   breakdown) and `_attack` (severity, graze floors, saves, the two-level log
   lines). `_check_weapon_break` on parries and Clashes.
@@ -2710,7 +2746,10 @@ mechanic *does* and *why* is rules.md's job.
   `lands` / `areas` / `sites` / `rooms` stores and tree accessors; quest
   Sites as persistent world IDs, `QUEST_PLACE_REQUIREMENTS` routing;
   `wild_pool`
-  (what roams a land = the union of its country's template pools),
+  (what roams a land = the union of its CULTURE's template pools, ordered
+  by level then name — so anything put on a table also goes on that land's
+  roads, which is why the epics and the gate ruins' eight are drawn at the
+  board instead),
   `roll_wild_level` (the road's party-independent geometric level table),
   `build_wild_encounter`, `wild_encounter_xp`. `session.py`: breadcrumb
   `position` (`land`, `tile`, `area`, optional `site`/`room`), `current_area` /
@@ -2869,14 +2908,16 @@ mechanic *does* and *why* is rules.md's job.
   and no war ever ends.
 - **The gates: the four sites, the ruins and the delve** (2026-09-12, THE
   GATES ARC's session 1 — rules.md's Heaven & Hell add-on part 1, dm.md's
-  "The gates", `gates.md` for what is left to build) — split four ways.
+  "The gates"; `gates.md` is the arc's historical note) — split four ways.
   `places.py` ROLLS and STORES, in one section above `create_geography`:
   `HEAVEN_LANDS` / `HELL_LANDS` (the two sets), `GATE_SEPARATION` (4),
   `GATE_SPECS` (the roll order and the four weight functions, which are
   WEIGHTS and never filters), `GATE_KEYS` / `GATE_BY_KEY` / `GATE_TAGS`,
   `RUIN_SITES` (the two authored six-Site dungeons; the deepest Site's
   `boss` is None and is the slot session 2 names a `sites.BOSSES` key in)
-  with `RUIN_SHARES` for its four-room curve, `RUIN_REFILL_DAYS` (30),
+  with `RUIN_SHARES` for its four-room curve -- rescaled 2026-09-13 to the
+  2.10 `ROOM_SHARES[3]` spends, against an `ENCOUNTER_MULT` that now has an
+  honest 4 -- `RUIN_REFILL_DAYS` (30),
   `SIDE_WORDS` / `GATE_STATE_WORDS` / `GATE_WORDS` / `RUIN_LINES`, and
   behind them `roll_gates(world)` — called between the natural-Area loop
   and `roll_census` — with `gate_candidates` / `gate_ring` / `_ruin_area` /
@@ -2884,7 +2925,14 @@ mechanic *does* and *why* is rules.md's job.
   `gate_line` / `gate_glyph` / `gate_legend_lines` / `ruin_area` /
   `ruin_sites` / `ruin_site_state` / `refill_ruin_site` /
   `close_ruin_site`, and `_validate_gates` is the new `validate_world`
-  clause that re-checks the whole placement rule on every world.
+  clause that re-checks the whole placement rule on every world. Three
+  2026-09-13 corrections live in the same section: `_city_takeover` calls
+  `_refresh_border` on the taken tile and its neighbours (the `border` tag
+  is written one pass BEFORE the gates roll, and the natural Area holds a
+  copy of it), `refill_ruin_site` clears the Site's `routed` mark, and the
+  gate record carries `sealed_day` -- None until `close_ruin_site` seals
+  the deepest Site, and the one fact outside the ruin's own Sites that
+  says nothing comes out of it any more.
   `_build_ruin_sites` and `ruin_site_rosters` RUNTIME-IMPORT `quests`
   (quests imports places, so a module-level import would cycle — the
   `people.make_npc` precedent). `sites.py` DRESSES: `GATE_SKINS` (the two
@@ -2919,7 +2967,7 @@ mechanic *does* and *why* is rules.md's job.
   are the entry below.
 - **The gates: the two sentinels, the bars and the ruin jobs**
   (2026-09-12, THE GATES ARC's session 2 — rules.md's Heaven & Hell
-  add-on part 2, dm.md's "The gates", `gates.md` for what is left) —
+  add-on part 2, dm.md's "The gates"; `gates.md` is the historical note) —
   split five ways. `sites.py` OWNS THE BODIES: `BOSSES` beside `FOES`,
   `BOSS_GATES`, `foe_spec`, `boss_bar`, and `make_foe`'s new `weapon=`
   (see Files). `weapons.py` OWNS THE STEEL: `GATE_BARS` / `gate_bar` /
@@ -2930,20 +2978,35 @@ mechanic *does* and *why* is rules.md's job.
   read `deepest and boss_dead` where they read `deepest and not boss` —
   the Old Host takes spoils and can break and run out of its own hollow,
   so a cleared depth with no body in it refills like any other.
-  `_validate_gates` checks the authored key against `sites.BOSSES`,
+  `ruin_site_rosters` omits the boss once `boss_dead` (there is one
+  Sentinel and one bar, whatever refills or re-forges the Site --
+  2026-09-13), `_validate_gates` checks the authored key against
+  `sites.BOSSES`,
   `materialize_site` honors an authored `spec["template"]` (Tom's stone is
   a shrine and its name does not say so), and the Area tag merge now drops
   `GATE_TAGS` as well as `TRADE_TAGS`, so only the ruin Area wears
   `heaven-ruin` / `hell-ruin`. `quests.py` POSTS THE WORK:
   `RUIN_TEMPLATES`, `_ruin_place`, the `strict` flag, `place_reachable`,
-  the widened natural domain and the ruin-Site reuse ban (see Files).
+  the widened natural domain and the ruin-Site reuse ban — and, since the
+  2026-09-13 review, `ruin_templates(world)` (offered at the board, on no
+  culture's table, minus a sealed side), `RUIN_TARGET_DAYS` = 6 and
+  `requirement_radius` (see Files). `bench_worldgen.py --only ruins`
+  measures whether the family can be posted at all.
   `session.py` PLAYS IT: `ruin_boss_bar` (the spawn hook — a bar cannot
   ride a catalog row the way the warden blade does, because it is built
   off the world seed), `cmd_room` passing both it and the quest's own
   `ferocity` into `make_foe` (session 1 stored that dict and nobody read
   it), `record_drops` / `mark_boss_dead` in `resolve_encounter`'s won
-  branch, the `drops` map on the save, and `cmd_give` looking there before
-  the catalog. `rpg.py` gained `the(name)` — the article helper behind
+  branch -- and, since 2026-09-13, in the UNRESOLVED and RETREAT branches
+  too, so a boss killed in a fight the party then breaks off counts and
+  its bar is kept and announced where it fell -- the `drops` map on the
+  save, `claim_armory_piece` (a one-off drop whose name matches an armory
+  entry marks it `taken` and rewrites its `where`: the only status any
+  entry has ever been given after `roll_armory` rolled it `known`), and
+  `cmd_give` looking at the drops before the catalog. `sites.make_foe`
+  gives a `BOSSES` row its authored name with NO running number
+  (2026-09-13): there is one Zohariel, and a bare name is also what
+  `_named_dead` reads as a body the fiction cast. `rpg.py` gained `the(name)` — the article helper behind
   `fallen_weapons_line` and `equip_weapon`, so a piece that names itself
   never reads "the the Candor bar". `place_catalog.json` gained TOM'S
   STONE in all eleven western and southern natural inventories.
@@ -2954,7 +3017,7 @@ mechanic *does* and *why* is rules.md's job.
   per culture (session 5's, with the packets).
 - **The gates: the Nephilim** (2026-09-12, THE GATES ARC's session 3 —
   rules.md's Heaven & Hell add-on part 3, dm.md's "The gates" and "The
-  player character", `gates.md` for what is left) — the arc's small
+  player character"; `gates.md` is the historical note) — the arc's small
   additive session, split three ways and touching no other layer.
   `rpg.py` OWNS WHAT IT DOES: `Entity.blood` (`""` / `old` / `sky` /
   `fire`, riding `dataclasses.asdict` into the save like `tongues`), the
@@ -3001,7 +3064,7 @@ mechanic *does* and *why* is rules.md's job.
   previous commit to confirm.
 - **The gates: the two city states** (2026-09-12, THE GATES ARC's session
   4 — rules.md's Heaven & Hell add-on part 4, dm.md's "The gates" and "The
-  nine countries", `gates.md` for what session 5 still owes) — the session
+  nine countries"; `gates.md` is the historical note) — the session
   that made the world ELEVEN LANDS, and the only one in the arc that
   touched the country machinery. **The thing to hold in your head before
   touching any country-keyed reader: "the nine" and "every land" are now
@@ -3026,12 +3089,22 @@ mechanic *does* and *why* is rules.md's job.
   record. `quests.py` / `people.py` / `conquest.py` GIVE THEM IDENTITY:
   `TEMPLATES["heaven"]` and `TEMPLATES["hell"]` (four rows each, the EPIC
   one capital-only by construction because the culture has exactly one
-  land and that land has exactly one board), their eight
+  land and that land has exactly one board — and since 2026-09-13 banded
+  like one too: `min_level=EPIC_BAND_FLOOR` plus pools that start high,
+  `LADDER_POOL[4:]` and `GIANTKIN_POOL + DRAKE_POOL`, after the review
+  found both posting at L2 with a wolf roster. Concordia's third row is
+  `The Child off the Register`, renamed off the removal card's `Bring the
+  Child Home` so the board's by-title preference cannot conflate them),
+  their eight
   `QUEST_PLACE_REQUIREMENTS` rows (none strict — the work lands in the
   human countryside inside the ordinary three-day radius),
   `RULER_TITLES` and `DEFENDER_ROLES` rows, `people.NAMES` pools of 25+25
   in the two registers, and `people.HUMAN_HOMELANDS` / `HUMAN_TONGUES` —
-  the birth roll and the Byzantine's second tongue are the NINE.
+  the birth roll and the Byzantine's second tongue are the NINE; since
+  the 2026-09-13 review `session.recruit_homeland` keeps `recruit` on
+  that rule too: a face hired in a gate city is born in the land the
+  city was cut from (`world["gates"][city]["cut_from"]`), the humans of
+  the city, and speaks that land's tongue (`test_start.RecruitsInAGateCity`).
   `test_gates.TheTakeover` is the contract.
 - **The gates: the two packets and the human side** (2026-09-12, THE
   GATES ARC's session 5, the LAST — rules.md's Heaven & Hell add-on part
@@ -3075,6 +3148,28 @@ mechanic *does* and *why* is rules.md's job.
   `worldsim._authority_hook` grew `born=` so a card can name a person of
   another land. `test_gates`'s six new classes are the contract and
   benchlog's 2026-09-12 (E) entry the measurement.
+  **What the post-build review moved (2026-09-13), all of it in
+  `worldsim.py`:** `job()` grew `ferocity`, `proof` and `at`, so a card's
+  posted job carries the same `sites.GATE_FEROCITY` its authored twin on
+  `quests.TEMPLATES` does (without it every warden a card posted fought at
+  the catalog row's own mercy class), and `JOB_KEYS` is a CLOSED set now —
+  a stray term raises instead of being ignored. The quest outlet grew a
+  second verb, `dark`: a card may post a good job and a dark twin at once,
+  `_card_jobs` gives the twin its own board key (`<card>/dark`) so one
+  board holds both, and the karma and silver machinery reads it off
+  `align` like any other dark job. `at="host"` is the posting ADDRESS —
+  `board_postings` withholds a host-side job from the city's own board and
+  hands it to the boards of the land in `world["gates"][city]["cut_from"]`
+  instead. Three cards changed decks: `heaven/the-sermon` is `_HUMAN` +
+  `hosts-heaven` (it is the only setter of `preached-against`, which the
+  `pulpit-against` relation reads on the HOST), and the two `magic/*`
+  cards are `_HUMAN` rather than `ANY_LAND`. The second door to
+  `gate-shut` is a second card, `heaven/the-gate-guarded-by-law`, keyed on
+  the QUARANTINE constitution, because `admits` is AND across kinds so a
+  Concordia that rolled the government without the quarrel could never
+  shut its gate at all. The `hounds-out`
+  relation row reads `hunt-up` alone. `test_gates.TheCardPostedJobs` and
+  `TheDeckScopes` are the contract.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,

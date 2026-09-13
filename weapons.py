@@ -598,6 +598,33 @@ def weapon_lines(w: Weapon) -> list[str]:
     return lines
 
 
+def claim_armory_entry(armory: list[dict], name: str) -> dict | None:
+    """The famous piece changed hands: the armory learns it.
+
+    Every entry is rolled `known` and, until now, nothing ever wrote a
+    second status -- so the page went on saying the Sentinel holds the bar
+    long after the party took it off his body. A one-off drop the party
+    keeps is `taken`, and `where` (the only field the page prints) says so
+    in the same breath as who it came off. Returns the entry it changed,
+    or None when the name is not a famous one."""
+    for entry in armory:
+        if entry["name"] != name:
+            continue
+        if entry["status"] == "taken":
+            return entry
+        entry["status"] = "taken"
+        owner = entry.get("owner")
+        if owner:
+            entry["where"] = (f"taken from {owner['name']}, "
+                              f"{owner['role']} -- "
+                              f"the party carries it")
+        else:
+            entry["where"] = ("taken from its resting place -- "
+                              "the party carries it")
+        return entry
+    return None
+
+
 def armory_lines(armory: list[dict]) -> list[str]:
     lines = ["THE FAMOUS WEAPONS (all known):"]
     for entry in armory:

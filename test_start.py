@@ -794,5 +794,49 @@ class TheTraitRollback(unittest.TestCase):
             self.assertGreaterEqual(w.power_bonus, 1)
 
 
+# --------------------------------------------------------------------------- #
+# Recruits in a gate city (2026-09-13, the gates review)
+# --------------------------------------------------------------------------- #
+
+class RecruitsInAGateCity(unittest.TestCase):
+    """Nobody is BORN in Concordia or Saturna (people.HUMAN_HOMELANDS), so
+    the faces a gate city's tavern turns up are the humans of the city --
+    born in the land it was cut out of -- and not "concordia m, speaks
+    Latin and Phyrascian", which the review caught `recruit` casting."""
+
+    def _state_at(self, world: dict, land: str) -> dict:
+        area = next(a for a in world["areas"].values()
+                    if a["kind"] == "settlement"
+                    and world["tiles"][a["tile"]]["country"] == land)
+        rng = random.Random(5)
+        pc = people.make_character(rng, level=3)
+        pc.cha = 6
+        return {"world": world, "party": [pc], "rng": rng,
+                "clock": rpg.Clock(day=1),
+                "position": session._area_position(area),
+                "recruits": None}
+
+    def test_a_gate_citys_recruits_are_born_in_its_host_land(self):
+        world = places.create_geography(3)
+        for city in places.CITY_STATES:
+            host = world["gates"][city]["cut_from"]
+            self.assertIn(host, people.HUMAN_HOMELANDS)
+            self.assertEqual(session.recruit_homeland(world, city), host)
+            state = self._state_at(world, city)
+            session.roll_recruits(state)
+            options = state["recruits"]["options"]
+            self.assertTrue(options)
+            for option in options:
+                for member in option["members"]:
+                    self.assertEqual(member["homeland"], host, city)
+                    self.assertIn(people.LANGUAGES[host], member["tongues"])
+                    self.assertIn(people.LATIN, member["tongues"])
+
+    def test_everywhere_else_a_recruit_is_local(self):
+        world = places.create_geography(3)
+        for land in people.HUMAN_HOMELANDS:
+            self.assertEqual(session.recruit_homeland(world, land), land)
+
+
 if __name__ == "__main__":
     unittest.main()

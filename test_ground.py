@@ -183,12 +183,21 @@ class TheLandsPotential(unittest.TestCase):
         ceded = {record["tile"] for world in (first, second)
                  for record in world["gates"].values()
                  if record["kind"] == "city"}
+        # ...and so is `border` on everything AROUND one (2026-09-13): a new
+        # country is a new frontier and the tiles that touch it learn it.
+        # Which tiles those are is the roll's business; that every other
+        # word on them holds is still the claim.
+        frontier = set(ceded)
+        for built in (first, second):
+            for tid in ceded:
+                frontier.update(built["tiles"][tid]["neighbors"])
         for tid, tile in first["tiles"].items():
             if tid in ceded:
                 continue
+            skip = rolled | {"border"} if tid in frontier else rolled
             other = second["tiles"][tid]
-            ground = [tag for tag in tile["tags"] if tag not in rolled]
-            theirs = [tag for tag in other["tags"] if tag not in rolled]
+            ground = [tag for tag in tile["tags"] if tag not in skip]
+            theirs = [tag for tag in other["tags"] if tag not in skip]
             self.assertEqual(
                 (tile["climate"], tile["terrain"], tile["cover"], ground),
                 (other["climate"], other["terrain"], other["cover"],

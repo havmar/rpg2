@@ -194,7 +194,7 @@ from places import (
     tile_id as tile_id_of, tile_label,
     MAP_GLYPH_LEGEND, MAP_MARK_LEGEND, MAP_GATE_LEGEND,
     gate_line, gate_here, ruin_area, ruin_sites, ruin_site_state,
-    refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS,
+    refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS, CITY_STATES,
 )
 
 STATE_PATH = Path(__file__).parent / "save.json"
@@ -1663,6 +1663,18 @@ def recruit_options(cap: int, settlement: dict) -> int:
     return min(cap, RECRUIT_OPTIONS.get(settlement_tier(settlement), cap))
 
 
+def recruit_homeland(world: dict, land: str) -> str:
+    """Where a face hired at this counter was BORN. Nobody is born in a gate
+    city (people.HUMAN_HOMELANDS -- Concordia and Saturna are 27 years old
+    and their people came through a gate), so the faces in a gate city's
+    tavern are the HUMANS of the city: born in the land the city was cut
+    out of, the converts and the debtors the packets are about. Everywhere
+    else a recruit is local."""
+    if land in CITY_STATES:
+        return world["gates"][land]["cut_from"]
+    return land
+
+
 def roll_recruits(state: dict) -> None:
     """Roll a settlement day's recruit candidates: as many OPTIONS as
     the PC's CHA capacity (three choices even if only one slot is free --
@@ -1681,15 +1693,16 @@ def roll_recruits(state: dict) -> None:
         return
     cap = recruit_options(cap, here)
     used = {h.name for h in party}
+    born = recruit_homeland(state["world"], here["land"])
     options = []
     for _ in range(cap):
         level = max(1, pc.level + rng.randint(-1, 1))
         if rng.random() < PAIR_CHANCE:
             kind, members = make_pair(rng, level, used_names=used,
-                                      homeland=here["land"])
+                                      homeland=born)
         else:
             kind, members = None, [make_character(rng, level,
-                                                  homeland=here["land"],
+                                                  homeland=born,
                                                   used_names=used)]
         options.append({"kind": kind,
                         "members": [_entity_to_dict(m) for m in members]})
@@ -2714,6 +2727,12 @@ def _close_site(state: dict, log: list[str], qid: str,
     if last_site and delve:
         quest["status"] = "done"
         quest["done_day"] = day
+        # A delve is done and paid in the same breath -- there is no giver
+        # to return to -- so it comes off the taken list here, where every
+        # other closer takes its own off (2026-09-13).
+        accepted = state.get("accepted") or []
+        if qid in accepted:
+            accepted.remove(qid)
         for line in close_ruin_site(state["world"], site, day):
             log.append(f"  {line}")
         remember(state,
@@ -4256,6 +4275,15 @@ def finish_encounter(state: dict, log: list[str], foes: list,
                    "  The encounter is not cleared -- the foes still stand.",
                    ["The encounter is not cleared --",
                     "the foes still stand."])
+        # A body counts even when the fight does not resolve (2026-09-13):
+        # a boss killed in a fight the party then breaks off is dead for
+        # good, and the one-off steel it fell with is kept and announced
+        # where it fell rather than lost with the unfinished room.
+        mark_boss_dead(state, site, foes)
+        if record_drops(state, foes):
+            weapons_left = fallen_weapons_line(foes)
+            if weapons_left:
+                log.append(weapons_left)
         if site is not None:
             # A site room keeps its survivors (same rule as a retreat) --
             # re-running the room faces them again, not a fresh spawn.
@@ -4992,8 +5020,9 @@ def cmd_forge(args: argparse.Namespace) -> None:
 # refills after RUIN_REFILL_DAYS; the deepest one never does once its boss
 # is dead, and the ruin's ring goes quiet with it.
 
-def record_drops(state: dict, foes: list) -> None:
-    """Keep the ONE-OFF steel the fallen left where a hand can reach it.
+def record_drops(state: dict, foes: list) -> list[str]:
+    """Keep the ONE-OFF steel the fallen left where a hand can reach it,
+    and return what was kept (the caller announces it).
 
     `give` takes a weapon by name out of the catalog, which is every weapon
     the game had until generated steel existed. A dropped bar (or any famous
@@ -5002,14 +5031,30 @@ def record_drops(state: dict, foes: list) -> None:
     under their own names and `give` looks here first. The map ACCUMULATES
     and nothing removes from it: these are one-off famous pieces, there are
     a handful of them in a whole campaign, and a party that hands the bar to
-    somebody else two weeks later should still be able to."""
+    somebody else two weeks later should still be able to. A piece that is
+    one of the world's FAMOUS weapons tells the armory on the way past
+    (`claim_armory_piece`)."""
     drops = state.setdefault("drops", {})
+    kept = []
     for f in foes:
         w = f.weapon
         if (f.alive or f.withdrew or w is None or f.weapon_broken
                 or w.value <= 0 or w.name in WEAPON_INDEX):
             continue
         drops[w.name] = dataclasses.asdict(w)
+        kept.append(w.name)
+        claim_armory_piece(state, w.name)
+    return kept
+
+
+def claim_armory_piece(state: dict, name: str) -> None:
+    """A one-off the party just picked up may be one of the world's famous
+    weapons -- the two gate bars always are. Tell the armory, so `armory`
+    stops naming a dead boss as its holder."""
+    world = state.get("world")
+    if world is None or not world.get("armory"):
+        return
+    weaponlib.claim_armory_entry(world["armory"], name)
 
 
 def mark_boss_dead(state: dict, site_key: str | None, foes: list) -> None:
@@ -5108,6 +5153,13 @@ def cmd_delve(args: argparse.Namespace) -> None:
         # Thirty days gone by: the ring has fed it, with a fresh roster over
         # the same authored rooms.
         refill_ruin_site(world, site, day)
+        # The party's own memory of the old rooms goes with them. A room
+        # record left standing outranks the ring's fresh roster in
+        # `reclaim_room`, so the next delve would fight the last one's
+        # healed leftovers over re-rolled rooms (2026-09-13).
+        remembered = state.setdefault("rooms", {})
+        for key in [k for k in remembered if k[0] == site["id"]]:
+            del remembered[key]
         print(f"{site['name']} is not as it was left -- something has come "
               f"back into it.")
     qid = record.get("quest")
@@ -5863,15 +5915,18 @@ def cmd_look(args: argparse.Namespace) -> None:
     visible = [s for s in area_sites(world, area) if s.get("known")]
     kind = area.get("subtype", area["kind"])
     tile = world["tiles"][pos["tile"]]
-    # The TILE first, then the Area standing on it (2026-08-15): they are
+    # A GATE leads (2026-09-12, and ahead of the TILE line since
+    # 2026-09-13, which is how the `tile` brief has always read it):
+    # standing on one is the first thing about this ground.
+    gate = gate_line(world, tile)
+    if gate:
+        print(gate)
+    # Then the TILE, and then the Area standing on it (2026-08-15): they are
     # different places now, and a breadcrumb that only named the Area left
     # the player with no idea which map cell they were on.
     print(f"TILE {tile_label(tile)} -- "
           f"{world['lands'][tile['country']]['name']}, "
           f"{places_tile_ground(tile)}")
-    gate = gate_line(world, tile)
-    if gate:            # the site LEADS (2026-09-12): standing on a gate is
-        print(gate)     # the first thing about the ground you are standing on
     print(area.get("description") or f"{area['name']} is a {kind} Area.")
     facts = active_known_facts(area)
     if facts:
@@ -5942,6 +5997,15 @@ def cmd_go(args: argparse.Namespace) -> None:
     area = current_area(state)
     matches = [s for s in area_sites(world, area)
                if s.get("known") and want in s["name"].lower()]
+    if matches and matches[0].get("ruin"):
+        # A gate ruin's six places are not walked into: `delve` is the only
+        # door, and it is the one that checks the depth's state, forges the
+        # job and sets the room walk up. Walking in bare left the party
+        # standing in a Site that `room` then refused (2026-09-13).
+        site = matches[0]
+        print(f"{site['name']} is a depth of {area['name']} -- "
+              f"`delve {site['name'].lower()}` goes down into it.")
+        return
     if matches:
         site = matches[0]
         site["visited"] = True
@@ -6210,6 +6274,13 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         state["pending"] = None
         if escaped and not wiped and not mercy_fired:
             site, room = pending["site"], pending["room"]
+            # The same rule as an unresolved fight: what died before the
+            # party broke off stays dead, and its one-off steel is kept.
+            mark_boss_dead(state, site, pending["foes"])
+            if record_drops(state, pending["foes"]):
+                weapons_left = fallen_weapons_line(pending["foes"])
+                if weapons_left:
+                    log.append(weapons_left)
             if pending.get("pursuit"):
                 # The party broke off its own pursuit: the loose end stays
                 # on the books at the runners' current tracks -- the one
