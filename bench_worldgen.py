@@ -264,10 +264,12 @@ def sweep_gates(seeds: int) -> None:
     separations, capital_gaps = [], []
     tiles_seen: dict[str, set] = {key: set() for key in places.GATE_KEYS}
     # The NINE painted capitals: the no-capital clause is about them, and
-    # since 2026-09-12 a city state's own capital is its rolled tile.
-    capitals = [places.tile_row_column(tid)
-                for tid in places.HISTORICAL_CAPITAL_TILES.values()]
+    # since 2026-09-12 a city state's own capital is its rolled tile. Read
+    # per world off the LAND RECORD, which is where a capital lives now
+    # (`places.human_capital_tiles`), not off the module table.
     for _seed, world in worlds(seeds):
+        capitals = [places.tile_row_column(tid)
+                    for tid in places.human_capital_tiles(world)]
         placed = []
         for key in places.GATE_KEYS:
             spec = places.GATE_BY_KEY[key]

@@ -6343,16 +6343,41 @@ Each city carries a full country packet: four constitutions, three
 tensions, six faction edges, six standing facts, two priced services,
 eight crisis cards, a weather card and a season card. The two are built as
 **opposites on purpose**. Heaven's trouble is administrative — a list is
-posted, a child is taken, the gate is shut, a bishop preaches, a made thing
-walks off. Hell's is appetite — the feast comes over the wall, a debt is
-collected, a lord is hanged, the kennels open, the market puts people in
-cages. Neither deck is the villain's and the table plays both.
+posted, a child is taken, the gate is shut, a made thing walks off. Hell's
+is appetite — the feast comes over the wall, a debt is collected, a lord is
+hanged, the kennels open, the market puts people in cages. Neither deck is
+the villain's and the table plays both.
+
+The gate shuts two ways, because a card's admitting conditions are AND
+across kinds: THE GATE IS GUARDED FROM BOTH SIDES is the Prefect's quarrel
+with the bishops, and THE QUARANTINE SHUTS THE GATE is the same shut gate
+as the law of a Concordia the Pruners hold. A city that rolled one and not
+the other still sees it.
 
 **The two chains** are the spine of each side. Heaven's: THE REGISTER IS
 READ leaves the list standing, and A CHILD IS TAKEN admits on it, clears
 it, and posts *Bring the Child Home*. Hell's: THE FEAST SPILLS OVER THE
 WALL leaves the feast out, and THE DEBT-HOUSE COLLECTS admits on it, clears
 it, and posts *The Year Owed*. Both run again from the top.
+
+**Three cards offer two employers.** A card's job is ordinary board work,
+and on three of them the same trouble is posted twice with opposite money
+behind it: the player picks who he works for, and the dark half is dark
+work in the full sense — it pays the silver premium and every XP it pays
+is sin.
+
+| the card | the good job | the dark job |
+|---|---|---|
+| A CHILD IS TAKEN | *Bring the Child Home* — the mother pays | *Deliver the Child* — the Pruners pay to have the Gardeners' hidden child put back on the register |
+| THE DEBT-HOUSE COLLECTS | *The Year Owed* — burn the book | *Collect the Year* — collect it for the debt-house, against a rival crew after the same man |
+| A STRANDED DEMON IS FOUND | *The Old Feast* — leave her be | *Bring Her In* — bring her to the Hunger |
+
+**Where a card's job is posted.** A card puts its work up on the boards of
+the land it stands over — except where the trouble is plainly somewhere
+else. *Bring the Child Home* / *Deliver the Child* and *The Lord's Men* are
+posted in the HOST COUNTRY: a village child taken through a door in the
+Prefecture, and a hanged lord's men living off the host road, are both read
+off a board down the road rather than off the city's own single board.
 
 **Four people the packets NAME and keep.** A card cannot read the party, so
 what the world does about half-bloods reaches the table as four people it
@@ -6409,10 +6434,18 @@ them:
 | Concordia | the cure | its host | the gate is shut, a child was taken | `cure-dear` — the healer x1.3 |
 | Saturna | the feast | its host | the feast spilled, the cages are open | `feast-abroad` — a bed x0.7, revelers in the wilds |
 | the host | the bishops | Concordia | interdict, the pulpit is against the gate | `pulpit-against` — the shelf x1.2 |
-| the host | the hunt | Saturna | the hunt is up, the country is at war | `hounds-out` — hounds on the road |
+| the host | the hunt | Saturna | the hunt is up | `hounds-out` — hounds on the road |
 
 A power that lands on somebody's country is felt by the country and answers
 to it. Every derived word reaches a price or a road.
+
+Both rows into the cities read an EVENT in the host, never a standing
+fact. THE BISHOP PREACHES AGAINST THE GATE is therefore the host's own
+card — a bishop of the host country, admitted by `hosts-heaven`, so
+exactly one land in every world draws it — and the hunt row reads the
+posted witch-hunt alone: `at-war` is stamped at worldgen and never
+cleared, so reading it would have put hounds on Saturna's road in half of
+all worlds from day one.
 
 ## The human side
 

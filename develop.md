@@ -3075,6 +3075,28 @@ mechanic *does* and *why* is rules.md's job.
   `worldsim._authority_hook` grew `born=` so a card can name a person of
   another land. `test_gates`'s six new classes are the contract and
   benchlog's 2026-09-12 (E) entry the measurement.
+  **What the post-build review moved (2026-09-13), all of it in
+  `worldsim.py`:** `job()` grew `ferocity`, `proof` and `at`, so a card's
+  posted job carries the same `sites.GATE_FEROCITY` its authored twin on
+  `quests.TEMPLATES` does (without it every warden a card posted fought at
+  the catalog row's own mercy class), and `JOB_KEYS` is a CLOSED set now —
+  a stray term raises instead of being ignored. The quest outlet grew a
+  second verb, `dark`: a card may post a good job and a dark twin at once,
+  `_card_jobs` gives the twin its own board key (`<card>/dark`) so one
+  board holds both, and the karma and silver machinery reads it off
+  `align` like any other dark job. `at="host"` is the posting ADDRESS —
+  `board_postings` withholds a host-side job from the city's own board and
+  hands it to the boards of the land in `world["gates"][city]["cut_from"]`
+  instead. Three cards changed decks: `heaven/the-sermon` is `_HUMAN` +
+  `hosts-heaven` (it is the only setter of `preached-against`, which the
+  `pulpit-against` relation reads on the HOST), and the two `magic/*`
+  cards are `_HUMAN` rather than `ANY_LAND`. The second door to
+  `gate-shut` is a second card, `heaven/the-gate-guarded-by-law`, keyed on
+  the QUARANTINE constitution, because `admits` is AND across kinds so a
+  Concordia that rolled the government without the quarrel could never
+  shut its gate at all. The `hounds-out`
+  relation row reads `hunt-up` alone. `test_gates.TheCardPostedJobs` and
+  `TheDeckScopes` are the contract.
 - **The world layer** (2026-08-07, the worldsim build's frame — rules.md's
   The World Layer add-on) — `worldsim.py`: everything (see Files); the
   knobs are `WEALTH_BANDS`, `CARD_CHANCE`, `OPENING_DRAW` / `OPENING_DAY`,
