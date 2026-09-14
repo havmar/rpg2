@@ -1,6 +1,7 @@
 RPG2 MAP -- day 6
 the party is at Byzantium > R11C15 >
-  R11C15 Hills
+  R11C15 Hills > the den in the hills >
+  tracks
 
             111111111122222222223
    123456789012345678901234567890
@@ -81,6 +82,5 @@ Saturna cities: Saturna R04C14*
 
 [q43] Wolves Attack (L4) @ Salicetum
   - the high pasture (L4): cleared
-  - the den in the hills (L4): here,
-    room 1/1
+  - the den in the hills (L4): cleared
   - R11C15: here

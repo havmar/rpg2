@@ -1,6 +1,7 @@
 === Wolves Attack ===
-the high pasture (L4), room 1/1: tracks
-Wolf 9 -- fangs
+the den in the hills (L4),
+room 1/1: tracks
+Wolf 12 -- fangs
 DEX 4  STR 2  STA 8  HP 4/4
 breaks when beaten
 2x Dire Wolf -- fangs
@@ -8,57 +9,49 @@ DEX 6  STR 3  STA 10  HP 9/9
 breaks when beaten
 Round 1:
 Varro uses First Blood!
-Wolf 9 takes 1 dmg.
+Wolf 12 takes 1 dmg.
 The lines meet -- steel range.
-Nerva's ice bolt overwhelms Wolf 9,
-deals 6 dmg!!! [5 Power left]
-Wolf 9 is SLAIN.
+Nerva's ice bolt overwhelms Wolf 12,
+deals 6 dmg!!! [1 Power left]
+Wolf 12 is SLAIN.
 Round 2:
+!! Nerva is Winded.
 Nerva's ice bolt
-overwhelms Dire Wolf 10, deals 6 dmg!!!
-[4 Power left]
-Dire Wolf 10 is rimed with frost.
-Varro overwhelms Dire Wolf 10,
+outmaneuvers Dire Wolf 13, deals 4 dmg!!
+[0 Power left]
+Dire Wolf 13 is rimed with frost.
+Varro (11/12) overwhelms Dire Wolf 13,
 deals 6 dmg!!! SLAIN.
-Dire Wolf 10 strikes as they fall:
-outmaneuvers Varro, deals 1 dmg.
-Dire Wolf 11 attacks Varro, parried.
+Dire Wolf 13 strikes as they fall:
+Varro parries.
+Dire Wolf 14 outmaneuvers Varro,
+deals 1 dmg.
 Round 3: nothing lands.
 Round 4:
-Nerva's ice bolt
-outmaneuvers Dire Wolf 11, deals 2 dmg!
-[2 Power left]
-Dire Wolf 11 is rimed with frost.
-Varro (11/12) outmaneuvers Dire Wolf 11,
+Nerva edges past Dire Wolf 14,
+deals 1 dmg.
+!! Varro is Winded.
+Varro (10/12) outmaneuvers Dire Wolf 14,
 deals 6 dmg!!!
-Dire Wolf 11 (1/9)
-attacks Varro, parried.
+Dire Wolf 14 (2/9)
+attacks Nerva, parried.
 The beaten foes break and run!
-Nerva's ice bolt
-overwhelms Dire Wolf 11, deals 4 dmg!!
-[1 Power left]
-Dire Wolf 11 falls.
+The survivors escape.
+The field belongs to the party.
 The party catches its breath (+1 STA)
-Nerva +70 XP (encounter) [505/500]
-*** Nerva reaches level 6!
-(3 skill points unspent) ***
-Varro +70 XP (encounter) [505/500]
-*** Varro reaches level 6!
-(3 skill points unspent) ***
-*** SITE CLEARED ***
-the high pasture (site 1/2) --
-the job goes on.
-(next: the den in the hills, L4, 1 encounter(s))
-Varro drills the zweihander:
-proficiency rank 1 [2 point(s) left]
-Varro drills the zweihander:
-proficiency rank 2 [0 point(s) left]
+Nerva +70 XP (encounter) [75/600]
+Varro +70 XP (encounter) [75/600]
+(LOOSE END le1: Dire Wolf 14 got away -- `pursue` while the trail is warm: today, here, before a night's sleep)
+*** THE TARGET ESCAPED --
+proof wanted: the pelts.
+The job is not done until
+they are dead. ***
 
 -- the party --
-Nerva: Unhurt STA 5/8 Power 1/6
+Nerva: Unhurt STA 3/8 Power 0/7
+  (Winded -2 to rolls)
   (healing x1, stamina x1)
-Varro: Scratched STA 6/8 Power 3/5
+Varro: Scratched STA 4/8 Power 1/5
   (healing x1, stamina x1)
 Purse 323s; day 6.
-Ahead: 1 fight(s) at the den in the hills; the work done pays 142 XP in the field, and the turn-in pays 132s, 70 XP at the giver.
-  (due day 12 -- 6 days left; on time pay, x1)
+The field is cleared, but the target got away. The job still wants the pelts: `pursue` while the trail is warm -- nothing is paid until the target is dead.

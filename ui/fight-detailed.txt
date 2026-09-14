@@ -1,73 +1,67 @@
-=== Wolves Attack -- the high pasture (L4), room 1/1: tracks ===
-  Wolf 9 -- fangs
+=== Wolves Attack -- the den in the hills (L4), room 1/1: tracks ===
+  Wolf 12 -- fangs
   DEX 4  STR 2  STA 8  HP 4/4
   breaks when beaten
   2x Dire Wolf -- fangs
   DEX 6  STR 3  STA 10  HP 9/9
   breaks when beaten
   Round 1:
-    Varro strikes before the lines meet -- First Blood! Wolf 9 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 3 left]
-    Varro, Wolf 9, Dire Wolf 10, Dire Wolf 11 close the distance -- the lines meet!
-    Nerva's ice bolt overwhelms Wolf 9 -- a crippling blow! [Wolf 9: 0/4 HP, -4 to rolls]
-        pressure: Nerva: 19 (2d6=10, +6 AIM, +2 training, +1 proficiency) vs Wolf 9: 6 (2d6=3, +4 DEX, -1 wounds) [ice bolt: -1 Power, 5 left]
-        severity: 14 = margin 13 +2 ice bolt +1 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Wolf 9 is SLAIN. ***
-    stamina: Nerva 7/8, Varro 8/8 | Dire Wolf 10 10/10, Dire Wolf 11 10/10
+    Varro strikes before the lines meet -- First Blood! Wolf 12 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
+    Varro, Wolf 12, Dire Wolf 13, Dire Wolf 14 close the distance -- the lines meet!
+    Nerva's ice bolt overwhelms Wolf 12 -- a crippling blow! [Wolf 12: 0/4 HP, -4 to rolls]
+        pressure: Nerva: 16 (2d6=6, +6 AIM, +2 training, +2 proficiency) vs Wolf 12: 11 (2d6=8, +4 DEX, -1 wounds) [ice bolt: -1 Power, 1 left]
+        severity: 7 = margin 5 +2 ice bolt +2 spell rank -2 soak -> crippling blow (-6 HP)
+    *** Wolf 12 is SLAIN. ***
+    stamina: Nerva 4/8, Varro 6/8 | Dire Wolf 13 10/10, Dire Wolf 14 10/10
   Round 2:
-    Nerva's ice bolt overwhelms Dire Wolf 10 -- a crippling blow! [Dire Wolf 10: 3/9 HP, -6 to rolls]
-        pressure: Nerva: 20 (2d6=11, +6 AIM, +2 training, +1 proficiency) vs Dire Wolf 10: 13 (2d6=7, +6 DEX) [ice bolt: -1 Power, 4 left]
-        severity: 7 = margin 7 +2 ice bolt +1 spell rank -3 soak -> crippling blow (-6 HP)
-    Dire Wolf 10 is rimed with frost (-1 DEX for this fight)
-    Varro overwhelms Dire Wolf 10 -- a crippling blow! [Dire Wolf 10: 0/9 HP, -9 to rolls]
-        pressure: Varro: 12 (2d6=5, +4 DEX, +2 training, +1 zweihander) vs Dire Wolf 10: 1 (2d6=2, +6 DEX, -1 chilled, -6 wounds)
-        severity: 17 = margin 11 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
-    *** Dire Wolf 10 is SLAIN. ***
-    (Dire Wolf 10 strikes even as they fall)
-    Dire Wolf 10 outmaneuvers Varro -- a graze! [Varro: 11/12 HP, -0 to rolls]
-        pressure: Dire Wolf 10: 15 (2d6=10, +6 DEX, -1 chilled) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
+    !! Nerva is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Nerva's ice bolt outmaneuvers Dire Wolf 13 -- a grievous injury! [Dire Wolf 13: 5/9 HP, -4 to rolls]
+        pressure: Nerva: 14 (2d6=6, +6 AIM, +2 training, +2 proficiency, -2 winded) vs Dire Wolf 13: 10 (2d6=4, +6 DEX) [ice bolt: -1 Power, 0 left]
+        severity: 5 = margin 4 +2 ice bolt +2 spell rank -3 soak -> grievous (-4 HP)
+    Dire Wolf 13 is rimed with frost (-1 DEX for this fight)
+    Varro overwhelms Dire Wolf 13 -- a crippling blow! [Dire Wolf 13: 0/9 HP, -9 to rolls]
+        pressure: Varro: 17 (2d6=8, +4 DEX, +2 training, +1 zweihander, +2 proficiency) vs Dire Wolf 13: 8 (2d6=7, +6 DEX, -1 chilled, -4 wounds)
+        severity: 17 = margin 9 +6 STR +3 zweihander +2 proficiency -3 soak -> crippling blow (-6 HP)
+    *** Dire Wolf 13 is SLAIN. ***
+    (Dire Wolf 13 strikes even as they fall)
+    Dire Wolf 13 attacks Varro -- parried.
+        pressure: Dire Wolf 13: 9 (2d6=4, +6 DEX, -1 chilled) vs Varro: 15 (2d6=10, +4 DEX, +2 training, -1 zweihander)
+    Dire Wolf 14 outmaneuvers Varro -- a graze! [Varro: 10/12 HP, -0 to rolls]
+        pressure: Dire Wolf 14: 15 (2d6=9, +6 DEX) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
         severity: 0 = margin 3 +3 STR -6 soak -> deflected -> a clean hit still cuts: graze (-1 HP)
-    Dire Wolf 11 attacks Varro -- parried.
-        pressure: Dire Wolf 11: 9 (2d6=3, +6 DEX) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
-    stamina: Nerva 6/8, Varro 7/8 | Dire Wolf 11 9/10
+    stamina: Nerva 3/8*, Varro 5/8 | Dire Wolf 14 9/10   (* = Winded)
   Round 3:
-    Nerva sends ice bolt at Dire Wolf 11 -- warded off.
-        pressure: Nerva: 16 (2d6=7, +6 AIM, +2 training, +1 proficiency) vs Dire Wolf 11: 17 (2d6=11, +6 DEX) [ice bolt: -1 Power, 3 left]
-    Varro attacks Dire Wolf 11 -- parried.
-        pressure: Varro: 11 (2d6=4, +4 DEX, +2 training, +1 zweihander) vs Dire Wolf 11: 13 (2d6=7, +6 DEX)
-    Dire Wolf 11 and Varro -- Clash! Steel rings; neither yields.
-        pressure: Dire Wolf 11: 13 (2d6=7, +6 DEX) vs Varro: 13 (2d6=8, +4 DEX, +2 training, -1 zweihander)
-    stamina: Nerva 5/8, Varro 6/8 | Dire Wolf 11 8/10
+    Nerva close the distance (the gap narrows to 0).
+    Varro and Dire Wolf 14 -- Lull. They circle, probing for an opening.
+        pressure: Varro: 13 (2d6=4, +4 DEX, +2 training, +1 zweihander, +2 proficiency) vs Dire Wolf 14: 13 (2d6=7, +6 DEX)
+    Dire Wolf 14 edges past Varro, but the blow glances off -- deflected.
+        pressure: Dire Wolf 14: 13 (2d6=7, +6 DEX) vs Varro: 11 (2d6=6, +4 DEX, +2 training, -1 zweihander)
+        severity: -1 = margin 2 +3 STR -6 soak -> deflected
+    stamina: Nerva 3/8*, Varro 4/8 | Dire Wolf 14 8/10   (* = Winded)
   Round 4:
-    Nerva's ice bolt outmaneuvers Dire Wolf 11 -- a solid wound! [Dire Wolf 11: 7/9 HP, -2 to rolls]
-        pressure: Nerva: 15 (2d6=6, +6 AIM, +2 training, +1 proficiency) vs Dire Wolf 11: 12 (2d6=6, +6 DEX) [ice bolt: -1 Power, 2 left]
-        severity: 3 = margin 3 +2 ice bolt +1 spell rank -3 soak -> wound (-2 HP)
-    Dire Wolf 11 is rimed with frost (-1 DEX for this fight)
-    Varro outmaneuvers Dire Wolf 11 -- a crippling blow! [Dire Wolf 11: 1/9 HP, -8 to rolls]
-        pressure: Varro: 13 (2d6=6, +4 DEX, +2 training, +1 zweihander) vs Dire Wolf 11: 10 (2d6=7, +6 DEX, -1 chilled, -2 wounds)
-        severity: 9 = margin 3 +6 STR +3 zweihander -3 soak -> crippling blow (-6 HP)
-    Dire Wolf 11 attacks Varro -- parried.
-        pressure: Dire Wolf 11: 4 (2d6=7, +6 DEX, -1 chilled, -8 wounds) vs Varro: 10 (2d6=5, +4 DEX, +2 training, -1 zweihander)
-    stamina: Nerva 4/8, Varro 5/8 | Dire Wolf 11 7/10
+    Nerva edges past Dire Wolf 14 -- a graze! [Dire Wolf 14: 8/9 HP, -1 to rolls]
+        pressure: Nerva: 13 (2d6=7, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded) vs Dire Wolf 14: 11 (2d6=5, +6 DEX)
+        severity: 1 = margin 2 +3 STR -1 masterwork wooden staff -3 soak -> graze (-1 HP)
+    !! Varro is Winded (STA 3 -- -2 to all rolls until they catch their breath)
+    Varro outmaneuvers Dire Wolf 14 -- a crippling blow! [Dire Wolf 14: 2/9 HP, -7 to rolls]
+        pressure: Varro: 14 (2d6=7, +4 DEX, +2 training, +1 zweihander, +2 proficiency, -2 winded) vs Dire Wolf 14: 10 (2d6=5, +6 DEX, -1 wounds)
+        severity: 12 = margin 4 +6 STR +3 zweihander +2 proficiency -3 soak -> crippling blow (-6 HP)
+    Dire Wolf 14 attacks Nerva -- parried.
+        pressure: Dire Wolf 14: 6 (2d6=7, +6 DEX, -7 wounds) vs Nerva: 14 (2d6=8, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded)
+    stamina: Nerva 2/8*, Varro 3/8* | Dire Wolf 14 7/10   (* = Winded)
     The beaten foe line breaks and runs!
-    Nerva's ice bolt overwhelms Dire Wolf 11 -- a grievous injury! [Dire Wolf 11: 0/9 HP, -9 to rolls]
-        pressure: Nerva: 18 (2d6=9, +6 AIM, +2 training, +1 proficiency) vs Dire Wolf 11: -2 (2d6=3, +6 DEX, -1 chilled, -8 wounds, -2 fleeing) [ice bolt: -1 Power, 1 left]
-        severity: 20 = margin 20 +2 ice bolt +1 spell rank -3 soak -> crippling blow -> a hurried blow at a fleeing back: grievous (-4 HP)
-    *** Dire Wolf 11 falls. ***
+    The survivors escape. The field belongs to the party.
     The party catches its breath (+1 STA)
-    Nerva gains 70 XP (encounter) [505/500]
-    *** Nerva reaches level 6! (+3 skill points, 3 unspent) ***
-    Varro gains 70 XP (encounter) [505/500]
-    *** Varro reaches level 6! (+3 skill points, 3 unspent) ***
-  *** SITE CLEARED: the high pasture (site 1/2) -- the job goes on. ***
-  (next: the den in the hills, L4, 1 encounter(s))
-    Varro drills with the zweihander: proficiency rank 1 (+1 attack pressure and +1 severity with it) [2 point(s) left]
-    Varro drills with the zweihander: proficiency rank 2 (+2 attack pressure and +2 severity with it) [0 point(s) left]
+    Nerva gains 70 XP (encounter) [75/600]
+    Varro gains 70 XP (encounter) [75/600]
+  (LOOSE END le1: Dire Wolf 14 got away -- `pursue` while the trail is warm: today, here, before a night's sleep)
+  *** THE TARGET ESCAPED -- proof wanted: the pelts. The job is not done until they are dead. ***
 
 -- the party --
-Nerva: Unhurt STA 5/8 Power 1/6
+Nerva: Unhurt STA 3/8 Power 0/7
+  (Winded -2 to rolls)
   (healing x1, stamina x1)
-Varro: Scratched STA 6/8 Power 3/5
+Varro: Scratched STA 4/8 Power 1/5
   (healing x1, stamina x1)
 Purse 323s; day 6.
-Ahead: 1 fight(s) at the den in the hills; the work done pays 142 XP in the field, and the turn-in pays 132s, 70 XP at the giver.
-  (due day 12 -- 6 days left; on time pay, x1)
+The field is cleared, but the target got away. The job still wants the pelts: `pursue` while the trail is warm -- nothing is paid until the target is dead.
