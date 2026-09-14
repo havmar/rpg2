@@ -1,33 +1,60 @@
-## turn 7 (day 6)
+## turn 8 (day 7)
 
-> pursue
+> camp here, look for it in the morning
 
-You go after it while there is still blood to follow. It takes the shoulder of the hill into broken ground, and the blood stops at a rockfall. Varro works the far side of it for half an hour and turns up nothing. It cost no day and it got you nothing.
-
-```
-  the trail: trackers 9.0
-    (2d6=3, +6 best MIND)
-    vs runners 11.8
-THE TRAIL IS LOST. No day spent.
-  le1: Dire Wolf 14 (2/9 HP) --
-  fled the den, day 6
-```
-
-Varro is not troubled about it. A wolf hurt that badly goes to ground and stays down, he says. It will not have gone a mile from its own den, and it will be lying in the same place in the morning. He talks about wolves the whole way back down to the pasture wall, and he is right about most of it as far as you can tell.
-
-Evening on the hill. Two pelts are worth nothing: Quintilla pays when the pack is dead, and six days are left on that, three of them the road back to Salicetum. Lauretum is an hour inland and the shepherds there graze this ground.
+The night on the hill is quiet and hazy and nothing comes near the fire. In the morning you walk the ground around the den in widening circles. Varro finds it inside the hour, lying up under thorn scrub in a gully two hundred paces from its own mouth, which is where he said it would be. It gets up when it hears you.
 
 ```
-  Nerva: STA 3/8, Power 0/7
-  Varro: STA 4/8, HP 10/12
-  options: camp here, look for
-    it in the morning
-    ask at Lauretum
-    start back to Salicetum
-      without the pelt
+=== THE RE-ENCOUNTER: Wolves Attack --
+  the den in the hills -- day 6 ===
+(a level-1 fight)
+Dire Wolf 14 -- fangs
+DEX 6  STR 3  STA 10  HP 9/9
+breaks when beaten
+```
+
+[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/fight-short.txt)
+
+```
+The party catches its breath (+1 STA)
+Nerva +26 XP (encounter) [101/600]
+Varro +26 XP (encounter) [101/600]
+(loose end le1 is settled -- nobody got
+  away this time)
+*** PROOF TAKEN: the pelts --
+the target is dead. ***
+
+*** THE JOB IS DONE (driven off, not
+  slain):
+Wolves Attack --
+the den in the hills (site 2/2).
+Return to Quintilla
+at Salicetum -- due day 12:
+`turnin q43`. ***
+Nerva +142 XP (the work done) [243/600]
+Varro +142 XP (the work done) [243/600]
+
+-- the party --
+Nerva: Unhurt STA 7/8 Power 5/7
+  (healing x1, stamina x1)
+Varro: Unhurt STA 8/8 Power 3/5
+  (healing x1, stamina x1)
+Purse 323s; day 7.
+  (due day 12 -- 5 days left; on time
+    pay, x1)
+```
+
+A night's rest has done it no good at all. Two bolts and it is over, and neither of you takes a mark. Varro skins all four of them at the den mouth and has the pelts rolled and tied by midday. The pasture is clear; the sheep can stay up here through the summer, which is the whole of what Quintilla wanted.
+
+Salicetum is three days back down the coast. Quintilla pays 132 silver there and the job is wanted by day 12, so the road is not tight. The other clock is Paulina's: hell's letter has to be taken by day 11, and three days puts you in the village on day 10.
+
+```
+  options: start back to
+    Salicetum
+    Lauretum, an hour inland
     hunt this ground
 ```
 
-What do you do?
+Where to?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/map.txt)

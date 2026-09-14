@@ -1,4 +1,4 @@
-RPG2 MAP -- day 6
+RPG2 MAP -- day 7
 the party is at Byzantium > R11C15 >
   R11C15 Hills > the den in the hills >
   tracks
@@ -45,7 +45,7 @@ HERE: R11C15 -- Byzantium, hills
     on this ground (day 0); the country
     is at war (day 0)
   ABSOLUTISM
-  WEATHER: haze.
+  WEATHER: clear skies.
 
 -- known settlements --
 GATES: Candor R18C27 (Heaven, ruin),

@@ -1,67 +1,39 @@
-=== Wolves Attack -- the den in the hills (L4), room 1/1: tracks ===
-  Wolf 12 -- fangs
-  DEX 4  STR 2  STA 8  HP 4/4
-  breaks when beaten
-  2x Dire Wolf -- fangs
+=== THE RE-ENCOUNTER: Wolves Attack -- the den in the hills -- day 6 (a level-1 fight) ===
+  Dire Wolf 14 -- fangs
   DEX 6  STR 3  STA 10  HP 9/9
   breaks when beaten
   Round 1:
-    Varro strikes before the lines meet -- First Blood! Wolf 12 is grazed (-1 HP -> 3/4, -1 to rolls) [2 Power spent, 1 left]
-    Varro, Wolf 12, Dire Wolf 13, Dire Wolf 14 close the distance -- the lines meet!
-    Nerva's ice bolt overwhelms Wolf 12 -- a crippling blow! [Wolf 12: 0/4 HP, -4 to rolls]
-        pressure: Nerva: 16 (2d6=6, +6 AIM, +2 training, +2 proficiency) vs Wolf 12: 11 (2d6=8, +4 DEX, -1 wounds) [ice bolt: -1 Power, 1 left]
-        severity: 7 = margin 5 +2 ice bolt +2 spell rank -2 soak -> crippling blow (-6 HP)
-    *** Wolf 12 is SLAIN. ***
-    stamina: Nerva 4/8, Varro 6/8 | Dire Wolf 13 10/10, Dire Wolf 14 10/10
+    Varro strikes before the lines meet -- First Blood! Dire Wolf 14 is grazed (-1 HP -> 8/9, -1 to rolls) [2 Power spent, 3 left]
+    Varro, Dire Wolf 14 close the distance -- the lines meet!
+    Nerva's ice bolt overwhelms Dire Wolf 14 -- a grievous injury! [Dire Wolf 14: 4/9 HP, -5 to rolls]
+        pressure: Nerva: 19 (2d6=9, +6 AIM, +2 training, +2 proficiency) vs Dire Wolf 14: 14 (2d6=9, +6 DEX, -1 wounds) [ice bolt: -1 Power, 6 left]
+        severity: 6 = margin 5 +2 ice bolt +2 spell rank -3 soak -> grievous (-4 HP)
+    Dire Wolf 14 is rimed with frost (-1 DEX for this fight)
+    stamina: Nerva 7/8, Varro 8/8 | Dire Wolf 14 10/10
   Round 2:
-    !! Nerva is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Nerva's ice bolt outmaneuvers Dire Wolf 13 -- a grievous injury! [Dire Wolf 13: 5/9 HP, -4 to rolls]
-        pressure: Nerva: 14 (2d6=6, +6 AIM, +2 training, +2 proficiency, -2 winded) vs Dire Wolf 13: 10 (2d6=4, +6 DEX) [ice bolt: -1 Power, 0 left]
-        severity: 5 = margin 4 +2 ice bolt +2 spell rank -3 soak -> grievous (-4 HP)
-    Dire Wolf 13 is rimed with frost (-1 DEX for this fight)
-    Varro overwhelms Dire Wolf 13 -- a crippling blow! [Dire Wolf 13: 0/9 HP, -9 to rolls]
-        pressure: Varro: 17 (2d6=8, +4 DEX, +2 training, +1 zweihander, +2 proficiency) vs Dire Wolf 13: 8 (2d6=7, +6 DEX, -1 chilled, -4 wounds)
-        severity: 17 = margin 9 +6 STR +3 zweihander +2 proficiency -3 soak -> crippling blow (-6 HP)
-    *** Dire Wolf 13 is SLAIN. ***
-    (Dire Wolf 13 strikes even as they fall)
-    Dire Wolf 13 attacks Varro -- parried.
-        pressure: Dire Wolf 13: 9 (2d6=4, +6 DEX, -1 chilled) vs Varro: 15 (2d6=10, +4 DEX, +2 training, -1 zweihander)
-    Dire Wolf 14 outmaneuvers Varro -- a graze! [Varro: 10/12 HP, -0 to rolls]
-        pressure: Dire Wolf 14: 15 (2d6=9, +6 DEX) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
-        severity: 0 = margin 3 +3 STR -6 soak -> deflected -> a clean hit still cuts: graze (-1 HP)
-    stamina: Nerva 3/8*, Varro 5/8 | Dire Wolf 14 9/10   (* = Winded)
-  Round 3:
-    Nerva close the distance (the gap narrows to 0).
-    Varro and Dire Wolf 14 -- Lull. They circle, probing for an opening.
-        pressure: Varro: 13 (2d6=4, +4 DEX, +2 training, +1 zweihander, +2 proficiency) vs Dire Wolf 14: 13 (2d6=7, +6 DEX)
-    Dire Wolf 14 edges past Varro, but the blow glances off -- deflected.
-        pressure: Dire Wolf 14: 13 (2d6=7, +6 DEX) vs Varro: 11 (2d6=6, +4 DEX, +2 training, -1 zweihander)
-        severity: -1 = margin 2 +3 STR -6 soak -> deflected
-    stamina: Nerva 3/8*, Varro 4/8 | Dire Wolf 14 8/10   (* = Winded)
-  Round 4:
-    Nerva edges past Dire Wolf 14 -- a graze! [Dire Wolf 14: 8/9 HP, -1 to rolls]
-        pressure: Nerva: 13 (2d6=7, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded) vs Dire Wolf 14: 11 (2d6=5, +6 DEX)
-        severity: 1 = margin 2 +3 STR -1 masterwork wooden staff -3 soak -> graze (-1 HP)
-    !! Varro is Winded (STA 3 -- -2 to all rolls until they catch their breath)
-    Varro outmaneuvers Dire Wolf 14 -- a crippling blow! [Dire Wolf 14: 2/9 HP, -7 to rolls]
-        pressure: Varro: 14 (2d6=7, +4 DEX, +2 training, +1 zweihander, +2 proficiency, -2 winded) vs Dire Wolf 14: 10 (2d6=5, +6 DEX, -1 wounds)
-        severity: 12 = margin 4 +6 STR +3 zweihander +2 proficiency -3 soak -> crippling blow (-6 HP)
-    Dire Wolf 14 attacks Nerva -- parried.
-        pressure: Dire Wolf 14: 6 (2d6=7, +6 DEX, -7 wounds) vs Nerva: 14 (2d6=8, +5 DEX, +2 training, +1 masterwork wooden staff, -2 winded)
-    stamina: Nerva 2/8*, Varro 3/8* | Dire Wolf 14 7/10   (* = Winded)
-    The beaten foe line breaks and runs!
-    The survivors escape. The field belongs to the party.
+    Nerva's ice bolt overwhelms Dire Wolf 14 -- a crippling blow! [Dire Wolf 14: 0/9 HP, -9 to rolls]
+        pressure: Nerva: 17 (2d6=7, +6 AIM, +2 training, +2 proficiency) vs Dire Wolf 14: 5 (2d6=5, +6 DEX, -1 chilled, -5 wounds) [ice bolt: -1 Power, 5 left]
+        severity: 13 = margin 12 +2 ice bolt +2 spell rank -3 soak -> crippling blow (-6 HP)
+    *** Dire Wolf 14 is SLAIN. ***
+    (Dire Wolf 14 strikes even as they fall)
+    Dire Wolf 14 attacks Varro -- parried.
+        pressure: Dire Wolf 14: 3 (2d6=3, +6 DEX, -1 chilled, -5 wounds) vs Varro: 12 (2d6=7, +4 DEX, +2 training, -1 zweihander)
+    stamina: Nerva 6/8, Varro 8/8
     The party catches its breath (+1 STA)
-    Nerva gains 70 XP (encounter) [75/600]
-    Varro gains 70 XP (encounter) [75/600]
-  (LOOSE END le1: Dire Wolf 14 got away -- `pursue` while the trail is warm: today, here, before a night's sleep)
-  *** THE TARGET ESCAPED -- proof wanted: the pelts. The job is not done until they are dead. ***
+    Nerva gains 26 XP (encounter) [101/600]
+    Varro gains 26 XP (encounter) [101/600]
+  (loose end le1 is settled -- nobody got away this time)
+  *** PROOF TAKEN: the pelts -- the target is dead. ***
+
+  *** THE JOB IS DONE (driven off, not slain): Wolves Attack -- the den in the hills (site 2/2). Return to Quintilla at Salicetum -- due day 12: `turnin q43`. ***
+    Nerva gains 142 XP (the work done) [243/600]
+    Varro gains 142 XP (the work done) [243/600]
 
 -- the party --
-Nerva: Unhurt STA 3/8 Power 0/7
-  (Winded -2 to rolls)
+Nerva: Unhurt STA 7/8 Power 5/7
   (healing x1, stamina x1)
-Varro: Scratched STA 4/8 Power 1/5
+Varro: Unhurt STA 8/8 Power 3/5
   (healing x1, stamina x1)
-Purse 323s; day 6.
-The field is cleared, but the target got away. The job still wants the pelts: `pursue` while the trail is warm -- nothing is paid until the target is dead.
+Purse 323s; day 7.
+The work is done: return to Quintilla at Salicetum -- the turn-in pays 132s, 70 XP (`turnin q43`).
+  (due day 12 -- 5 days left; on time pay, x1)
