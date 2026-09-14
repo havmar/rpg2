@@ -1,6 +1,6 @@
-RPG2 MAP -- day 2
-the party is at Byzantium > Venice >
-  Salicetum
+RPG2 MAP -- day 6
+the party is at Byzantium > R11C15 >
+  R11C15 Hills
 
             111111111122222222223
    123456789012345678901234567890
@@ -14,8 +14,8 @@ the party is at Byzantium > Venice >
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~##~##^
 10 ....######~######^^^###~##C##^
-11 .....######^^^#~~~~~~~~~.#.^^#
-12 .....##^^####@.#^G####......##
+11 .....######^^^@~~~~~~~~~.#.^^#
+12 .....##^^####C.#^G####......##
 13 .#CC^#T#....##...###.........#
 14 .##C##...#..^C...#T..###^^C###
 15 ..###......###........########
@@ -28,35 +28,23 @@ the party is at Byzantium > Venice >
   village
 R gate ruin  G gate city
 
-HERE: Venice (R12C14) -- Byzantium,
-  plains
-  wine country
-  ground: farmland, coast,
-    mountain-foot, border, trade-route,
-    port
-  last harvest: failed -- the drought
-  goods: wine
-  the Spice Lane: Cairo - Venice, spice,
-    sugar and dyes
-  the Amber Road: the amber shore -
-    Venice, amber
-  the Fairs Road: Venice - Paris, silk,
-    spice and sugar
-  Erzberg - Venice: iron
-  +6 more
-  Venice Countryside (coast)
-  Venice (metropolis)  6 job(s)
-  Petrapolis (city)  6 job(s)
-  Castranova (town)  5 job(s)
-  Salicetum (village)  <- the party, 2
-    job(s)
+HERE: R11C15 -- Byzantium, hills
+  hill country
+  ground: pasture, coast, mountain-foot,
+    border, trade-route, port
+  last harvest: ordinary
+  the armouries - Prague: arms
+  R11C16 - Erzberg: grain
+  R11C15 Hills (hills)  <- the party
+  Lauretum (village)  0 job(s)
+  Hortulus (hamlet)  3 job(s)
 
 -- Byzantium --
   [PROSPEROUS] Heaven's gate city stands
     on this ground (day 0); the country
     is at war (day 0)
   ABSOLUTISM
-  WEATHER: clear skies.
+  WEATHER: haze.
 
 -- known settlements --
 GATES: Candor R18C27 (Heaven, ruin),
@@ -77,6 +65,7 @@ Byzantium cities: Venice R12C14, Rome
     R14C14, Athens R14C19,
     Constantinople R14C27*
 Byzantium known: Castranova R12C14,
+    Hortulus R11C15, Lauretum R11C15,
     Petrapolis R12C14, Salicetum R12C14
 Andalusia (Byzantium's vassal) cities:
     Lisbon R13C03, Toledo R13C04*,
@@ -87,3 +76,11 @@ Umaia cities: Qurtuba R14C04, Jerusalem
 Tergal cities: Kyiv R10C27*
 Concordia cities: Concordia R12C18*
 Saturna cities: Saturna R04C14*
+
+-- quests in hand (where they lead) --
+
+[q43] Wolves Attack (L4) @ Salicetum
+  - the high pasture (L4): cleared
+  - the den in the hills (L4): here,
+    room 1/1
+  - R11C15: here

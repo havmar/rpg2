@@ -1,77 +1,64 @@
-=== The Restless Crypt ===
-the village graveyard (L5),
-room 2/2: crypt steps
-Skeleton 5 -- rusted blade
-DEX 4  STR 2  HP 5/5
-undead, tireless, relentless
-3x Ghoul -- grave claws
-DEX 5  STR 3  HP 8/8
-undead, tireless, relentless
+=== Wolves Attack ===
+the high pasture (L4), room 1/1: tracks
+Wolf 9 -- fangs
+DEX 4  STR 2  STA 8  HP 4/4
+breaks when beaten
+2x Dire Wolf -- fangs
+DEX 6  STR 3  STA 10  HP 9/9
+breaks when beaten
 Round 1:
 Varro uses First Blood!
-Skeleton 5 takes 1 dmg.
+Wolf 9 takes 1 dmg.
 The lines meet -- steel range.
-Nerva's ice bolt overwhelms Skeleton 5,
+Nerva's ice bolt overwhelms Wolf 9,
 deals 6 dmg!!! [5 Power left]
-Skeleton 5 is SLAIN.
+Wolf 9 is SLAIN.
 Round 2:
-Nerva's ice bolt is warded off.
-Varro outmaneuvers Ghoul 6,
-deals 6 dmg!!!
-Ghoul 6 (2/8) attacks Varro, parried.
-Ghoul 7 outmaneuvers Varro, deals 1 dmg.
-Ghoul 8 slips through the press.
-Round 3:
-Nerva's ice bolt edges past Ghoul 6,
-deals 1 dmg. [3 Power left]
-Ghoul 6 is rimed with frost.
-Varro (11/12) overwhelms Ghoul 6,
+Nerva's ice bolt
+overwhelms Dire Wolf 10, deals 6 dmg!!!
+[4 Power left]
+Dire Wolf 10 is rimed with frost.
+Varro overwhelms Dire Wolf 10,
 deals 6 dmg!!! SLAIN.
-Ghoul 6 strikes as they fall:
-Varro deflects it.
-Ghoul 7 attacks Varro, parried.
-Ghoul 8 attacks Nerva, parried.
+Dire Wolf 10 strikes as they fall:
+outmaneuvers Varro, deals 1 dmg.
+Dire Wolf 11 attacks Varro, parried.
+Round 3: nothing lands.
 Round 4:
-Nerva's ice bolt outmaneuvers Ghoul 7,
-deals 2 dmg! [2 Power left]
-Ghoul 7 is rimed with frost.
-Varro (11/12) outmaneuvers Ghoul 7,
-deals 6 dmg!!! SLAIN.
-Ghoul 7 strikes as they fall:
-Varro deflects it.
-Ghoul 8 attacks Varro, deflected.
-Round 5:
-!! Nerva is Winded.
-Nerva's ice bolt edges past Ghoul 8,
-deals 1 dmg. [1 Power left]
-Ghoul 8 is rimed with frost.
-Varro (11/12) outmaneuvers Ghoul 8,
+Nerva's ice bolt
+outmaneuvers Dire Wolf 11, deals 2 dmg!
+[2 Power left]
+Dire Wolf 11 is rimed with frost.
+Varro (11/12) outmaneuvers Dire Wolf 11,
 deals 6 dmg!!!
-Ghoul 8 (1/8) attacks Nerva, parried.
-Round 6:
-Nerva's ice bolt outmaneuvers Ghoul 8,
-deals 2 dmg! [0 Power left]
-Ghoul 8 falls.
-Ghoul 8 strikes as they fall:
-Nerva parries.
+Dire Wolf 11 (1/9)
+attacks Varro, parried.
+The beaten foes break and run!
+Nerva's ice bolt
+overwhelms Dire Wolf 11, deals 4 dmg!!
+[1 Power left]
+Dire Wolf 11 falls.
 The party catches its breath (+1 STA)
-Nerva +84 XP (encounter) [168/500]
-Varro +84 XP (encounter) [168/500]
-
-*** THE JOB IS DONE:
-The Restless Crypt --
-the village graveyard. Return to Aurelia
-at Salicetum -- due day 7:
-`turnin q01`. ***
-Nerva +170 XP (the work done) [338/500]
-Varro +170 XP (the work done) [338/500]
+Nerva +70 XP (encounter) [505/500]
+*** Nerva reaches level 6!
+(3 skill points unspent) ***
+Varro +70 XP (encounter) [505/500]
+*** Varro reaches level 6!
+(3 skill points unspent) ***
+*** SITE CLEARED ***
+the high pasture (site 1/2) --
+the job goes on.
+(next: the den in the hills, L4, 1 encounter(s))
+Varro drills the zweihander:
+proficiency rank 1 [2 point(s) left]
+Varro drills the zweihander:
+proficiency rank 2 [0 point(s) left]
 
 -- the party --
-Nerva: Unhurt STA 3/8 Power 0/6
-  (Winded -2 to rolls)
+Nerva: Unhurt STA 5/8 Power 1/6
   (healing x1, stamina x1)
-Varro: Scratched STA 5/8 Power 3/5
+Varro: Scratched STA 6/8 Power 3/5
   (healing x1, stamina x1)
-Purse 115s; day 2.
-The work is done: return to Aurelia at Salicetum -- the turn-in pays 191s, 97 XP (`turnin q01`).
-  (due day 7 -- 5 days left; quick pay, x1.15)
+Purse 323s; day 6.
+Ahead: 1 fight(s) at the den in the hills; the work done pays 142 XP in the field, and the turn-in pays 132s, 70 XP at the giver.
+  (due day 12 -- 6 days left; on time pay, x1)
