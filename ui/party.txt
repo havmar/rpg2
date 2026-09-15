@@ -27,8 +27,10 @@ party: 1/1 companion slot(s) filled (CHA
   interest: animals; dress:
     professional; looks: weathered
 
-active quest [q43] Wolves Attack is
-  COMPLETE
+active quest: [q44] L6 Bandits on the
+  Road -- next: the roadside camp (L6),
+  room 1/1
+  due day 12 -- 2 days left
 THE PACT: assignment [q28] Blood on the
   Altar at Salicetum (grace to take it
   runs to day 11).

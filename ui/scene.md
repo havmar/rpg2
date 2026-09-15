@@ -1,46 +1,33 @@
-## turn 9 (day 10)
+## turn 10 (day 10)
 
-> turn in the quest
+> take the bandit job
 
-Three days back down the coast, two of them on the water and the last one into rain. Quintilla goes through the pelts on the quay at Salicetum one at a time before she pays, which takes a while and is the whole reason she asked for them.
+Tullia is the sheriff of a fishing village and she is twenty-two. Her whole force is two men and one of them is her uncle. The camp is two days west along the coast, on the stretch where the Paris road comes down to the water and the fair traffic goes through it -- silk, spice, sugar, and men walking beside the carts who are paid to walk and not to fight. She has had three reports in a fortnight and has not been out there once, and she says so without being asked.
 
-```
-*** QUEST COMPLETE: Wolves Attack --
-  paid in full. Reward: 132 silver. ***
-  Nerva talks the pay up: +13s (CHA 4
-    -- 145s in all).
-  The party purse holds 468 silver.
-  Nerva gains 70 XP (quest) [313/600]
-  Varro gains 70 XP (quest) [313/600]
-  Varro: satisfaction 9 -> 10/10 (a job
-    paid out)
-```
+She shakes on it in the rain outside the store. A hundred and twenty-four silver, and she wants it done by day twelve.
 
-No more sheep will go missing this season. She is sending her people back up to the high pasture inside the week, and she says so to everybody on the quay, twice. Varro has been paid, fed and proved right about a wolf in the same week and is about as content as he gets.
+The arithmetic is not good. Two days out, the fight, two days back puts you in front of her on day fourteen. Late pays three fifths, and there are three days of grace after the twelfth before the job is gone for good.
 
-The village has news. Renegade wizards took a tollhouse two days off, they are still in it, the road past it is shut and the carts are going the long way round. That job was on the board here and nobody took it. There is also word off the eastern road that Umaian riders have burned more country out that way, which nobody in Salicetum can do anything about either.
-
-Three jobs are open now. Tullia still wants her bandit camp on the king's road cleared and has two days left to want it in. Gaius is an army captain down from the muster, looking for somebody to deal with deserters, on the same two days. Quintus came in yesterday: the bishop's mage hunter, hiring for the tollhouse, rings brought back as proof. He looks at your staff while he is talking and it does not change anything he says.
-
-Paulina has not gone anywhere. The grace on hell's letter runs out tomorrow.
+The other clock is tomorrow. Paulina is here, in Salicetum, and hell's letter has to be taken by day eleven. The roadside camp is two days west of her.
 
 ```
-  [q44] L6 Bandits on the Road
+  [q44] TAKEN -- the roadside
+    camp, R12C12, 2 days west
     1 fight. 124s. due day 12
-    Tullia, the sheriff
-  [q58] L6 Deserter Raiders
-    2 fights. 199s. due day 12
-    Gaius, the army captain
-  [q59] L6 Renegade Wizards
-    1 fight. 124s. due day 22
-    proof: the wizards' rings
-    Quintus, the mage hunter
-  WORD FROM BELOW: [q28] L6
-    Blood on the Altar. 162s,
-    and the XP it pays is sin.
-    take it by day 11 -- Paulina
-  purse 468s. Venice is a walk:
-    market, smith, alchemist
+  today is day 10. out and back
+    lands on day 14 -- late, and
+    late pays x0.6
+  [q28] Blood on the Altar, L6
+    take it by day 11, here,
+    from Paulina. past that:
+    past due, one warning, then
+    one collections visit
+  bribe buys 10 quiet days at
+    30s a level
+  purse 468s
+  options: set out west now
+    take Paulina's job first
+    bribe
 ```
 
 What do you do?

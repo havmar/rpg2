@@ -15,7 +15,7 @@ the party is at Byzantium > Venice >
 09 ...######C~#####~C#####~##~##^
 10 ....######~######^^^###~##C##^
 11 .....######^^^v~~~~~~~~~.#.^^#
-12 .....##^^####@.#^G####......##
+12 .....##^^##!#@.#^G####......##
 13 .#CC^#T#....##...###.........#
 14 .##C##...#..^C...#T..###^^C###
 15 ..###......###........########
@@ -88,3 +88,11 @@ Umaia cities: Qurtuba R14C04, Jerusalem
 Tergal cities: Kyiv R10C27*
 Concordia cities: Concordia R12C18*
 Saturna cities: Saturna R04C14*
+
+-- quests in hand (where they lead) --
+
+[q44] Bandits on the Road (L6) @
+  Salicetum
+  - the roadside camp (L6): here, room
+    1/1
+  - R12C12: 2 road day(s)
