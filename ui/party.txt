@@ -1,14 +1,13 @@
-RPG2 PARTY SHEET -- day 7, at Byzantium
-  > R11C15 > R11C15 Hills > the den in
-  the hills > tracks
-purse: 323s
+RPG2 PARTY SHEET -- day 10, at Byzantium
+  > Venice > Salicetum
+purse: 468s
 party: 1/1 companion slot(s) filled (CHA
   4)
 
 (YOU) Nerva -- byzantium m, age 32
-  L6  training 2  XP 243/600  points 0
+  L6  training 2  XP 313/600  points 0
   DEX 5  STR 3  MIND 6  CHA 4
-  HP 14/14  STA 7/8  Power 5/7
+  HP 14/14  STA 8/8  Power 7/7
   masterwork wooden staff | healingx1,
     staminax1
   spells: ice 2
@@ -16,22 +15,20 @@ party: 1/1 companion slot(s) filled (CHA
   speaks: Latin, Norse
 
 (companion) Varro -- byzantium m, age 17
-  L6  training 2  XP 243/600  points 0
+  L6  training 2  XP 313/600  points 0
   DEX 4  STR 6  MIND 5  CHA 5
-  HP 12/12  STA 8/8  Power 3/5
+  HP 12/12  STA 8/8  Power 5/5
   zweihander, prof 2 | healingx1,
     staminax1
   abilities: first_blood
   pools bought: hp +2, power +2, sta +2
   speaks: Latin, Tergal
-  satisfaction 9/10
+  satisfaction 10/10
   interest: animals; dress:
     professional; looks: weathered
 
-active quest [q43] Wolves Attack: THE
-  WORK IS DONE -- return to Quintilla at
-  Salicetum (`turnin q43`)
-  due day 12 -- 5 days left
+active quest [q43] Wolves Attack is
+  COMPLETE
 THE PACT: assignment [q28] Blood on the
   Altar at Salicetum (grace to take it
   runs to day 11).

@@ -1,60 +1,48 @@
-## turn 8 (day 7)
+## turn 9 (day 10)
 
-> camp here, look for it in the morning
+> turn in the quest
 
-The night on the hill is quiet and hazy and nothing comes near the fire. In the morning you walk the ground around the den in widening circles. Varro finds it inside the hour, lying up under thorn scrub in a gully two hundred paces from its own mouth, which is where he said it would be. It gets up when it hears you.
-
-```
-=== THE RE-ENCOUNTER: Wolves Attack --
-  the den in the hills -- day 6 ===
-(a level-1 fight)
-Dire Wolf 14 -- fangs
-DEX 6  STR 3  STA 10  HP 9/9
-breaks when beaten
-```
-
-[the full fight, round by round](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/fight-short.txt)
+Three days back down the coast, two of them on the water and the last one into rain. Quintilla goes through the pelts on the quay at Salicetum one at a time before she pays, which takes a while and is the whole reason she asked for them.
 
 ```
-The party catches its breath (+1 STA)
-Nerva +26 XP (encounter) [101/600]
-Varro +26 XP (encounter) [101/600]
-(loose end le1 is settled -- nobody got
-  away this time)
-*** PROOF TAKEN: the pelts --
-the target is dead. ***
-
-*** THE JOB IS DONE (driven off, not
-  slain):
-Wolves Attack --
-the den in the hills (site 2/2).
-Return to Quintilla
-at Salicetum -- due day 12:
-`turnin q43`. ***
-Nerva +142 XP (the work done) [243/600]
-Varro +142 XP (the work done) [243/600]
-
--- the party --
-Nerva: Unhurt STA 7/8 Power 5/7
-  (healing x1, stamina x1)
-Varro: Unhurt STA 8/8 Power 3/5
-  (healing x1, stamina x1)
-Purse 323s; day 7.
-  (due day 12 -- 5 days left; on time
-    pay, x1)
+*** QUEST COMPLETE: Wolves Attack --
+  paid in full. Reward: 132 silver. ***
+  Nerva talks the pay up: +13s (CHA 4
+    -- 145s in all).
+  The party purse holds 468 silver.
+  Nerva gains 70 XP (quest) [313/600]
+  Varro gains 70 XP (quest) [313/600]
+  Varro: satisfaction 9 -> 10/10 (a job
+    paid out)
 ```
 
-A night's rest has done it no good at all. Two bolts and it is over, and neither of you takes a mark. Varro skins all four of them at the den mouth and has the pelts rolled and tied by midday. The pasture is clear; the sheep can stay up here through the summer, which is the whole of what Quintilla wanted.
+No more sheep will go missing this season. She is sending her people back up to the high pasture inside the week, and she says so to everybody on the quay, twice. Varro has been paid, fed and proved right about a wolf in the same week and is about as content as he gets.
 
-Salicetum is three days back down the coast. Quintilla pays 132 silver there and the job is wanted by day 12, so the road is not tight. The other clock is Paulina's: hell's letter has to be taken by day 11, and three days puts you in the village on day 10.
+The village has news. Renegade wizards took a tollhouse two days off, they are still in it, the road past it is shut and the carts are going the long way round. That job was on the board here and nobody took it. There is also word off the eastern road that Umaian riders have burned more country out that way, which nobody in Salicetum can do anything about either.
+
+Three jobs are open now. Tullia still wants her bandit camp on the king's road cleared and has two days left to want it in. Gaius is an army captain down from the muster, looking for somebody to deal with deserters, on the same two days. Quintus came in yesterday: the bishop's mage hunter, hiring for the tollhouse, rings brought back as proof. He looks at your staff while he is talking and it does not change anything he says.
+
+Paulina has not gone anywhere. The grace on hell's letter runs out tomorrow.
 
 ```
-  options: start back to
-    Salicetum
-    Lauretum, an hour inland
-    hunt this ground
+  [q44] L6 Bandits on the Road
+    1 fight. 124s. due day 12
+    Tullia, the sheriff
+  [q58] L6 Deserter Raiders
+    2 fights. 199s. due day 12
+    Gaius, the army captain
+  [q59] L6 Renegade Wizards
+    1 fight. 124s. due day 22
+    proof: the wizards' rings
+    Quintus, the mage hunter
+  WORD FROM BELOW: [q28] L6
+    Blood on the Altar. 162s,
+    and the XP it pays is sin.
+    take it by day 11 -- Paulina
+  purse 468s. Venice is a walk:
+    market, smith, alchemist
 ```
 
-Where to?
+What do you do?
 
 [party](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-uh60er/ui/map.txt)
