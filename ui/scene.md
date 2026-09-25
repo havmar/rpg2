@@ -1,7 +1,3 @@
-## turn 1 (day 1)
-
-> start a new game
-
 You are Edwin: a Phyrascian, 27, with gold in your eyes. Strangers look at your eyes first. You throw ice, and you carry a zweihander. You have done this work for years. Years ago you also signed a contract with Hell -- wealth and power, obedience owed. The wealth has not arrived yet.
 
 Osric walks beside you: 47, weathered, a gloomy man with a fine singing voice. He carries a wooden staff and knows the healing spell. He has watched your back for years.
@@ -35,5 +31,3 @@ Inside, the smoke from the taproom fire curls into words meant for you alone. He
 ```
 
 What do you do?
-
-[party](https://github.com/havmar/rpg2/blob/claude/new-game-s7br1i/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/claude/new-game-s7br1i/ui/map.txt)

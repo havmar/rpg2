@@ -1,0 +1,10 @@
+{
+  "url": "https://claude.ai/artifact/S5r9XPdGvsqga11MiS3qhX",
+  "versions": {
+    "game/state": 1,
+    "game/party": 1,
+    "game/map": 1,
+    "game/quests": 1,
+    "game/record": 1
+  }
+}
