@@ -1,63 +1,73 @@
 RPG2 MAP -- day 1
-the party is at Umaia > R17C11 > Dar
-  Aziza
+the party is at Phyrascia > R07C06 >
+  Harrowfield
 
             111111111122222222223
    123456789012345678901234567890
 01 ..............................
-02 ...............#^^#######.....
+02 ...............#^^####T##.....
 03 ...^.........#^^###.##C###.###
-04 ...##......^^####...##########
+04 ...##......^^##R#...##########
 05 .T.##.....^#####...###########
 06 .#..C#.......##......#########
-07 ...####....#......#########C##
+07 ...##@#....#......#########C##
 08 ........##C#####~####T#######^
 09 ...######C~#####~C#####~##~##^
-10 ....######~######^^^###~##C##^
-11 .....######^^^#~~~~~~~~~.#.^^#
+10 ....######~####G#^^^###~##C##^
+11 .....##G###^^^#~~~~~~~~~.#.^^#
 12 .....##^^####C.#^^####......##
-13 .#C#^#T#....##...###.........#
-14 .##C##...#..^C...#T..###^^C###
+13 .#CC^#T#....##...###.........#
+14 .##C##...#..^C...#T..###R^C###
 15 ..###......###........########
 16 ......###.................T###
-17 .##^^#####@C###...##......####
+17 .##^^######C###...##......####
 18 #######################C######
 
 . sea  # land  ^ mtns  ~ river
 @ party  ! job  C city  T town  v
   village
+R gate ruin  G gate city
 
-HERE: R17C11 -- Umaia, plains
-  wine country
-  ground: farmland, coast
-  last harvest: ordinary
-  goods: wine
-  R17C11 Countryside (coast)
-  Wadi Sef (town)  0 job(s)
-  Dar Aziza (village)  <- the party, 2
+HERE: R07C06 -- Phyrascia, plains
+  rich farmland
+  ground: farmland, coast, island
+  last harvest: poor -- the great rains
+  R07C06 Countryside (coast)
+  Ivybourne (village)  2 job(s)
+  Harrowfield (village)  <- the party, 2
     job(s)
 
--- Umaia --
+-- Phyrascia --
   [NORMAL]
-  MINISTERIAL RULE
-  WEATHER: steady rain.
+  DECENTRALIZED FEUDALISM
+  WEATHER: clear skies.
 
 -- known settlements --
+GATES: Candor R14C25 (Heaven, ruin),
+    Libera R04C16 (Hell, ruin),
+    Concordia R11C08 (Heaven, city state
+    in Seraptania), Saturna R10C16
+    (Hell, city state in Teutonia)
 Phyrascia cities: Dublin R05C02, London
     R06C05*
+Phyrascia known: Harrowfield R07C06,
+    Ivybourne R07C06
 Seraptania cities: Paris R09C10*
 Teutonia cities: Amsterdam R08C11,
     Prague R09C18*
 Vellisclavia cities: Moscow R07C28*,
     Warsaw R08C22
-Thule cities: Stockholm R03C23*
+Thule cities: Uppsala R02C23, Stockholm
+    R03C23*
 Byzantium cities: Venice R12C14, Rome
     R14C14, Athens R14C19,
     Constantinople R14C27*
-Andalusia cities: Lisbon R13C03, Madrid
-    R13C07, Cordoba R14C04*
-Umaia cities: Jerusalem R16C27, Carthage
-    R17C12, Cairo R18C24*
-Umaia known: Dar Aziza R17C11, Wadi Sef
-    R17C11
+Andalusia (Byzantium's vassal) cities:
+    Lisbon R13C03, Toledo R13C04*,
+    Madrid R13C07
+Umaia cities: Qurtuba R14C04, Jerusalem
+    R16C27, Carthage R17C12, Cairo
+    R18C24*
 Tergal cities: Kyiv R10C27*
+Concordia cities: Concordia R11C08*
+Saturna cities: Saturna R10C16*

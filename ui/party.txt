@@ -1,27 +1,31 @@
-RPG2 PARTY SHEET -- day 1, at Umaia >
-  R17C11 > Dar Aziza
-purse: 0s
-party: 1/2 companion slot(s) filled (CHA
-  5)
+RPG2 PARTY SHEET -- day 1, at Phyrascia
+  > R07C06 > Harrowfield
+purse: 35s
+party: 1/3 companion slot(s) filled (CHA
+  6)
 
-(YOU) Nasir -- umaia m, age 21
-  L1  training 0  XP 0/100  points 0
-  DEX 3  STR 5  MIND 6  CHA 5
-  HP 9/9  STA 5/5  Power 7/7
-  wooden staff | healingx1, staminax1
+(YOU) Edwin -- phyrascia m, age 27
+  L3  training 1  XP 0/300  points 1
+  DEX 4  STR 5  MIND 6  CHA 6
+  HP 9/9  STA 9/9  Power 4/4
+  zweihander | healingx1, staminax1
   spells: ice 1
+  pools bought: hp +1, power +1, sta +1
+  BLOOD: sky-born (gold in the eyes)
+  speaks: Latin, Phyrascian
 
-(companion) Amina -- umaia f, age 33
-  L1  training 0  XP 0/100  points 0
-  DEX 6  STR 6  MIND 5  CHA 4
-  HP 9/9  STA 6/6  Power 3/3
-  whip | healingx1, staminax1
-  abilities: bulwark
+(companion) Osric -- phyrascia m, age 47
+  L3  training 1  XP 0/300  points 0
+  DEX 4  STR 5  MIND 4  CHA 4
+  HP 10/10  STA 8/8  Power 8/8
+  wooden staff, prof 1 | staminax2
+  spells: healing 1
+  pools bought: hp +1, power +1, sta +1
+  speaks: Latin, Phyrascian
   satisfaction 7/10
-  quirk: has a child (with them: Maryam,
-    age 10); speech: swears a lot;
-    dress: colorful
+  temperament: gloomy; voice: melodious;
+    looks: weathered
 
-THE PACT: assignment [q19] Desecrate the
-  Shrine at Dar Aziza (grace to take it
-  runs to day 11).
+THE PACT: assignment [q24] Desecrate the
+  Shrine at Harrowfield (grace to take
+  it runs to day 11).
