@@ -288,6 +288,162 @@ export function readMember(raw: unknown): Member | null {
   };
 }
 
+// ------------------------------------------------------------------ game/map
+/** A place the party knows: a settlement slot, or one of the four gates. */
+export interface MapPlace {
+  coord: string;
+  name: string;
+  /** "village" ... "metropolis", "gate ruin", "gate city". */
+  kind: string;
+  land: string;
+  capital: boolean;
+}
+
+export interface MapDoc {
+  v: number;
+  day: number;
+  /** The party's cell, "R17C10". */
+  coord: string;
+  /** The grid's base glyphs, a row a string, with no party and no job marks. */
+  rows: string[];
+  /** The cells of the jobs in hand's sites. */
+  objectives: string[];
+  /** [glyph, word] pairs, map.txt's legend. */
+  legend: [string, string][];
+  places: MapPlace[];
+  here: string[];
+  land: { name: string; lines: string[] };
+  known: string[];
+  holdings: string[];
+  /** map_sheet_lines, wrapped: the whole ui/map.txt. */
+  text: string[];
+}
+
+export function readMap(raw: unknown): MapDoc | null {
+  const r = obj(raw);
+  if (!r) return null;
+  const land = obj(r['land']) ?? {};
+  return {
+    v: num(r['v'], SCHEMA_VERSION),
+    day: num(r['day'], 0),
+    coord: str(r['coord']),
+    rows: lines(r['rows']).slice(0, 60).map((row) => row.slice(0, 60)),
+    objectives: strs(r['objectives']).slice(0, 40),
+    legend: arr(r['legend'])
+      .filter((p): p is [string, string] => Array.isArray(p) && typeof p[0] === 'string' && typeof p[1] === 'string')
+      .map((p) => [p[0], p[1]] as [string, string])
+      .slice(0, 30),
+    places: objs(r['places'], 600).map((p) => ({
+      coord: str(p['coord']),
+      name: str(p['name']),
+      kind: str(p['kind']),
+      land: str(p['land']),
+      capital: p['capital'] === true,
+    })).filter((p) => p.coord && p.name),
+    here: lines(r['here']),
+    land: { name: str(land['name']), lines: lines(land['lines']) },
+    known: lines(r['known']),
+    holdings: lines(r['holdings']),
+    text: lines(r['text']),
+  };
+}
+
+/** "R17C10" for a 0-based row and column, as places.tile_coordinate writes it. */
+export function cellCoord(row: number, col: number): string {
+  return `R${String(row + 1).padStart(2, '0')}C${String(col + 1).padStart(2, '0')}`;
+}
+
+// ------------------------------------------------------------------ game/quests
+export type QuestStatus = 'open' | 'work_done' | 'proof_pending';
+
+export interface QuestSite { name: string; level: number; mark: string; }
+
+export interface Quest {
+  id: string;
+  name: string;
+  level: number | null;
+  kind: 'delivery' | '';
+  origin: string;
+  status: QuestStatus;
+  sites: QuestSite[];
+  /** The first road line: "R17C10: here", "R16C12: 2 days". */
+  road: string;
+  /** The day it is wanted by; null for no deadline. */
+  due: number | null;
+  /** "5 days left", "late -- ...": the deadline in words. */
+  note: string;
+  cargo: string | null;
+  dest: string | null;
+  /** The job as the map page prints it. */
+  lines: string[];
+}
+
+export interface QuestsDoc {
+  v: number;
+  /** The active job's id, or null. */
+  active: string | null;
+  quests: Quest[];
+}
+
+export function readQuests(raw: unknown): QuestsDoc | null {
+  const r = obj(raw);
+  if (!r) return null;
+  return {
+    v: num(r['v'], SCHEMA_VERSION),
+    active: str(r['active']) || null,
+    quests: objs(r['quests'], 50).map((q) => ({
+      id: str(q['id']),
+      name: str(q['name']) || str(q['id']),
+      level: isNum(q['level']) ? q['level'] : null,
+      kind: q['kind'] === 'delivery' ? ('delivery' as const) : ('' as const),
+      origin: str(q['origin']),
+      status: oneOf<QuestStatus>(q['status'], ['open', 'work_done', 'proof_pending'], 'open'),
+      sites: objs(q['sites'], 20).map((s) => ({ name: str(s['name']), level: num(s['level'], 0), mark: str(s['mark']) })),
+      road: str(q['road']),
+      due: isNum(q['due']) ? q['due'] : null,
+      note: str(q['note']),
+      cargo: str(q['cargo']) || null,
+      dest: str(q['dest']) || null,
+      lines: lines(q['lines']),
+    })).filter((q) => q.id),
+  };
+}
+
+// ------------------------------------------------------------------ game/record
+export interface RecordLine { day: number; line: string; note: string; }
+
+export interface RecordDoc {
+  v: number;
+  day: number;
+  /** QUESTS DONE, oldest first. */
+  quests: RecordLine[];
+  /** REMARKABLE, oldest first. */
+  remarkable: RecordLine[];
+  /** THE TALLY OF SIN, as printed. */
+  tally: string[];
+  /** SUGGESTIONS: what hell is advertising today. */
+  suggestions: { key: string; name: string; line: string }[];
+  /** history_sheet_lines, wrapped: the whole ui/history.txt. */
+  text: string[];
+}
+
+export function readRecord(raw: unknown): RecordDoc | null {
+  const r = obj(raw);
+  if (!r) return null;
+  const rows = (v: unknown) => objs(v, 2000).map((x) => ({ day: num(x['day'], 0), line: str(x['line']), note: str(x['note']) }))
+    .filter((x) => x.line);
+  return {
+    v: num(r['v'], SCHEMA_VERSION),
+    day: num(r['day'], 0),
+    quests: rows(r['quests']),
+    remarkable: rows(r['remarkable']),
+    tally: lines(r['tally']),
+    suggestions: objs(r['suggestions'], 20).map((x) => ({ key: str(x['key']), name: str(x['name']), line: str(x['line']) }))
+      .filter((x) => x.key || x.name),
+    text: lines(r['text']),
+  };
+}
+
 // ------------------------------------------------------------------ moves
 export type MoveKind = 'say' | 'ooc' | 'pause';
 export const MOVE_KINDS: readonly MoveKind[] = ['say', 'ooc', 'pause'];
@@ -454,8 +610,21 @@ export const FIGHT_MARKER = '[fight]';
 /** One piece of a DM turn: a paragraph, a fenced display, or a fight in place. */
 export type Block =
   | { kind: 'p'; text: string }
-  | { kind: 'display'; lines: string[] }
+  | { kind: 'display'; lines: string[]; options: string[] | null }
   | { kind: 'fight'; id: string };
+
+/**
+ * The choices of an `options:` display, or null for any other display. The
+ * first line starts `options:` (after trimming); wrapped continuation lines
+ * are joined, the prefix cut, and the rest split on ", ". The page turns them
+ * into chips that put the words in the answer box and never send them.
+ */
+export function optionChoices(lines: readonly string[]): string[] | null {
+  if (!lines.length || !lines[0].trim().startsWith('options:')) return null;
+  const joined = lines.map((l) => l.trim()).filter(Boolean).join(' ').slice('options:'.length);
+  const out = joined.split(', ').map((o) => o.trim()).filter(Boolean);
+  return out.length ? out.slice(0, 20) : null;
+}
 
 /**
  * A turn's prose as blocks. Fenced ``` displays keep their lines verbatim; a
@@ -479,7 +648,7 @@ export function proseBlocks(prose: string, fights: readonly string[]): Block[] {
     const t = line.trim();
     if (t.startsWith('```')) {
       if (display) {
-        out.push({ kind: 'display', lines: display });
+        out.push({ kind: 'display', lines: display, options: optionChoices(display) });
         display = null;
       } else {
         endPara();
@@ -504,7 +673,7 @@ export function proseBlocks(prose: string, fights: readonly string[]): Block[] {
     }
     para.push(t);
   });
-  if (display) out.push({ kind: 'display', lines: display });
+  if (display) out.push({ kind: 'display', lines: display, options: optionChoices(display) });
   endPara();
   for (const id of queue) out.push({ kind: 'fight', id });
   return out;

@@ -2246,9 +2246,15 @@ a pointer: what the file is, how it's run, where its docs are.
     `moves/mNNNN` with the next seq, never a pause move without the
     paused fight's published id; `app.ts` the shell (three zones, two,
     one with the phone's bottom bar; `data-paused` / `data-over`);
-    `panels/` story, prose, answer, chronicle, party, fight, fights,
-    fight-chip; `drawer/tabs.ts` the tab list (Fight on the bar, Fights
-    under More). Node lives only here; Python stays stdlib.
+    `panels/` story, prose (with the `options:` chips, `model.optionChoices`),
+    pause (**the pause picker**, session 4: the menu as data, Fight on with
+    one action a hero from the heroes `pause.options` names, or Retreat
+    with an optional blink / smoke; sends the `pause` move), answer,
+    chronicle, party (with the level-up menu), map (the SVG grid from
+    `game/map.rows`, a tap names the square), fight, fights, fight-chip,
+    quests, record; `drawer/tabs.ts` the tab list (Map and Fight on the
+    bar, Fights / Quests / Record under More). Node lives only here;
+    Python stays stdlib.
   - `web/page.html` + `web/build-artifact.mjs` — the published page
     (content only, no `<head>`) and its assembly into `web/dist/`,
     failing on a stray bundle.
@@ -2259,12 +2265,19 @@ a pointer: what the file is, how it's run, where its docs are.
     `get` / `batch` / `dump`; `RPG2_TABLE` picks the server).
   - `web/e2e.mjs` — the page played end to end against the fake store
     with the real `session.py` / `publish.py` / `page.py` under a temp
-    `RPG2_HOME` (playwright-core): opening, two moves, a keeper's turn, a
-    fight placed by `[fight]` and its tab equal to `ui/fight-short.txt`,
-    the party equal to `ui/party.txt`, layout at 412 / 360 / 1100 / 1440
-    light and dark, the fallbacks; screenshots to `DIR/shots`.
+    `RPG2_HOME` (playwright-core): opening and its option chips, two
+    moves, a keeper's turn, a fight placed by `[fight]` and its tab equal
+    to `ui/fight-short.txt`, the party equal to `ui/party.txt`, a job
+    taken (Map, Quests, Record against `ui/map.txt` / `ui/history.txt`,
+    no unknown settlement in the store), a level crossed, a real paused
+    fight (unread marks; a tampered pause move refused; the picker's move
+    through `page.py moves` to `resume` and its second half), layout at
+    412 / 360 / 1100 / 1440 light and dark on every tab, blocked storage,
+    the fallbacks, game over; screenshots to `DIR/shots`.
 - `test_page.py` — **the player's page contract suite, parts 1 and 2**
-  (2026-09-25): the projection (JSON, under 256 KiB, ASCII, each `text`
+  (2026-09-25; session 4 added that the pause view offers exactly what
+  `pause_menu_data` does, heroes and escapers included, each passing
+  resume's own checker): the projection (JSON, under 256 KiB, ASCII, each `text`
   its ui page), the secrets (no `rng`/`world` key, no untaken posting or
   its giver, no unknown settlement, no unentered room; the map's places
   the known slots and the gates, its rows the bare grid), the pause menu
@@ -3668,7 +3681,13 @@ mechanic *does* and *why* is rules.md's job.
   numbers the queue, projects, pins and writes the batch; `page.py moves`
   checks the moves. Everything is rooted at `RPG2_HOME` (session's
   `STATE_PATH` / `UI_DIR`, read at call time by page.py), and `new`
-  (`forget_page`) makes one page one game.
+  (`forget_page`) makes one page one game. On the page (`web/app/`) the
+  one structured move is the pause picker's (`panels/pause.ts`), built
+  only from `game/state.pause.options` -- whose `heroes` are
+  `pause_action_refusal`'s verdicts, the same gate `check_pause_actions`
+  applies -- so a picker move `pause_args` refuses means the save moved
+  since the publish. Everything else the player says in words; the
+  `options:` chips only fill the box.
 
 ## Balance / tuning
 

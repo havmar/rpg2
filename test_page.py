@@ -494,6 +494,42 @@ class ThePauseMenu(unittest.TestCase):
                                        "warbreath", "vanish", "retreat",
                                        "blink", "smoke"])
 
+    def test_the_page_offers_what_the_menu_does(self):
+        # the picker (web/app/src/app/panels/pause.ts) builds its chips from
+        # pause.options alone, so the view must carry the menu's eligibility
+        # exactly: the same choices, the same heroes, the same named escaper
+        with sandbox():
+            state = crafted_pause(fresh(3), "normal")
+            pc, companion = state["party"]
+            companion.hp, companion.down = 5, False
+            plain = page.pause_view(state, "f0001")["options"]
+            self.assertNotIn("berserk", [o["choice"] for o in plain])
+            self.assertNotIn("warbreath", [o["choice"] for o in plain])
+            self.assertNotIn("vanish", [o["choice"] for o in plain])
+            pc.abilities.add("berserk")
+            pc.items["healing"] = 1
+            companion.items["healing"] = 0
+            companion.items["smoke"] = 1
+            data = session.pause_menu_data(state)
+            view = page.pause_view(state, "f0001")["options"]
+            self.assertEqual([o["choice"] for o in view],
+                             [o["choice"] for o in data["options"]])
+            for mine, theirs in zip(view, data["options"]):
+                self.assertEqual(mine.get("heroes"), theirs.get("heroes"))
+                self.assertEqual(mine.get("hero"), theirs.get("hero"))
+                self.assertNotIn("cmd", mine)
+            berserk = next(o for o in view if o["choice"] == "berserk")
+            self.assertEqual(berserk["heroes"], [pc.name])
+            heal = next(o for o in view if o["choice"] == "heal")
+            self.assertEqual(heal["heroes"], [pc.name])
+            # every hero a chip offers passes the checker resume itself runs
+            for opt in view:
+                for name in opt.get("heroes", []):
+                    session.check_pause_actions(state, [(opt["choice"], name)])
+            smoke = next(o for o in view if o["choice"] == "smoke")
+            self.assertEqual(smoke["hero"], companion.name)
+            session.check_escape(state, "smoke", smoke["hero"])
+
     def test_a_real_paused_fight_prints_as_it_always_did(self):
         with sandbox():
             state = real_pause()

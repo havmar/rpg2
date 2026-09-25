@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, effect, inject } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, untracked } from '@angular/core';
 import { Drawer } from './drawer/drawer';
 import { BAR_TABS, MORE_ICON, MORE_TABS, PARTY_ICON, STORY_ICON } from './drawer/tabs';
 import { Answer } from './panels/answer';
@@ -87,7 +87,15 @@ export class App implements OnInit {
   readonly inMore = computed(() => this.ui.view() === 'drawer' && MORE_TABS.some((t) => t.id === this.ui.drawerTab()));
   readonly moreUnread = computed(() => MORE_TABS.some((t) => this.unread.marks().has(t.id)));
 
+  /** The newest fight's id: a string, so a re-read of the same state changes nothing. */
+  private readonly lastFight = computed(() => this.state()?.lastFight ?? null);
+
   constructor() {
+    // A new fight on the page: the Fight tab turns to it (the newest).
+    effect(() => {
+      this.lastFight();
+      untracked(() => this.ui.fight.set(null));
+    });
     // What the game waits on dresses the page (styles.css reads these).
     effect(() => {
       const s = this.state();

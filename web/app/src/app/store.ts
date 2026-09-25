@@ -1,7 +1,7 @@
 import { Injectable, Signal, computed, signal } from '@angular/core';
 import {
   ChronicleEntry, Fight, Move, MoveBody, PATHS, cleanBody, moveId,
-  readChronicle, readFight, readMove, readParty, readState,
+  readChronicle, readFight, readMap, readMove, readParty, readQuests, readRecord, readState,
 } from './model';
 
 /**
@@ -14,7 +14,7 @@ import {
  * `moves/mNNNN`; everything else is the keeper's, written with
  * `python publish.py` and an ArtifactData batch.
  *
- * To read a new document or collection, add one line below:
+ * To read a new document or collection, add one line below, as for the map:
  *
  *   readonly map = this.doc(PATHS.map, readMap);
  *
@@ -68,6 +68,9 @@ export class TableStore {
   // ------------------------------------------------------------ the keeper's documents
   readonly state = this.doc(PATHS.state, readState);
   readonly party = this.doc(PATHS.party, readParty);
+  readonly map = this.doc(PATHS.map, readMap);
+  readonly quests = this.doc(PATHS.quests, readQuests);
+  readonly record = this.doc(PATHS.record, readRecord);
   /** Every chronicle entry, oldest first (newest 1000 read). */
   readonly chronicle = this.collection<ChronicleEntry>(PATHS.chronicle, readChronicle, {
     orderBy: 'turn', dir: 'desc', limit: 1000, sortBy: (a, b) => a.turn - b.turn,
@@ -123,6 +126,19 @@ export class TableStore {
 
   /** The player's own hero. */
   readonly pc = computed(() => this.party()?.members.find((m) => m.isPc) ?? null);
+
+  /** The pause while it stands on the page: set, and the game not over. */
+  readonly pause = computed(() => {
+    const s = this.state();
+    return s && s.status !== 'ended' ? s.pause : null;
+  });
+
+  /** The newest pause move sent for the fight that stands paused, not yet answered. */
+  readonly pauseSent = computed<Move | null>(() => {
+    const fight = this.pause()?.fight;
+    if (!fight) return null;
+    return this.pending().filter((m) => m.kind === 'pause' && m.fight === fight).at(-1) ?? null;
+  });
 
   // ------------------------------------------------------------ plumbing
   async connect(): Promise<void> {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Member } from '../model';
 import { TableStore } from '../store';
 
@@ -10,7 +10,8 @@ interface Meter { key: string; label: string; now: number; max: number; ceiling:
  * (level, XP, HP, STA, Power as bars; kit, weapon, spells, abilities, moves,
  * conditions and wounds as tags), each with its block of the sheet as
  * printed; then the purse, the companion slots, the sheet's tail, and the
- * whole of ui/party.txt.
+ * whole of ui/party.txt. While the PC has points banked, the level-up menu
+ * as printed sits on top, and the player says what to buy.
  */
 @Component({
   selector: 'rpg-party',
@@ -20,6 +21,16 @@ interface Meter { key: string; label: string; now: number; max: number; ceiling:
         <h2>The party</h2>
         <span class="label facts"><span>Purse {{ p.purse }}s</span><span>Companions {{ p.slots.filled }} of {{ p.slots.cap }}</span></span>
       </div>
+      @if (levelUp(); as l) {
+        <section class="levelup" id="levelup" aria-label="Points to spend">
+          <p class="label">Level up</p>
+          <p><b>{{ l.hero }}</b> has {{ l.points }} point{{ l.points === 1 ? '' : 's' }} to spend. Say what to spend them on.</p>
+          <details open>
+            <summary>The spending menu, as printed</summary>
+            <pre class="display" id="levelup-menu">{{ l.text.join('\\n') }}</pre>
+          </details>
+        </section>
+      }
       @for (m of p.members; track m.name) {
         <article class="card" [attr.data-member]="m.name" [class.dead]="m.dead" [class.pc]="m.isPc">
           <header>
@@ -37,7 +48,7 @@ interface Meter { key: string; label: string; now: number; max: number; ceiling:
             <span class="bar" role="img" [attr.aria-label]="'XP ' + m.xp + ' of ' + m.xpNext"><i [style.width.%]="pct(m.xp, m.xpNext)"></i></span>
             <span class="num">{{ m.xp }}/{{ m.xpNext }}</span>
           </div>
-          @if (m.points) { <p class="state accent">{{ m.points }} point{{ m.points === 1 ? '' : 's' }} to spend</p> }
+          @if (m.points) { <p class="state accent points">{{ m.points }} point{{ m.points === 1 ? '' : 's' }} to spend</p> }
 
           @for (g of meters(m); track g.key) {
             <div class="meter" [attr.data-meter]="g.key">
@@ -120,11 +131,20 @@ interface Meter { key: string; label: string; now: number; max: number; ceiling:
     .extra .note { font-size: .86rem; }
     .status { color: var(--ink-2); }
     .whole { border-top: 1px solid var(--rule); }
+    .levelup { border: 1px solid var(--accent); border-left-width: 4px; background: var(--accent-soft); border-radius: 4px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .levelup .label { color: var(--accent); }
+    .levelup pre.display { background: none; border: 0; padding: 4px 0; }
+    @media (max-width: 380px) { .levelup { padding: 10px; } }
   `],
 })
 export class Party {
   private readonly store = inject(TableStore);
   readonly party = this.store.party;
+  /** The PC's banked points and the spending menu, while there are some. */
+  readonly levelUp = computed(() => {
+    const s = this.store.state();
+    return s && s.status !== 'ended' ? s.levelUp : null;
+  });
 
   meters(m: Member): Meter[] {
     return [

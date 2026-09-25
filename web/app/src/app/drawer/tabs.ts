@@ -1,13 +1,15 @@
 import { Type } from '@angular/core';
 import { Fight } from '../panels/fight';
 import { Fights } from '../panels/fights';
+import { MapTab } from '../panels/map';
+import { Quests } from '../panels/quests';
+import { RecordTab } from '../panels/record';
 
 /**
  * The drawer's tabs, in order. Wide screens show them as tabs on the right.
- * Phones have a bar at the bottom: Story, Party, the tabs marked `bar`, and
- * More, which opens the rest with a row of chips to switch among them. The
- * bar holds five buttons at most (Story, Party, Map, Fight, More, once
- * session 4 adds the Map; More then holds Fights, Quests and Record).
+ * Phones have a bar at the bottom: Story, Party, the tabs marked `bar` (Map
+ * and Fight), and More, which opens the rest (Fights, Quests, Record) with a
+ * row of chips to switch among them. The bar holds five buttons at most.
  *
  * A tab is one standalone component in `panels/`, reading `TableStore`, and
  * one entry here. The drawer, the phone's bottom bar and the unread marks
@@ -27,12 +29,24 @@ export interface DrawerTab {
 
 export const DRAWER_TABS: DrawerTab[] = [
   {
+    id: 'map', label: 'Map', icon: ['M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z', 'M9 4v14M15 6v14'],
+    component: MapTab, bar: true,
+  },
+  {
     id: 'fight', label: 'Fight', icon: ['M5 19L19 5M14 5h5v5M5 5l14 14M5 14v5h5'],
     component: Fight, bar: true,
   },
   {
     id: 'fights', label: 'Fights', icon: ['M6 21V4h12l-2.5 4L18 12H6'],
     component: Fights,
+  },
+  {
+    id: 'quests', label: 'Quests', icon: ['M7 3h10v18l-5-4-5 4z'],
+    component: Quests,
+  },
+  {
+    id: 'record', label: 'Record', icon: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h5'],
+    component: RecordTab,
   },
 ];
 

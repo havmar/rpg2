@@ -61,7 +61,7 @@ export class Ui {
     if (typeof window !== 'undefined' && this.narrow()) window.scrollTo({ top: 0 });
   }
 
-  /** Back to the story, at the pause (the picker, from session 4). */
+  /** Back to the story, at the pause picker (#pause). */
   openPause(): void {
     this.view.set('story');
     setTimeout(() => document.getElementById('pause')?.scrollIntoView({ block: 'start' }), 30);

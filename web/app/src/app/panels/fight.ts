@@ -110,7 +110,8 @@ const ROUND = /^Round (\d+)(?:-(\d+))?:/;
     .log { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .half { padding-bottom: 10px; }
     .block { overflow-x: auto; }
-    .ln { display: block; min-height: 1.45em; }
+    /* a line past 40 columns (the engine prints a few) wraps in place, hanging, rather than pan */
+    .ln { display: block; min-height: 1.45em; white-space: pre-wrap; overflow-wrap: anywhere; padding-left: 2ch; text-indent: -2ch; }
     .round > summary { cursor: pointer; list-style: none; min-height: 40px; display: flex; align-items: center; border-bottom: 1px solid var(--rule); }
     .round > summary::-webkit-details-marker { display: none; }
     .round > summary::before { content: ""; flex: none; width: 0; height: 0; margin-right: 8px; border-style: solid; border-width: 5px 0 5px 7px; border-color: transparent transparent transparent var(--ink-3); transition: transform .15s; }

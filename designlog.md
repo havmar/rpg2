@@ -8988,3 +8988,97 @@ bar's buttons and the story's buttons at least 44px tall (the bar's
 60px); the read-only and no-db fallbacks. The screenshots at 412 and 360
 were read by eye in both themes. The Python suite is untouched:
 `python -m unittest discover -p "test_*.py"` **1350 OK**.
+
+## 2026-09-25 (D) — The player's page, session 4: the pause picker, the map, the rest of the tabs
+
+The fourth of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`):
+everything rpg2-specific on the page, and the full e2e. The page now
+carries the one mid-fight decision as a structured move, and shows every
+player-facing ui surface.
+
+### What shipped
+
+- **The pause picker** (`web/app/src/app/panels/pause.ts`, in the
+  Story's `#pause`): the pause menu as data (trips, facing, each hero's
+  HP / STA / Power, penalties, conditions, wounds, potions), Fight on
+  with at most one action chip per hero or Retreat with an optional
+  blink / smoke, a summary line in the player's words, Send, "Sent.
+  Waiting on the DM.", and the exact menu in a fold.
+- **The Map** (`panels/map.ts`): an SVG of `game/map.rows` with the
+  party's `@`, the jobs' `!` and the axes every 5; a tap names the
+  square; the HERE, land, known-places and holdings blocks; "Text map"
+  as `ui/map.txt`. **Quests** (`panels/quests.ts`) and **Record**
+  (`panels/record.ts`). The **level-up** block on the Party tab. The
+  **option chips** under an `options:` display (`model.optionChoices`).
+  `data-paused` / `data-over` dressed. Unread marks for map, quests and
+  record. The bar is five: Story, Party, Map, Fight, More.
+- **`web/e2e.mjs`** in eleven parts (below). **`test_page.py`** +1: the
+  pause view offers exactly what `pause_menu_data` does.
+- **Docs**: `web/README.md` (the tabs, the pause picker, the e2e,
+  "Adding to the page" with the pause as the worked move); develop.md's
+  `web/` and `test_page.py` entries and the dev map; plan.md's arc entry;
+  `page-plan.md`'s "Session 4 notes / deviations".
+
+### The calls the build settled
+
+- **The picker can only build what the session would play.** Its chips
+  come from `pause.options` alone, whose `heroes` are the session's own
+  per-hero verdicts (`pause_action_refusal`, the gate
+  `check_pause_actions` applies); a Fate pause offers no action. A picker
+  move `pause_args` refuses therefore means the save moved after the
+  publish -- which `pause_args` answers as it should.
+- **A sent choice can be changed** ("Change it"): the newer pause move
+  supersedes the older, which `page.py moves` already reported. The plan
+  had the picker stop at "Sent"; one mis-tap at the game's one real
+  decision should not need words to undo.
+- **No fight id, no Send**: with `pause.fight` null (the paused fight
+  not yet published) the picker shows the menu and asks for the call in
+  words, as the store would refuse the move anyway.
+- **A new fight turns the Fight tab to it.** The tab kept whichever fight
+  a card last opened; looking at it then cleared the new fight's mark
+  without showing the fight.
+- **Chips only where they can be used**: the Story's latest turn, while
+  the player can answer. The chronicle keeps the display alone.
+- **The fight log never pans**: a line the engine printed past 40
+  columns wraps in place with a hanging indent, the words untouched.
+  Such lines exist -- a lost fight's closing carries the site's "Ahead:
+  ..." summary at 123 columns and a few more at 41-54 -- an engine gap
+  against writing.md's 40 columns, left for a later session.
+- **The map's words are the legend's**: a square reads `COORD --
+  GROUND.` (sea, land, mtns, river; a settlement's square is land), then
+  the party, a job's site, and every known place there with its kind and
+  land. Squares are about 12px on a 412 phone -- below a thumb by
+  nature -- so the text map and the printed blocks carry every fact the
+  drawing does, and the grid takes the arrow keys.
+- **Wide screens open the drawer on the Map**, now the first tab.
+- **Game over greys the page** (`.zones` in grayscale) beside the closed
+  answer box.
+
+### Verification
+
+`cd web/app && npx ng build && node ../build-artifact.mjs` green: `main.js`
+about 229 kB raw (62 kB transferred), `styles.css` 7 kB, no stray bundle.
+`node web/e2e.mjs` all ok, 212 checks in under a minute, on seed 5 under a
+temp `RPG2_HOME`: the opening's option chips filling the box and sending
+nothing; the session 3 loop; a job taken (`take q01`): the Map's 540
+squares, the `@` on `game/state.coord` over the grid's own glyph, taps
+naming the party's square and a city, the `!`, the text map equal to
+`ui/map.txt`, none of the 9 unknown settlements anywhere in
+`/__db/dump`, the Quests card and its printed lines inside `map.txt`,
+the Record's sections and `ui/history.txt`, the Map's mark; a level
+crossed (`award`): the level-up menu as printed, "Mansur reaches level
+2."; a troll that pauses the party (found on copies of the home): the
+Fight and More marks, cleared by looking and kept over a reload, "To the
+pause", a tampered move (Mansur, vanish) REFUSED by `page.py moves` and
+answered in the fiction with the pause still standing, the picker
+offering exactly the menu's heroes (heal to the potion carriers), one
+action a hero, the move in `moves/` with the paused id and its known
+fields only, `page.py moves` printing `python session.py resume --heal
+Mansur`, played, the second half published (`continues`), the picker and
+`data-paused` gone, both halves on the page and together equal to
+`ui/fight-short.txt`; every tab without side scroll or a clipped display
+at 412 and 360, light and dark; the five 48px+ bar buttons; mid and wide;
+the marks with storage blocked; the fallbacks; game over over a dead PC
+(`data-over`, the box closed). The screenshots at 412 and 360 were read
+by eye in both themes. `python -m unittest discover -p "test_*.py"`
+**1351 OK** (1350 + the one pause-view test).

@@ -22,8 +22,11 @@ export class Unread {
     const fights = s.fights();
     return {
       party: sign(s.party()),
+      map: sign(s.map()),
       fight: s.state()?.lastFight ?? '',
       fights: fights.length ? `${fights.length}:${fights.at(-1)!.id}` : '',
+      quests: sign(s.quests()),
+      record: sign(s.record()),
     };
   });
 

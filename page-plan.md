@@ -662,6 +662,24 @@ Add to `test_page.py`:
 
 The full e2e is all ok and the screenshots are reviewed at 412 and 360. All touched Python suites pass, and the full discover run matches or exceeds the last count.
 
+
+### Session 4 notes / deviations (2026-09-25, as built)
+
+Read these before Session 5; designlog 2026-09-25 (D) has the full record.
+
+- **The bar is five**: Story, Party, Map, Fight, More (Fights, Quests, Record). `DRAWER_TABS[0]` is now the Map, so a wide or mid screen with no remembered tab opens the drawer on the Map (it used to be the Fight). The component classes are `MapTab` and `RecordTab` (a class named `Record` would shadow the `Record<...>` type in `tabs.ts`).
+- **The picker** (`panels/pause.ts`, inside `#pause`) builds its chips from `game/state.pause.options` alone: an action chip for each hero an option's `heroes` names, none at Fate; blink / smoke for the option's `hero`. Its move passes `cleanBody`, `clean_move` and `pause_args` (the e2e plays it through `page.py moves` to `resume`). **Two additions to the plan**: "Change it" after a send (a newer pause move supersedes the older, as `page.py moves` already reports), and with `pause.fight` null the picker still shows but Send is off with "The paused fight is not on the page yet. Say your call in the box below." `store.pause` / `store.pauseSent` are the computeds (the pause while the game goes on; the newest unanswered pause move for that fight).
+- **A new fight turns the Fight tab to it** (`app.ts` resets `ui.fight` when `game/state.lastFight` changes). Without it the tab kept the fight a card last opened, and looking at it cleared the new fight's mark.
+- **Option chips** show on the Story's latest turn only, and only while the player can answer (live, writable, not over); the chronicle shows the display alone. `model.optionChoices` parses (`Block.display.options`).
+- **The fight log wraps a line past 40 columns in place** (`white-space: pre-wrap`, hanging indent; the text is untouched, so `.ln` still equals `ui/fight-short.txt`). The engine prints such lines: a lost fight's closing (mercy) carries "Ahead: 2 fight(s) at the roadside camp; the work done pays ..." at 123 columns, "(due day 6 -- ...)" at 46, a PERMANENT wound line at 54, "the beasts leave the party where it fell." at 41. That is an engine gap (the player log should be 40-column wrapped, writing.md) left for a later session; the page does not pan a fight.
+- **The map**: an SVG of `rows` (squares 10 units, ~12.5px on a 412 phone, ~10.5px at 360), `@` and `!` drawn over, axes every 5. A tap names the square: `COORD -- GROUND.` where GROUND is the legend's word (`sea`, `land`, `mtns`, `river`; a settlement's square reads `land`), then "The party is here.", "A job in hand leads here.", then every known place there, `Name (kind, land[, capital])`. The svg takes the arrow keys. The squares are under a thumb's size by nature: the text map, HERE and the known list carry the same facts.
+- **Level-up**: the Party tab's `#levelup` block (the menu open in a fold) and the PC card's "N points to spend"; the player says the buy in words.
+- **Record** empty states are short page words ("No job finished yet.", "Nothing yet.", "Hell is not advertising."); the history as printed is in the fold.
+- **Game over** greys `.zones` (`filter: grayscale(1)`) and the brand; the answer box already said GAME OVER. The e2e kills the PC by editing the home's save at the end of the run (not a copy: nothing follows it).
+- **The e2e** (now eleven parts, 212 checks, under a minute here) finds its pausing foe on copies of `RPG2_HOME` (`PAUSING_FOE`: the first of troll / ogre / bear / wight / champion / giant x1-2 that pauses short of Fate with the PC up and carrying a potion, and whose `resume --heal PC` leaves him alive; the dice are in the save, so the real home repeats it -- seed 5 gives one troll). Seed 5's heroes both carry a healing potion and a draught, so the tampered move falls back to `vanish` for a hero without invisibility 2 (refused by the same checker); the code prefers heal for a hero with no potion when there is one. Screenshots include the picker at 412 / 360, light and dark, as element shots with the bar hidden.
+- **For Session 5's protocol**: the picker is the pause's answer on the page, so dm.md's page-play section should say: publish the paused fight and stop; next turn, `page.py moves` prints the command (or REFUSED, or superseded lines when the player used "Change it"), run exactly that; a REFUSED pause leaves the pause standing and the picker back after the publish. The level-up and every other choice come in words.
+- Test count: `test_page.py` 53 (one added: the pause view offers exactly what `pause_menu_data` does, each hero passing resume's checker).
+
 ---
 
 ## SESSION 5 — The play protocol, docs, and a dress rehearsal

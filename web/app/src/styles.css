@@ -9,6 +9,8 @@
   --ink: #1f1c17; --ink-2: #4f493e; --ink-3: #6d6656;
   --rule: #c9c0ad; --accent: #9a4712; --accent-soft: #f1dfcc; --on-accent: #fffaf3;
   --good: #2c6a38; --hurt: #a3301e; --warn: #845800;
+  /* the map's ground */
+  --sea: #b9d0d4; --land: #e6dcc3; --mtn: #bfa57c; --river: #6f9fb8;
   --prose: Georgia, "Noto Serif", serif;
   --mono: ui-monospace, "Roboto Mono", "Droid Sans Mono", monospace;
   /* 40 columns of a display fit a 360px phone at this size */
@@ -22,6 +24,7 @@
     --ink: #e9e3d5; --ink-2: #b7ae9b; --ink-3: #8c8574;
     --rule: #3a352d; --accent: #e59c4f; --accent-soft: #3a2918; --on-accent: #1a1007;
     --good: #88c48b; --hurt: #f07c68; --warn: #e3b75a;
+    --sea: #1b2c33; --land: #3b352a; --mtn: #62523a; --river: #3d7390;
   }
 }
 :root[data-theme="dark"] {
@@ -30,6 +33,7 @@
   --ink: #e9e3d5; --ink-2: #b7ae9b; --ink-3: #8c8574;
   --rule: #3a352d; --accent: #e59c4f; --accent-soft: #3a2918; --on-accent: #1a1007;
   --good: #88c48b; --hurt: #f07c68; --warn: #e3b75a;
+  --sea: #1b2c33; --land: #3b352a; --mtn: #62523a; --river: #3d7390;
 }
 @media (max-width: 380px) { :root { --mono-size: 12.5px; } }
 
@@ -104,6 +108,12 @@ details[open] > summary::before { transform: rotate(90deg); }
 .page { padding: 28px 40px 60px; display: flex; flex-direction: column; gap: 28px; min-width: 0; }
 .notice { max-width: 60ch; }
 .notice p { color: var(--ink-2); line-height: 1.6; }
+
+/* a fight stands paused: the story wears the accent until it is answered */
+:root[data-paused] rpg-story .scene { border-left: 3px solid var(--accent); padding-left: 14px; }
+/* the game is over: the page goes grey, the answer box says GAME OVER */
+:root[data-over] .zones { filter: grayscale(1); }
+:root[data-over] .brand { color: var(--ink-3); }
 
 /* the bottom bar: phones only */
 .bottom { display: none; }

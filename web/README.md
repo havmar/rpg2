@@ -6,9 +6,8 @@ store and answered through it. It is a port of dream's `web/` page and its
 keeper's-turn protocol; `page-plan.md` is the build contract (section 2, the
 data contract, and each shipped session's notes). Section 1 of this file is
 the Python half, which works from the terminal; section 2 is the page itself
-(`web/app/`, the build, the local server, the e2e). The pause picker, the
-Map, Quests and Record tabs arrive with the arc's session 4, and dm.md's
-page-play section with session 5.
+(`web/app/`, its tabs, the pause picker, the build, the local server, the
+e2e). dm.md's page-play section arrives with the arc's session 5.
 
 ## 1. The Python half
 
@@ -135,8 +134,9 @@ web/
                             fight on show, words for the answer box (prefill)
     src/app/unread.ts       the unread marks, per viewer in localStorage
     src/app/panels/         story, prose (the turn's blocks: paragraphs,
-                            displays, fight cards in place), answer,
-                            chronicle, party, fight, fights, fight-chip
+                            displays, option chips, fight cards in place),
+                            pause (the picker), answer, chronicle, party,
+                            map, fight, fights, fight-chip, quests, record
     src/app/drawer/         the drawer; tabs.ts lists its tabs
     src/styles.css          the tokens (one palette, light and dark), the
                             layout, the .display class (40 columns, mono)
@@ -160,12 +160,72 @@ folded with the newest open, lines coloured by what they say and never
 reworded. A second half shows its paused first half above it, folded.
 
 On a phone (the target: Android at about 412px, 360px the floor) the
-bottom bar is Story, Party, Fight and More, and More opens the other tabs
-(today Fights) with a row of chips. A tab's `bar` flag in
-`src/app/drawer/tabs.ts` gives it a button of its own; session 4 adds the
-Map as the fifth. Chrome copy is ASCII, in writing.md's display register;
+bottom bar is Story, Party, Map, Fight and More, and More opens Fights,
+Quests and Record with a row of chips. A tab's `bar` flag in
+`src/app/drawer/tabs.ts` gives it a button of its own; five is the most
+the bar holds. Chrome copy is ASCII, in writing.md's display register;
 separators are drawn with CSS. Fonts are system stacks, with no external
 host.
+
+### The tabs
+
+- **Story** (the page's middle zone): the DM's last turn, the player's
+  words it answered, the pause picker while a fight stands paused, the
+  answer box, the chronicle. An `options:` display (a fenced block whose
+  first line starts `options:`; wrapped lines are joined and the rest
+  split on ", ") carries a chip per option: a tap puts the words in the
+  answer box and focuses it, and never sends. Chips show only on the
+  latest turn and only while the player can answer.
+- **Party**: a card per hero (the sheet's numbers drawn, the block as
+  printed), the whole `ui/party.txt`; while the PC has points banked, the
+  level-up menu as printed on top ("Say what to spend them on." -- the
+  player says it in words, the DM plays `levelup` / `train` / `learn`).
+- **Map**: the 30 x 18 grid drawn from `game/map.rows` (sea, land,
+  mountains, river; the settlement letters), the party's `@` and the
+  jobs' `!` laid over it, the axes every 5. A tap names the square in the
+  legend's words and the known places ("R06C05 -- land. London (city,
+  Phyrascia, capital)."); the arrow keys move the pick. Below it the HERE
+  block, the land, the known places and the holdings as printed; "Text
+  map" shows `ui/map.txt` exactly. Wide screens open the drawer on it.
+- **Fight**: the fight as the player log, block by block, the rounds
+  folded with the newest open; a line the engine printed past 40 columns
+  wraps in place, hanging, and is never reworded. A new fight turns the
+  tab to it. **Fights**: every fight, newest first.
+- **Quests**: a card per job in hand (sites with how far the party got,
+  the road, the due day and its note, a delivery's cargo and
+  destination, the job as `ui/map.txt` prints it); "No job in hand."
+- **Record**: QUESTS DONE and REMARKABLE (newest first), THE TALLY OF
+  SIN and SUGGESTIONS as `ui/history.txt` has them, the whole page in a
+  fold.
+
+Each tab carries an unread mark when its document changed since this
+viewer last had it in front of them (`unread.ts`, a signature per tab,
+kept per viewer in localStorage; without storage the marks last for the
+visit). `data-paused` on `:root` puts the accent on the Story while a
+fight stands paused; `data-over` greys the page, and the answer box says
+GAME OVER.
+
+### The pause picker
+
+`panels/pause.ts`, in the Story above the answer box while
+`game/state.pause` is set and the game goes on (`id="pause"`; the Fight
+tab's "To the pause" scrolls there). It is the pause menu as data: what
+tripped it, who the party faces, each hero's HP / STA / Power,
+penalties, conditions, wounds and potions. The player picks **Fight on**
+or **Retreat**. Under Fight on, one action chip per hero at most, and only
+the actions `pause.options` names that hero for (the heroes the session's
+own checker passes); none at a Fate pause. Under Retreat, an optional
+blink or smoke for the one hero the menu names. The summary line is the
+move in the player's words (`moveWords`, as `page.move_words` says it),
+and Send writes `moves/mNNNN` = `{kind: "pause", fight, choice, actions |
+escape + hero}` with the paused fight's published id -- the store sends
+none without one. Sent, it says "Sent. Waiting on the DM." with the
+words; "Change it" sends a newer choice, which supersedes the first
+(`page.py moves` plays only the newest). With `pause.fight` null (the
+paused fight not published) Send stays off and the player says it in
+words. The exact menu as printed sits in a fold. The keeper never obeys
+the move: `page.py moves` prints the command (`python session.py resume
+--heal Mansur`) or the refusal, and the DM runs only what it printed.
 
 ### Build
 
@@ -224,20 +284,42 @@ question to the DM waiting in the chronicle, the keeper's turn (`page.py
 moves`, a pinned batch, `--sent`, the same batch refused twice, the
 transcript gaining the turn), a fight placed by `[fight]` between two
 displays whose Fight tab is `ui/fight-short.txt` line for line, the party
-cards and the whole sheet as `ui/party.txt`, no side scroll and every
-display unclipped at 412 and 360, the bottom bar's thumb-sized buttons,
-mid and wide widths, light and dark, and the read-only and no-db
-fallbacks. Screenshots go to `DIR/shots`.
+cards and the whole sheet as `ui/party.txt`; the options chips filling the
+box and sending nothing; a job taken (`take`): the Map's 540 squares, the
+`@` on `game/state.coord`, a tap naming the square, the `!`, the text map
+as `ui/map.txt`, no unknown settlement anywhere in the store, the Quests
+card and the Record as `ui/history.txt`; a level crossed (`award`): the
+level-up menu and "NAME reaches level N." in the chronicle; a real paused
+fight (a foe the save's own dice pause against, found on copies of the
+home): the Fight and More marks, cleared by looking and remembered over a
+reload, the picker offering only what the menu does, a tampered pause
+move REFUSED and answered in the fiction, the player's heal and fight on
+printed by `page.py moves` as the resume command, played, and its second
+half published with both halves equal to `ui/fight-short.txt`; no side
+scroll and every display unclipped at 412 and 360 on every tab, the five
+thumb-sized bar buttons, mid and wide widths, light and dark, the marks
+with storage blocked, the read-only and no-db fallbacks; and game over
+(`--status ended` over a dead PC): `data-over`, the box closed.
+Screenshots go to `DIR/shots`.
 
 ### Adding to the page
 
 - **A drawer tab**: one standalone component in `src/app/panels/`, reading
   `TableStore`, and its entry in `src/app/drawer/tabs.ts`; give it a
   signature in `unread.ts` for its mark. The phone's bar is five buttons at
-  most.
+  most, and it is full (Story, Party, Map, Fight, More): a new tab goes
+  under More. Name the component class so it does not shadow a global
+  (`MapTab`, `RecordTab`: `tabs.ts` uses `Record<...>`).
 - **A document or collection**: a reader in `model.ts` (fall back, never
   cast), then one line in `store.ts`: `readonly x = this.doc('game/x',
   readX)`. It is subscribed once, at connect.
-- **A move of a new kind**: `MoveBody` and `cleanBody` in `model.ts`,
-  `MOVE_KINDS` and `clean_move` in `page.py`, and a checker like
-  `pause_args` that raises `MoveRefused`.
+- **A move of a new kind** (the pause is the worked example): `MoveBody`,
+  `cleanBody` and `moveWords` in `model.ts`; `MOVE_KINDS`, `clean_move`
+  and `move_words` in `page.py`, whole or nothing alike; a checker like
+  `pause_args` that goes through the session's own gate (as
+  `check_pause_actions` / `check_escape` are `resume`'s and `retreat`'s)
+  and raises `MoveRefused`; its line in `moves_report`; the data the page
+  needs to build only valid moves, projected from the same gate (as
+  `pause_menu_data`'s `heroes`); and a guard in `TableStore.send` if the
+  move answers one standing thing. Test the page's move through the
+  Python in the e2e, not only each side alone.

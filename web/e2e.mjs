@@ -13,7 +13,9 @@
  *   1. the opening: an opening scene with an options display goes out with
  *      publish.py --all; its batch seeds the fake store (web/dev/serve.mjs)
  *      and the phone shows the prose, the display in mono, the day and the
- *      place in the header, "Your move" and the answer box as the PC;
+ *      place in the header, "Your move" and the answer box as the PC; the
+ *      options display carries chips, and a chip fills the box and sends
+ *      nothing;
  *   2. two moves, one in the game and one to the DM: both wait in the
  *      chronicle, and land in moves/ as m0001 and m0002;
  *   3. the keeper's turn: moves and game/state read with their versions,
@@ -27,10 +29,28 @@
  *      Fights list has it;
  *   5. the party: a card for the PC and the companion, and the whole sheet
  *      as printed is ui/party.txt;
- *   6. the layout: no side scroll at 412 and 360, the bottom bar fits and
- *      its targets are thumb-sized; screenshots at phone (light and dark),
- *      small, mid and wide;
- *   7. the fallbacks: a read-only viewer, and a page with no db.
+ *   6. a job taken (session.py take): the Map (540 squares, the party's @
+ *      on game/state's coord, a tap naming the square, the job's !, the
+ *      text map as ui/map.txt, no unknown settlement anywhere in the
+ *      store), the Quests card (sites, due day, the job as map.txt prints
+ *      it) and the Record (its sections; the history as ui/history.txt);
+ *      the Map's unread mark;
+ *   7. a level crossed (session.py award): the Party tab's level-up menu,
+ *      and "NAME reaches level N." in the chronicle;
+ *   8. a paused fight (a foe the save's own dice pause against, found on a
+ *      copy of the home): the Fight and More marks, cleared by looking and
+ *      remembered over a reload; the picker offering only what the menu
+ *      does; a tampered pause move REFUSED by page.py moves and answered
+ *      in the fiction; the player's heal and fight on sent from the picker,
+ *      printed by page.py moves as the resume command, played, and its
+ *      second half published: the picker gone, both halves on the page;
+ *   9. the layout: no side scroll at 412 and 360, every display unclipped,
+ *      the bottom bar's five thumb-sized buttons; screenshots at phone
+ *      (light and dark), small, mid and wide; the marks with storage
+ *      blocked;
+ *  10. the fallbacks: a read-only viewer, and a page with no db;
+ *  11. game over: the PC killed in the save, published --status ended:
+ *      data-over, the answer box closed, no picker.
  *
  * Screenshots land in DIR/shots (DIR defaults to a fresh temp directory).
  */
@@ -82,6 +102,19 @@ const TURN = `Habiba points up the coast road. "Past the second milestone," she 
 The road is quiet. The trees are close on both sides.
 
 (Out of the game: the next town is two days along the coast road.)`;
+const TAKEN = `You tell Habiba you will clear the road. She marks the camp on your map.
+
+\`\`\`
+  job taken: Bandits on the Road
+\`\`\``;
+const LEVEL = `Yusuf counts the coin from the last caravan twice. Word of the wolves has gone ahead of you.`;
+const REFUSED = `NAME reaches for a flask. There is no such flask in the pack. The fight holds its breath a moment longer.`;
+const CONTINUED = `You pull the cork with your teeth and drink.
+
+[fight]
+
+The road is quiet again.`;
+const OVER = `The last blow lands. The road goes dark.`;
 const FIGHT = `Two wolves come out of the olive trees, low and fast.
 
 \`\`\`
@@ -96,6 +129,54 @@ const FIGHT = `Two wolves come out of the olive trees, low and fast.
 \`\`\`
 
 The road is clear again.`;
+
+// ---------------------------------------------------------------- the Python helpers
+/** The settlement slots the party does not know, bar names public anyway (test_page's rule). */
+const UNKNOWN_PLACES = `
+import json, session
+s = session.load()
+w = s["world"]
+slots = w["settlement_slots"].values()
+public = {x["name"] for x in slots if x["known"]}
+public |= {land["name"] for land in w["lands"].values()} | {h.name for h in s["party"]}
+print(json.dumps(sorted({x["name"] for x in slots if not x["known"] and x["name"]} - public)))
+`;
+
+/**
+ * A foe the save's own dice pause the party against, found on copies of
+ * RPG2_HOME (the dice live in the save, so the real home repeats the copy):
+ * the fight pauses (not at Fate), the PC stands with a healing potion, and
+ * resume --heal PC leaves him alive. Prints the fight's argv after "fight".
+ */
+const PAUSING_FOE = `
+import json, os, shutil, subprocess, sys, tempfile
+home = os.environ["RPG2_HOME"]
+def run(h, *argv):
+    env = dict(os.environ, RPG2_HOME=h)
+    subprocess.run([sys.executable, "session.py", *argv], env=env, capture_output=True, text=True, check=True)
+def load(h):
+    with open(os.path.join(h, "save.json")) as f:
+        return json.load(f)
+for kind in ("troll", "ogre", "bear", "wight", "champion", "giant"):
+    for n in ("1", "2"):
+        t = tempfile.mkdtemp()
+        try:
+            shutil.copy(os.path.join(home, "save.json"), t)
+            os.makedirs(os.path.join(t, "ui"))
+            run(t, "fight", n, "--type", kind)
+            s = load(t)
+            pc, p = s["party"][0], s.get("pending")
+            if not p or p.get("pause_kind") == "fate" or pc["dead"] or pc["down"] or pc["items"].get("healing", 0) < 1:
+                continue
+            run(t, "resume", "--heal", pc["name"])
+            s = load(t)
+            if not s["party"][0]["dead"] and not s.get("pending"):
+                print(json.dumps([n, "--type", kind]))
+                sys.exit(0)
+        finally:
+            shutil.rmtree(t, ignore_errors=True)
+sys.exit("no foe paused the party on a copy of the home")
+`;
 
 // ---------------------------------------------------------------- plumbing
 let failures = 0;
@@ -182,6 +263,37 @@ async function shoot(page, name, full = true) {
   await page.screenshot({ path: join(shots, `${name}.png`), fullPage: full });
 }
 
+/** The keeper's read: moves (list) and game/state (get), with their versions. */
+async function keeperRead() {
+  const read = join(pub, 'read');
+  await mkdir(read, { recursive: true });
+  const moves = join(read, 'moves.json');
+  const state = join(read, 'state.json');
+  await writeFile(moves, JSON.stringify(server.store.list('moves'), null, 2));
+  await writeFile(state, JSON.stringify(server.store.get('game/state'), null, 2));
+  return { moves, state, report: python('page.py', 'moves', moves, '--state', state) };
+}
+
+/** A batch posted to the fake store as ArtifactData would take it, then --sent. */
+async function land(batch, what) {
+  const res = await fetch(new URL('__db/batch', server.url), { method: 'POST', body: JSON.stringify(batch) });
+  check(res.ok, `${what} lands`);
+  python('publish.py', '--sent');
+}
+
+/** A keeper's turn with no moves to answer: the prose, pinned by the state read. */
+async function turnOf(prose, what, extra = []) {
+  const { state } = await keeperRead();
+  await land(await publish(prose, ['--state', state, ...extra]), what);
+}
+
+/** Whether a bottom-bar button carries its unread mark. */
+const barMarked = (page, name) => page.locator('nav.bottom').getByRole('button', { name: new RegExp(`^${name}\\b`) })
+  .locator('.unread').count().then((n) => n > 0);
+
+/** An element's screenshot without the phone's fixed bar laid across it. */
+const NO_BAR = 'nav.bottom { display: none !important; }';
+
 const text = (page, sel) => page.locator(sel).first().innerText();
 const fileLines = async (path) => (await readFile(path, 'utf8')).replace(/\n$/, '').split('\n');
 
@@ -219,6 +331,20 @@ try {
   await noSideScroll(phone, 'phone, story');
   await displaysFit(phone, 'phone, story');
   await shoot(phone, 'phone-light-opening');
+
+  const opts = phone.locator('rpg-story .options .opt');
+  const optWords = await opts.allInnerTexts();
+  check(optWords.join('|') === 'take the road job|the board|the tavern|camp|travel',
+    `the options display carries its choices as chips (${optWords.join('|')})`);
+  check(await phone.locator('rpg-story .options').count() === 1, 'only the options display has chips');
+  await opts.nth(2).click();
+  await phone.waitForFunction(() => document.querySelector('#move')?.value === 'the tavern');
+  check(true, 'a chip puts its words in the answer box');
+  await phone.waitForFunction(() => document.activeElement?.id === 'move', null, { timeout: 3000 }).catch(() => null);
+  check(await phone.evaluate(() => document.activeElement?.id) === 'move', 'and the box has the focus');
+  await phone.waitForTimeout(300);
+  check(server.store.list('moves').length === 0, 'a chip never sends: moves/ is still empty');
+  await phone.fill('#move', '');
 
   // ---------------------------------------------------------------- 2. two moves
   console.log('2. two moves');
@@ -331,16 +457,243 @@ try {
   await displaysFit(phone, 'phone, party');
   await shoot(phone, 'phone-light-party');
 
-  // ---------------------------------------------------------------- 6. the layout
-  console.log('6. the layout');
+  // ---------------------------------------------------------------- 6. a job: the map, the quests, the record
+  console.log('6. a job taken: the map, the quests, the record');
+  const qid = python('-c', 'import session; print(session.load()["world"]["opening_quest"])').trim();
+  python('session.py', 'take', qid);
+  await turnOf(TAKEN, 'the job turn');
+  await phone.locator('.line rpg-party').waitFor();
+  await phone.waitForFunction(() => document.querySelector('nav.bottom')?.textContent?.includes('Map'));
+  await phone.waitForTimeout(200);
+  check(await barMarked(phone, 'Map'), 'the Map is marked once its document changes');
+  await phoneTab(phone, 'Map');
+  await phone.locator('rpg-map svg.grid').waitFor();
+  await phone.waitForTimeout(200);
+  check(!(await barMarked(phone, 'Map')), 'looking at the Map clears its mark');
+  const st = server.store.get('game/state');
+  const mapDoc = server.store.get('game/map');
+  check(await phone.locator('rpg-map rect[data-coord]').count() === 540, 'the map is 540 squares (30 by 18)');
+  check((await phone.locator('rpg-map g.party').getAttribute('data-mark')) === `party ${st.coord}`, `the @ stands on game/state's coord (${st.coord})`);
+  const glyph = await phone.locator(`rpg-map rect[data-coord="${st.coord}"]`).getAttribute('data-glyph');
+  const [r0, c0] = st.coord.match(/\d+/g).map(Number);
+  check(glyph === mapDoc.rows[r0 - 1][c0 - 1], `the square under the @ is the grid's own (${glyph})`);
+  check(mapDoc.objectives.length > 0 && await phone.locator('rpg-map g.job').count() === mapDoc.objectives.length, `the job's site is marked (${mapDoc.objectives.join(', ')})`);
+  const city = mapDoc.places.find((p) => p.kind === 'city' && !mapDoc.places.some((q) => q !== p && q.coord === p.coord));
+  const cityGlyph = mapDoc.rows[Number(city.coord.slice(1, 3)) - 1][Number(city.coord.slice(4, 6)) - 1];
+  await phone.locator(`rpg-map rect[data-coord="${city.coord}"]`).click();
+  await phone.waitForFunction((c) => document.querySelector('#map-said')?.textContent?.startsWith(c), city.coord);
+  const cityWords = await text(phone, '#map-said');
+  check(cityWords === `${city.coord} -- land. ${city.name} (city, ${city.land}${city.capital ? ', capital' : ''}).` && cityGlyph === 'C',
+    `tapping a city names it: ${cityWords}`);
+  await phone.locator(`rpg-map rect[data-coord="${st.coord}"]`).click();
+  await phone.waitForFunction((c) => document.querySelector('#map-said')?.textContent?.startsWith(c), st.coord);
+  const named = await text(phone, '#map-said');
+  check(named.startsWith(`${st.coord} -- `) && named.includes('The party is here') && named.includes('Sidi Farhan (village, Umaia)'),
+    `tapping the party's square names it: ${named}`);
+  await noSideScroll(phone, 'phone, map');
+  await displaysFit(phone, 'phone, map');
+  await shoot(phone, 'phone-light-map');
+  await phone.click('#map-toggle');
+  const mapText = await phone.locator('#map-text').textContent();
+  check(mapText === (await fileLines(join(home, 'ui', 'map.txt'))).join('\n'), 'the text map is ui/map.txt exactly');
+  await displaysFit(phone, 'phone, text map');
+  await shoot(phone, 'phone-light-map-text');
+  await phone.click('#map-toggle');
+  const unknown = JSON.parse(python('-c', UNKNOWN_PLACES));
+  const dump = JSON.stringify(await (await fetch(new URL('__db/dump', server.url))).json());
+  const leaked = unknown.filter((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(dump));
+  check(unknown.length > 0 && leaked.length === 0, `no unknown settlement is anywhere in the store (${unknown.length} unknown${leaked.length ? `; leaked: ${leaked.join(', ')}` : ''})`);
+
+  await phoneTab(phone, 'Quests');
+  const card = phone.locator(`rpg-quests [data-quest="${qid}"]`);
+  await card.waitFor();
+  const quest = server.store.get('game/quests').quests[0];
+  const cardText = await card.innerText();
+  check(cardText.includes(quest.name) && quest.sites.length > 0 && quest.sites.every((s) => cardText.includes(s.name) && cardText.includes(s.mark)),
+    `the Quests card has ${quest.name} and its sites, with how far the party has got`);
+  check(quest.due !== null && cardText.includes(`day ${quest.due}`) && cardText.includes(quest.note), `and the due day (day ${quest.due}, ${quest.note})`);
+  await card.locator('summary').click();
+  const printedJob = await card.locator('pre.display').textContent();
+  check(printedJob === quest.lines.join('\n') && mapText.includes(printedJob), 'the job as printed is map.txt\'s own lines');
+  await noSideScroll(phone, 'phone, quests');
+  await displaysFit(phone, 'phone, quests');
+  await shoot(phone, 'phone-light-quests');
+
+  await phoneTab(phone, 'Record');
+  await phone.locator('rpg-record [data-section]').first().waitFor();
+  const sections = await phone.locator('rpg-record [data-section] h3').allInnerTexts();
+  check(sections.map((x) => x.toUpperCase()).join('|') === 'QUESTS DONE|REMARKABLE|THE TALLY OF SIN|SUGGESTIONS', `the Record's sections are history.txt's (${sections.join(', ')})`);
+  await phone.locator('rpg-record details.whole summary').click();
+  check((await phone.locator('#record-text').textContent()) === (await fileLines(join(home, 'ui', 'history.txt'))).join('\n'), 'the history as printed is ui/history.txt');
+  check((await phone.locator('rpg-record [data-section="tally"] pre').textContent()) === server.store.get('game/record').tally.join('\n'), 'the tally is printed as the page prints it');
+  await noSideScroll(phone, 'phone, record');
+  await displaysFit(phone, 'phone, record');
+  await shoot(phone, 'phone-light-record');
+
+  // ---------------------------------------------------------------- 7. a level crossed
+  console.log('7. a level crossed');
+  const pcBefore = server.store.get('game/party').members.find((m) => m.isPc);
+  python('session.py', 'award', '0', String(pcBefore.xpNext - pcBefore.xp), pcBefore.name);
+  await turnOf(LEVEL, 'the level turn');
+  await phoneTab(phone, 'Party');
+  await phone.locator('.line #levelup').waitFor();
+  const lu = server.store.get('game/state').levelUp;
+  check(lu?.hero === pc.name && lu.points > 0, `game/state.levelUp: ${pc.name}, ${lu?.points} points`);
+  check((await phone.locator('.line #levelup-menu').textContent()) === lu.text.join('\n'), 'the Party tab shows the spending menu as printed');
+  check((await text(phone, '.line #levelup')).includes('Say what to spend them on.'), 'and asks the player to say what to buy');
+  check(await phone.locator(`.line [data-member="${pc.name}"] .points`).count() === 1, "the PC's card is marked with points to spend");
+  await noSideScroll(phone, 'phone, level-up');
+  await displaysFit(phone, 'phone, level-up');
+  await shoot(phone, 'phone-light-levelup');
+  await phoneTab(phone, 'Story');
+  const level = server.store.get('game/party').members.find((m) => m.isPc).level;
+  check(await phone.locator('rpg-chronicle .entry.level', { hasText: `${pc.name} reaches level ${level}.` }).count() === 1, `the chronicle says "${pc.name} reaches level ${level}."`);
+
+  // ---------------------------------------------------------------- 8. a paused fight
+  console.log('8. a paused fight');
+  const foe = JSON.parse(python('-c', PAUSING_FOE));
+  python('session.py', 'fight', ...foe);
+  check(python('-c', 'import session; print(bool(session.load()["pending"]))').trim() === 'True', `${foe.join(' ')} pauses, as it did on a copy of the home`);
+  await turnOf(`A ${foe[2]} comes out of the olive trees onto the road.\n\n[fight]\n\nThe fight stops for a breath. The call is yours.`, 'the paused fight');
+  const st2 = server.store.get('game/state');
+  const pz = st2.pause;
+  const pausedId = pz?.fight;
+  check(!!pausedId && pausedId === st2.lastFight && server.store.get(`fights/${pausedId}`)?.outcome === 'paused', `game/state.pause.fight is the paused fight (${pausedId})`);
+  await phone.locator('#pause').waitFor();
+  check(await phone.evaluate(() => document.documentElement.dataset.paused) === 'true', ':root carries data-paused');
+  check((await phone.locator('#pause .head').textContent()).startsWith(`PAUSED after round ${pz.round}`), 'the picker says the round');
+  check(await barMarked(phone, 'Fight') && await barMarked(phone, 'More'), 'a new fight marks Fight, and More for Fights');
+  await phoneTab(phone, 'Fight');
+  await phone.locator(`rpg-fight .main[data-fight="${pausedId}"]`).waitFor();
+  await phone.waitForTimeout(200);
+  check(!(await barMarked(phone, 'Fight')) && await barMarked(phone, 'More'), 'looking at the Fight clears its mark; Fights keeps its own');
+  await phone.getByRole('button', { name: 'To the pause' }).click();
+  await phone.locator('#pause').waitFor();
+  check(await phone.locator('.page').isVisible(), '"To the pause" goes back to the story, at the picker');
+  await phone.reload();
+  await phone.locator('#pause').waitFor();
+  await phone.waitForTimeout(300);
+  check(!(await barMarked(phone, 'Fight')) && await barMarked(phone, 'More'), 'a reload remembers what was looked at');
+  await phoneTab(phone, 'Fights');
+  await phone.waitForTimeout(200);
+  check(!(await barMarked(phone, 'More')), 'looking at the Fights clears More');
+  await phoneTab(phone, 'Story');
+
+  // a tampered move: the page would never build it, the keeper refuses it
+  const party2 = server.store.get('game/party').members;
+  const lacks = (h) => (h.healing < 1 ? 'heal' : h.stamina < 1 ? 'drink' : null);
+  let bad = pz.party.map((h) => ({ hero: h.name, action: lacks(h) })).find((b) => b.action);
+  if (!bad) bad = { hero: party2.find((m) => (m.spells.invisibility ?? 0) < 2).name, action: 'vanish' };
+  const seqNow = Math.max(st2.lastSeq, ...server.store.list('moves').map((m) => m.seq)) + 1;
+  const badId = `m${String(seqNow).padStart(4, '0')}`;
+  const badMove = { seq: seqNow, at: Date.now(), kind: 'pause', fight: pausedId, choice: 'fight_on', actions: [bad] };
+  check((await fetch(new URL('__db/write', server.url), { method: 'POST', body: JSON.stringify({ op: 'set', path: `moves/${badId}`, data: badMove }) })).ok,
+    `a tampered pause move is written: ${bad.hero} ${bad.action}`);
+  const badWords = `At the pause: ${bad.hero} ${{ heal: 'drinks a healing potion', drink: 'drinks a stamina draught', vanish: 'vanishes' }[bad.action]}; fight on`;
+  await phone.locator('#pause-sent').waitFor();
+  check((await text(phone, '#pause-sent')) === badWords, 'the picker says a choice is sent, in the words page.move_words uses');
+  const r1 = await keeperRead();
+  const refusedLine = r1.report.split('\n').find((l) => l.startsWith(`${badId} pause REFUSED:`)) ?? '';
+  check(refusedLine.includes(bad.hero) && refusedLine.endsWith('(answer it in the fiction)'), `page.py moves refuses it: ${refusedLine}`);
+  await land(await publish(REFUSED.replace('NAME', bad.hero), ['--moves', r1.moves, '--state', r1.state]), 'the refusal turn');
+  await phone.locator('rpg-story p', { hasText: 'no such flask' }).waitFor();
+  check(server.store.list('moves').length === 0, 'the publish deletes the refused move');
+  check((await phone.locator('rpg-story .yousaid').allInnerTexts()).some((t) => t.includes(badWords)), 'the turn answers it, with its words under the prose');
+  await phone.locator('#pause-fight-on').waitFor();
+  check(server.store.get('game/state').pause?.fight === pausedId, 'the pause still stands, and the picker is back');
+
+  // the picker: only what the menu offers
+  await phone.click('#pause-fight-on');
+  await phone.locator('#pause .hero-acts').first().waitFor();
+  const ACTS = ['drink', 'heal', 'berserk', 'warbreath', 'vanish'];
+  const want = pz.party.map((h) => [h.name, pz.options.filter((o) => ACTS.includes(o.choice) && (o.heroes ?? []).includes(h.name)).map((o) => o.choice)])
+    .filter(([, a]) => a.length);
+  const offered = await phone.locator('#pause .hero-acts').evaluateAll((els) => els.map((el) => [el.dataset.hero, [...el.querySelectorAll('.chip')].map((c) => c.dataset.action)]));
+  check(JSON.stringify(offered) === JSON.stringify(want), `the picker offers only what the menu does (${JSON.stringify(offered)})`);
+  const healers = pz.party.filter((h) => !h.down && h.healing > 0).map((h) => h.name);
+  check(JSON.stringify(offered.filter(([, a]) => a.includes('heal')).map(([h]) => h)) === JSON.stringify(healers), `heal is offered to the potion carriers only (${healers.join(', ')})`);
+  const mine = phone.locator(`#pause .hero-acts[data-hero="${pc.name}"]`);
+  const others = (want.find(([h]) => h === pc.name)?.[1] ?? []).filter((a) => a !== 'heal');
+  if (others.length) {
+    await mine.locator(`.chip[data-action="${others[0]}"]`).click();
+    await mine.locator('.chip[data-action="heal"]').click();
+    check(await mine.locator('.chip[aria-pressed="true"]').count() === 1, 'one action a hero: a second chip replaces the first');
+  } else {
+    await mine.locator('.chip[data-action="heal"]').click();
+  }
+  const pickWords = `At the pause: ${pc.name} drinks a healing potion; fight on`;
+  check((await text(phone, '#pause-summary')) === pickWords, `the summary is the move in words: ${pickWords}`);
+  await phone.click('#pause-retreat');
+  await phone.locator('#pause-escapes').waitFor();
+  check(!(await phone.locator('#pause-actions').count()) && (await text(phone, '#pause-summary')) === 'At the pause: retreat', 'Retreat puts the actions away');
+  await phone.click('#pause-fight-on');
+  await phone.locator('#pause-actions').waitFor();
+  check((await text(phone, '#pause-summary')) === pickWords, 'and Fight on keeps the choice');
+  const tiny = await smallTargets(phone, '#pause button, #pause summary, rpg-prose .opt');
+  check(tiny.length === 0, `the picker's targets are thumb-sized${tiny.length ? ` (${JSON.stringify(tiny)})` : ''}`);
+  await phone.locator('#pause details.fold summary').click();
+  await noSideScroll(phone, 'phone, pause');
+  await displaysFit(phone, 'phone, pause');
+  await phone.locator('#pause').scrollIntoViewIfNeeded();
+  await phone.locator('#pause').screenshot({ path: join(shots, 'phone-light-pause.png'), style: NO_BAR });
+  await shoot(phone, 'phone-light-story-paused');
+  for (const [device, name, scheme] of [[PHONE, 'phone', 'dark'], [SMALL, 'small', 'light'], [SMALL, 'small', 'dark']]) {
+    const page = await open(browser, device, scheme);
+    await page.locator('#pause-fight-on').waitFor();
+    await page.click('#pause-fight-on');
+    await page.locator(`#pause .hero-acts[data-hero="${pc.name}"] .chip[data-action="heal"]`).click();
+    await page.locator('#pause details.fold summary').click();
+    await noSideScroll(page, `${name}, ${scheme}, pause`);
+    await displaysFit(page, `${name}, ${scheme}, pause`);
+    await page.locator('#pause').screenshot({ path: join(shots, `${name}-${scheme}-pause.png`), style: NO_BAR });
+    await page.context().close();
+  }
+  await phone.click('#pause-send');
+  await phone.locator('#pause-sent').waitFor();
+  const sentMoves = server.store.list('moves');
+  const pm = sentMoves[0];
+  check(sentMoves.length === 1 && pm.kind === 'pause' && pm.fight === pausedId && pm.choice === 'fight_on'
+    && JSON.stringify(pm.actions) === JSON.stringify([{ hero: pc.name, action: 'heal' }]), `the move lands in moves/ for ${pausedId}: heal ${pc.name}, fight on`);
+  check(Object.keys(pm).sort().join() === 'actions,at,choice,fight,id,kind,seq,version', 'a pause move carries its known fields only');
+  check((await text(phone, '#pause-sent')) === pickWords && await phone.locator('#move').count() === 1, 'sent: the picker waits on the DM, and the box stays open for words');
+  const r2 = await keeperRead();
+  const cmd = r2.report.split('\n').find((l) => l.startsWith(`${pm.id} pause -> `)) ?? '';
+  check(cmd === `${pm.id} pause -> python session.py resume --heal ${pc.name}`, `page.py moves prints the command: ${cmd}`);
+  const argv = JSON.parse(python('-c', 'import json, shlex, sys; print(json.dumps(shlex.split(sys.argv[1])))', cmd.split(' -> python session.py ')[1]));
+  python('session.py', ...argv);
+  await land(await publish(CONTINUED, ['--moves', r2.moves, '--state', r2.state]), 'the second half');
+  const st3 = server.store.get('game/state');
+  const contId = st3.lastFight;
+  const cont = server.store.get(`fights/${contId}`);
+  check(cont?.continues === pausedId && st3.pause === null, `${contId} continues ${pausedId}; the pause is over`);
+  await phone.locator(`rpg-story .fightchip[data-fight="${contId}"]`).waitFor();
+  await phone.waitForFunction(() => !document.querySelector('#pause'));
+  check(await phone.evaluate(() => document.documentElement.dataset.paused) === undefined, 'the picker is gone, and data-paused with it');
+  check((await text(phone, `rpg-story .fightchip[data-fight="${contId}"]`)).includes('the fight goes on:'), 'the story holds the second half, as the fight going on');
+  check(await phone.locator(`rpg-chronicle .fightchip[data-fight="${pausedId}"]`).count() === 1, 'the chronicle holds the first half');
+  await phone.locator(`rpg-story .fightchip[data-fight="${contId}"]`).click();
+  await phone.locator('rpg-fight details.first').waitFor();
+  await phone.locator('rpg-fight details.first summary').click();
+  const both = [...await phone.locator('rpg-fight .half .ln').allTextContents(), ...await phone.locator('rpg-fight .main .ln').allTextContents()];
+  check(JSON.stringify(both) === JSON.stringify(await fileLines(join(home, 'ui', 'fight-short.txt'))), 'both halves, in order, are ui/fight-short.txt exactly');
+  await noSideScroll(phone, 'phone, second half');
+  await displaysFit(phone, 'phone, second half');
+  await shoot(phone, 'phone-light-second-half');
+  await phoneTab(phone, 'Story');
+
+  // ---------------------------------------------------------------- 9. the layout
+  console.log('9. the layout');
   for (const [page, width] of [[phone, 412]]) {
     const bar = await page.locator('nav.bottom button').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { right: r.right, h: r.height, w: r.width }; }));
-    check(bar.length === 4 && Math.max(...bar.map((b) => b.right)) <= width && bar.every((b) => b.h >= 48 && b.w >= 48),
-      `${width}: the bottom bar is four thumb-sized buttons, and they fit`);
+    check(bar.length === 5 && Math.max(...bar.map((b) => b.right)) <= width && bar.every((b) => b.h >= 48 && b.w >= 48),
+      `${width}: the bottom bar is five thumb-sized buttons, and they fit`);
   }
-  check((await phone.locator('nav.bottom').innerText()).replace(/\s+/g, ' ').trim() === 'Story Party Fight More', 'the bar: Story, Party, Fight, More');
+  check((await phone.locator('nav.bottom').innerText()).replace(/, changed/g, '').replace(/\s+/g, ' ').trim() === 'Story Party Map Fight More', 'the bar: Story, Party, Map, Fight, More');
+  await phoneTab(phone, 'Quests');
+  const moreTabs = (await phone.locator('.drawer .tabs.more button').allTextContents()).map((t) => t.replace(', changed', '').trim());
+  check(moreTabs.join(' ') === 'Fights Quests Record', 'More holds Fights, Quests and Record');
   await phone.locator('nav.bottom').getByRole('button', { name: /^Story/ }).click();
-  const small = await smallTargets(phone, 'rpg-answer button, rpg-fight-chip button, nav.bottom button');
+  const small = await smallTargets(phone, 'rpg-answer button, rpg-fight-chip button, nav.bottom button, rpg-prose .opt');
   check(small.length === 0, `the story's buttons are thumb-sized${small.length ? ` (${JSON.stringify(small)})` : ''}`);
   await phone.context().close();
 
@@ -361,6 +714,22 @@ try {
       await noSideScroll(page, `${name}, ${scheme}, party`);
       await displaysFit(page, `${name}, ${scheme}, party`);
       if (name === 'small') await shoot(page, `${name}-${scheme}-party`);
+      for (const tab of ['Map', 'Quests', 'Record']) {
+        await phoneTab(page, tab);
+        const panel = page.locator(`.drawer rpg-${tab.toLowerCase()}`);
+        await panel.waitFor();
+        for (const fold of await panel.locator('details:not([open]) > summary').all()) await fold.click();
+        await noSideScroll(page, `${name}, ${scheme}, ${tab}`);
+        await displaysFit(page, `${name}, ${scheme}, ${tab}`);
+        await shoot(page, `${name}-${scheme}-${tab.toLowerCase()}`);
+        if (tab === 'Map') {
+          const svg = await page.locator('rpg-map svg.grid').boundingBox();
+          check(svg.x >= 0 && svg.x + svg.width <= device.viewport.width, `${name}, ${scheme}: the drawn map fits the width (${Math.round(svg.width)}px)`);
+          await page.click('#map-toggle');
+          await noSideScroll(page, `${name}, ${scheme}, text map`);
+          await displaysFit(page, `${name}, ${scheme}, text map`);
+        }
+      }
       await page.context().close();
     }
   }
@@ -368,7 +737,7 @@ try {
     for (const scheme of ['light', 'dark']) {
       const page = await open(browser, device, scheme);
       await page.locator('rpg-story rpg-fight-chip').waitFor();
-      check(await page.locator('.drawer rpg-fight').isVisible(), `${name}, ${scheme}: the drawer shows the fight`);
+      check(await page.locator('.drawer rpg-map svg.grid').isVisible(), `${name}, ${scheme}: the drawer opens on the map`);
       if (name === 'wide') check(await page.locator('.line rpg-party').isVisible(), `${name}, ${scheme}: three zones, the party beside the story`);
       else check(!(await page.locator('.line').isVisible()) && await page.getByRole('tab', { name: 'Party' }).isVisible(), `${name}, ${scheme}: the party folds into a tab`);
       await noSideScroll(page, `${name}, ${scheme}`);
@@ -378,8 +747,25 @@ try {
     }
   }
 
-  // ---------------------------------------------------------------- 7. the fallbacks
-  console.log('7. the fallbacks');
+  const blocked = await browser.newContext({ ...PHONE, colorScheme: 'light' });
+  await blocked.addInitScript(() => {
+    for (const name of ['localStorage', 'sessionStorage']) {
+      Object.defineProperty(window, name, { configurable: true, get() { throw new DOMException('blocked', 'SecurityError'); } });
+    }
+  });
+  const nostore = await blocked.newPage();
+  nostore.on('pageerror', (e) => check(false, `storage blocked: no error on the page: ${e.message}`));
+  await nostore.goto(server.url);
+  await nostore.locator('rpg-story rpg-fight-chip').waitFor();
+  await phoneTab(nostore, 'Map');
+  await nostore.locator('rpg-map svg.grid').waitFor();
+  await phoneTab(nostore, 'Fights');
+  await nostore.locator('rpg-fights .row').first().waitFor();
+  check(true, 'storage blocked: the page, its tabs and its marks still work');
+  await blocked.close();
+
+  // ---------------------------------------------------------------- 10. the fallbacks
+  console.log('10. the fallbacks');
   const ro = await open(browser, PHONE, 'light', '?readonly');
   await ro.locator('rpg-story p').first().waitFor();
   await ro.fill('#move', 'This will not land.');
@@ -394,6 +780,23 @@ try {
   check((await text(none, '.top .link')).includes('Not connected'), 'no db: the header says not connected');
   await shoot(none, 'nodb-phone-light');
   await none.context().close();
+
+  // ---------------------------------------------------------------- 11. game over
+  console.log('11. game over');
+  python('-c', 'import json, os; p = os.path.join(os.environ["RPG2_HOME"], "save.json"); s = json.load(open(p)); '
+    + 's["party"][0].update(hp=0, dead=True, down=False); json.dump(s, open(p, "w"))');
+  await turnOf(OVER, 'the last turn', ['--status', 'ended']);
+  check(server.store.get('game/state').over === 'pc_dead' && server.store.get('game/state').status === 'ended', 'game/state: over pc_dead, status ended');
+  const end = await open(browser, PHONE, 'light');
+  await end.locator('rpg-story p', { hasText: 'The road goes dark' }).waitFor();
+  check(await end.evaluate(() => document.documentElement.dataset.over) === 'pc_dead', ':root carries data-over');
+  check((await text(end, 'rpg-answer .closed')) === 'GAME OVER' && !(await end.locator('#move').count()), 'the answer box is closed: GAME OVER');
+  check((await text(end, 'rpg-answer .status')).startsWith('GAME OVER'), 'the status line says GAME OVER');
+  check(!(await end.locator('#pause').count()) && !(await end.locator('rpg-prose .opt').count()), 'no picker and no option chips');
+  const grey = await end.locator('.zones').evaluate((el) => getComputedStyle(el).filter);
+  check(/grayscale/.test(grey), `the page goes grey (${grey})`);
+  await shoot(end, 'phone-light-over');
+  await end.context().close();
 } catch (e) {
   check(false, `the run finished: ${e.stack || e}`);
 } finally {
