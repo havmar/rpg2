@@ -2153,6 +2153,57 @@ a pointer: what the file is, how it's run, where its docs are.
   and the stored sighting; the gate line (which LEADS the page) and the
   dungeon list in `cmd_look`; and `MAP_GATE_LEGEND` under the map's mark
   legend.
+  **THE PLAYER'S PAGE, session 1** (2026-09-25) added the seams `page.py`
+  reads through: **`RPG2_HOME`** (env var, default the repo folder) roots
+  `STATE_PATH` and `UI_DIR`, and `sheet` under any other home writes the
+  pages and commits nothing (`REPO_DIR` is the repo); the pause's checks
+  are ONE set of functions -- `pause_action_refusal` /
+  `check_pause_actions` (what `resume` runs, raising `ValueError` with the
+  line it prints) and `escape_refusal` / `check_escape` (what `retreat`
+  runs, both escapes checked before anything rolls, a blink without
+  teleport 2 now refused there instead of spending the round on an honest
+  retreat); `pause_menu_data` is the menu as data and `print_pause_menu`
+  prints exactly it; and the pages' parts have names --
+  `party_status_lines` (the party sheet's tail), `quest_in_hand_lines` /
+  `quest_site_marks` (the map's quests in hand), `sin_tally_lines` /
+  `hell_suggestions` (the history page's last two sections).
+- `page-plan.md` — **THE PLAYER'S PAGE ARC's build contract** (2026-09-25):
+  a port of dream's claude.ai Artifact page to rpg2 in five serial
+  sessions -- what exists, the architecture calls, the data contract
+  (section 2: the five `game/` singletons, `chronicle/`, `fights/`,
+  `moves/`), and each session's files, tests and docs. A shipped
+  session's section STAYS until the arc closes, with a "notes /
+  deviations" addendum under it, because the later sessions build on
+  it -- read the addenda first; session 5 cuts the file down to a
+  historical note, as gates.md was.
+- `page.py` — **the player's page projection** (2026-09-25, the page arc's
+  session 1; dream's `dreamgame/view.py` adapted). The ONLY road from the
+  save to the page's shared store, so it copies across only what the
+  player-facing surfaces show, by calling the functions they are built
+  from: `player_view(state, *, status, last_seq, latest, check_in,
+  last_fight, pause_fight)` returns the five singletons (`state_view`,
+  `party_view`, `map_view`, `quests_view`, `record_view`), each carrying a
+  `text` equal to its ui page line for line; `chronicle_entry(turn, prose,
+  answered, *, state, fights)` is one DM turn; `clean_move` reads a page
+  move as data (`say` / `ooc` / `pause`, a malformed pause move is no move
+  at all); `pause_args(move, state, *, paused_fight)` returns the
+  `session.py` argv (`["resume", "--heal", "Amina"]`) through session's
+  own checkers or raises `MoveRefused` -- and never runs it. The module
+  docstring lists what never crosses and the calls it made. `import
+  session` at the top; session never imports page at module level.
+- `test_page.py` — **the player's page contract suite, part 1**
+  (2026-09-25): the projection (JSON, under 256 KiB, ASCII, each `text`
+  its ui page), the secrets (no `rng`/`world` key, no untaken posting or
+  its giver, no unknown settlement, no unentered room; the map's places
+  the known slots and the gates, its rows the bare grid), the pause menu
+  printed byte for byte as the old printer (kept in the suite as the
+  witness) for a wounds, a Fate, an every-option and a real troll pause,
+  `pause_args`' argv and refusals (stale fight, Fate with an action,
+  duplicate, unknown or down hero, no potion, no teleport 2, no vial, the
+  substring trap), `resume`/`retreat` refusing with the save untouched,
+  `clean_move`, the chronicle entry, the level-up block, game over, and a
+  whole game under `RPG2_HOME` by subprocess.
+  `python -m unittest -v test_page.py`.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
   potions — the no-resource baseline, whose wipe rate is what ignoring your
@@ -2322,6 +2373,8 @@ python crime.py --seed 1              # the crime catalogue + local marks
 python -m unittest -v test_crime.py   # the crime layer contract
 python -m unittest -v test_history.py # the campaign record + the sin rename
 python -m unittest -v test_start.py   # the start level, the wizard PC, traits
+python -m unittest -v test_page.py    # the player's page: projection, moves
+RPG2_HOME=/tmp/g python session.py new  # a game under another base dir
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default).

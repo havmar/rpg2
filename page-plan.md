@@ -151,7 +151,7 @@ moves/mNNNN       one player move, written by the page, deleted by the keeper
 {
   "fight": "f0003",
   "round": 3,
-  "kind": "wounds",
+  "kind": "normal",
   "trips": "Amina is badly cut up",
   "facing": [{ "name": "Wolf 2", "hp": 3, "maxHp": 6 }],
   "party": [{ "name": "Amina", "down": false, "hpState": "Hurt", "hp": 4, "hpCeiling": 9, "maxHp": 9,
@@ -159,7 +159,7 @@ moves/mNNNN       one player move, written by the page, deleted by the keeper
               "conditions": ["bleeding"], "wounds": ["a deep cut in the forearm (sev 3)"],
               "healing": 1, "stamina": 0 }],
   "options": [
-    { "choice": "fight_on", "label": "fight on", "cost": "..." },
+    { "choice": "fight_on", "label": "fight on", "cost": "fight on" },
     { "choice": "drink",     "heroes": ["Nasir"], "cost": "stamina draught, +3 STA now" },
     { "choice": "heal",      "heroes": ["Amina", "Nasir"], "cost": "healing potion, +5 HP now ..." },
     { "choice": "berserk" }, { "choice": "warbreath" }, { "choice": "vanish" },
@@ -171,9 +171,9 @@ moves/mNNNN       one player move, written by the page, deleted by the keeper
 }
 ```
 
-- `kind` is `"wounds"` or `"fate"`.
+- `kind` is `"normal"` or `"fate"` (the engine's `pause_kind`; corrected in Session 1 -- what tripped the pause is in `trips`).
 - The `berserk`, `warbreath` and `vanish` options appear only when someone qualifies.
-- A `"fate"` pause offers only `fight_on` and `retreat`.
+- A `"fate"` pause offers `fight_on` and `retreat`, and keeps `blink` / `smoke` when someone qualifies: they are retreats, and rules.md lets a clean escape pay Fate at the door (corrected in Session 1).
 - `text` is the exact `print_pause_menu` output, 40-column wrapped, for fidelity.
 - `fight` is set by publish to the id of the published fight that paused.
 - `levelUp` is `null` or `{ "hero": "Nasir", "points": 3, "text": [ ...print_levelup_menu([pc]) lines... ] }`. It is present when the PC has `skill_points > 0`.
@@ -320,10 +320,10 @@ moves/mNNNN       one player move, written by the page, deleted by the keeper
   - Returns `None` unless `kind` is in `MOVE_KINDS = ("say", "ooc", "pause")` and `seq` is a whole number of at least 1.
   - Unknown fields are dropped.
   - `text` is stripped and capped at 2000. Hero names are capped at 40. `actions` holds at most 8 entries, and only known actions survive. `choice`, `escape` and `action` must come from the fixed sets.
-- **`pause_args(move, state) -> list[str]`** returns the `session.py` argv, e.g. `["resume", "--heal", "Amina"]` or `["retreat", "--blink", "Nasir"]`. Otherwise it raises `MoveRefused(reason)`, which is a `ValueError`. It refuses when:
+- **`pause_args(move, state, *, paused_fight) -> list[str]`** returns the `session.py` argv, e.g. `["resume", "--heal", "Amina"]` or `["retreat", "--blink", "Nasir"]`. Otherwise it raises `MoveRefused(reason)`, which is a `ValueError`. It refuses when:
   - no fight is paused;
   - `move.fight` is not the fight that paused (the pause is already over);
-  - it is a Fate pause and the move carries actions or an escape;
+  - it is a Fate pause and the move carries actions (an escape is allowed: see Session 1's notes);
   - a hero is not in the party, not alive, or named twice;
   - a hero fails an item, ability or Power gate. This must use the **same** checker as `cmd_resume` / `cmd_retreat`; see the refactor in Session 1;
   - `blink` is asked without teleport rank 2, or `smoke` without a vial;
@@ -389,6 +389,23 @@ Also run `test_ui_logs.py`, `test_history.py`, `test_start.py`, `test_mercy.py`,
 - The suites pass.
 - `python -c "import session, page, json; print(json.dumps(page.player_view(session.load())))"` works on a fresh `new` inside a temp `RPG2_HOME`.
 - `print_pause_menu` output is unchanged.
+
+### Session 1 notes / deviations (2026-09-25, as built)
+
+Read these before Session 2; designlog 2026-09-25 has the full record.
+
+- **Signatures as built.** `player_view(state, *, status="awaiting_player", last_seq=0, latest=None, check_in=None, last_fight=None, pause_fight=None)`; `state_view` takes the same. `check_in=None` becomes `page.CHECK_IN` ("when you call from Claude Code"), so `publish.py` need not default it. `chronicle_entry(turn, prose, answered=(), *, state, fights=())`. `pause_args(move, state, *, paused_fight)` -- the paused fight's id is **handed in** (the save does not know published ids): Session 2's `page.py moves` passes `game/state.pause.fight` from `--state`. `None` refuses every pause move as stale.
+- **`pause.kind` is `"normal"` or `"fate"`**, not `"wounds"` (section 2 corrected). Each option carries `choice`, `label`, `cost`; action options carry `heroes` (the names that pass the checker right now, possibly empty); `blink` / `smoke` carry `hero` (the menu's one named hero). The session-side dict (`session.pause_menu_data`) is snake_case and also keeps `cmd` (the printed command line) and `crossings`; `page.pause_view` drops `cmd`.
+- **A Fate pause keeps blink and smoke** (section 2 corrected): the old menu printed them at a Fate pause, `retreat` took them, and rules.md (the Fate section: "A CLEAN RETREAT pays it too ... a smoke-vial break, and a rank-2 blink-out alike") says so. `pause_args` refuses only *actions* at Fate.
+- **`clean_move` is whole-or-nothing for `pause`**: a `choice`, `escape` or `action` outside the fixed sets, an action or escape without a hero, `actions` not a list or longer than 8 makes the move `None` ("not a move") rather than dropping the bad part and playing the rest. A `fight_on` move keeps only `actions`; a `retreat` keeps only `escape` + `hero`. `at` is kept when numeric. `seq` must be an int (or an integral float) of at least 1 -- a string seq is not a move. The page's `cleanBody` / `readMove` (Session 3) should mirror this.
+- **The checkers.** `session.check_pause_actions(state, [(flag, name), ...]) -> {Entity: engine action}` (flag words `drink heal berserk warbreath vanish` = `session.PAUSE_ACTIONS`; `warbreath` maps to the engine's `war-breath`) and `session.check_escape(state, how, name) -> Entity` (`session.ESCAPES`), both raising `ValueError(the line resume/retreat prints)`. Per-hero reasons are `pause_action_refusal` / `escape_refusal`; `pause_menu_data`'s `heroes` lists use the same. **One behaviour change**: `retreat --blink HERO` without teleport rank 2 is now refused before anything rolls (it used to log "rank 2 needed" and run the honest retreat, parting blows and all); and both escapes are checked up front. A blink with too little Power is still not refused (the door fails and the honest retreat runs, as the menu prices it).
+- **`pause_args` names heroes by their whole name** (case-insensitive exact match), refuses a name `find_hero`'s substring match would send to another hero, and emits the full `name` in the argv. Session 2's printout must shell-quote names (`shlex.quote`): names can hold spaces.
+- **Extra session refactors** the projection needed, all byte-identical to the pages (tested): `quest_site_marks` + `quest_in_hand_lines` (the map's quests in hand), `sin_tally_lines` + `hell_suggestions` (the history page's last two sections), and `find_hero` now goes through the silent `_hero_named`.
+- **`RPG2_HOME`**: `session.REPO_DIR` is the repo, `session.RPG2_HOME` the base. `sheet` compares the two and, when they differ, prints "UI pages written under ... nothing was committed." Paths stay module constants computed at import; the suites still repoint them (`test_page.sandbox` repoints `STATE_PATH`, `UI_DIR` and all five page paths -- reuse it for Session 2, and compute queue paths from `session.UI_DIR` at call time as planned).
+- **`game/state.over`** is computed from the save (`page.game_over`: all dead -> `wiped`, else the PC dead -> `pc_dead`); `pause` and `levelUp` are `None` once over. `levelUp` is the PC's only (companions autolevel).
+- **Map `places`** are the four gates first (kind `gate ruin` / `gate city`, `capital: false`), then the known slots in `tile_order`, kind = the slot's tier (`hamlet`...`metropolis`); `land` is the tile's country's name. `legend` is parsed from places' three legend strings. `holdings` is `conquest.holdings_lines` wrapped (`[]` with none).
+- **`game/quests`**: `road` is the first `_quest_road_lines` line or `""`; `due` is `deadline_day` (may be `None`); `note` is `deadline_note` for open/work-done jobs. `game/record.quests[].note` is `""` when the record has none; `record` lists stay oldest first (the page reverses).
+- Test count: `test_page.py` 37 tests; the full discover run is in the designlog entry.
 
 ---
 

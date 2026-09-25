@@ -8714,3 +8714,83 @@ Test suite **1297 OK** (1234 before). The paperwork: rules.md's
 Heaven & Hell add-on parts 1, 2, 4 and 5 where the rules changed, dm.md's
 "The gates", develop.md's Files, tunables and the four gates dev-map
 entries, benchlog 2026-09-13.
+
+## 2026-09-25 — The player's page, session 1: the projection
+
+THE PLAYER'S PAGE ARC ports dream's claude.ai Artifact page to rpg2 in five
+serial sessions; `page-plan.md` is the contract (plan.md carries a short
+pointer entry). This session built the Python half's foundation, with no
+web and no publish yet: `page.py`, the session seams it reads through, and
+`test_page.py`.
+
+### What shipped
+
+- **`page.py`**, adapted from dream's `dreamgame/view.py`: `player_view`
+  and the five singletons (`game/state`, `game/party`, `game/map`,
+  `game/quests`, `game/record`), `chronicle_entry`, `clean_move`,
+  `MoveRefused` and `pause_args`. Every document is built by CALLING the
+  functions the ui pages are built from, and each carries a `text` equal
+  to its page line for line, so the page can never show more than
+  party.txt, map.txt and history.txt already do.
+- **`session.py` seams.** `RPG2_HOME` (env var; `REPO_DIR` is the repo)
+  roots the save and `ui/`; `sheet` under another home writes the pages
+  and commits nothing. The pause menu split into `pause_menu_data` plus a
+  printer that prints exactly it -- byte for byte the old menu, tested
+  against a verbatim copy of the old printer. `resume`'s per-hero checks
+  became `pause_action_refusal` / `check_pause_actions`, and `retreat`'s
+  became `escape_refusal` / `check_escape`; both commands print the
+  checker's `ValueError` text, so their messages are unchanged.
+  `party_status_lines` is the party sheet's tail.
+- **`.gitignore`**: `ui/queue/`, `web/out/`, `web/dist/`, `web/app/dist/`,
+  `web/app/.angular/`, `node_modules/`.
+
+### The calls the build settled
+
+- **`pause.kind` is `"normal"` or `"fate"`**, the engine's own
+  `pause_kind`; the plan's `"wounds"` confused the pause's kind with what
+  tripped it (that is `trips`).
+- **A Fate pause keeps blink and smoke.** The plan had a Fate pause refuse
+  any escape; the old menu printed both at Fate, `retreat` took them, and
+  rules.md's Fate section names the smoke-vial break and the blink-out as
+  clean retreats that pay at the door. The code and the rules won:
+  `pause_args` refuses only pause ACTIONS at Fate.
+- **`retreat --blink` without teleport rank 2 is refused up front** -- the
+  one behaviour change. It used to log "rank 2 needed" inside
+  `blink_escape` and run the honest retreat, parting blows and all, which
+  is a DM typo costing the party a round. The plan required `pause_args`
+  to refuse it with the same checker `retreat` uses, so the check moved
+  into `check_escape`, and both escapes are now validated before anything
+  rolls, as `resume` always did. A blink short of Power is still NOT
+  refused: the door simply fails and the menu prices that.
+- **The paused fight's id is handed in**: `pause_args(move, state, *,
+  paused_fight)`. The save does not know published fight ids; Session 2's
+  `page.py moves` reads it off the published `game/state.pause.fight`.
+- **A malformed pause move is no move at all.** The plan said unknown
+  actions are dropped; dropping one of a player's two pause actions and
+  playing the other is worse than not playing it, so `clean_move` returns
+  None for any pause move with a choice, escape or action outside the
+  fixed sets, a missing hero, or more than eight actions. Say/ooc moves
+  follow dream exactly.
+- **Heroes are named whole**: `pause_args` matches the full name (any
+  case), refuses one `find_hero`'s substring match would send to somebody
+  else, and puts the full name in the argv.
+- **Four more named parts of the pages**, which the plan did not list but
+  the projection needed to avoid copying page logic: `quest_site_marks`
+  and `quest_in_hand_lines` (the map's quests in hand), `sin_tally_lines`
+  and `hell_suggestions` (the history page's last two sections). All three
+  pages were checked identical before and after on a live save.
+- **Map `places`** are the four gates (common knowledge from day one,
+  like the legend) and the known slots, hamlets included; the grid's
+  `rows` are `map_lines` with no party and no objectives, so a settlement
+  letter shows but `@` and `!` travel as `coord` and `objectives`.
+- **`levelUp` is the PC's alone** (companions autolevel), and `over` is
+  read off the save with `report_game_over`'s rule; once over, `pause` and
+  `levelUp` are null and `status` is forced to `ended`.
+
+### Verification
+
+`test_page.py` 37 tests OK; `test_ui_logs`, `test_history`, `test_start`,
+`test_mercy`, `test_turnin` and `test_navigation` OK. The whole suite
+(`python -m unittest discover -p "test_*.py"`) **1334 OK** (1297 at the
+gates review, plus these 37), no failures. `page-plan.md`'s "Session 1
+notes / deviations" carries all of the above for Session 2.
