@@ -578,6 +578,24 @@ Read these before Session 3; designlog 2026-09-25 (B) has the full record.
 
 The build is green and e2e v1 is all ok. Screenshots are reviewed at 412px: readable displays, no clipped 40-column lines, thumb targets at least 48px.
 
+
+### Session 3 notes / deviations (2026-09-25, as built)
+
+Read these before Session 4; designlog 2026-09-25 (C) has the full record.
+
+- **The bottom bar is four buttons today**: Story, Party, Fight, More (More holds Fights). The plan's five need the Map; Session 4 gives the Map tab `bar: true` in `drawer/tabs.ts` (order Map before Fight) and changes the e2e's bar check (`bar.length === 4`, `'Story Party Fight More'`) to five / `'Story Party Map Fight More'`.
+- **Unread marks are live already** (dream's machinery whole, key `rpg2.seen`) with signatures for `party`, `fight`, `fights`; Session 4 adds `map`, `quests`, `record` and the e2e checks.
+- **The pause, until the picker**: the Story shows a stand-in `<section id="pause">` while `state.pause` is set and the game is not over -- "PAUSED after round N", the trips, "Fight on or retreat: say it in the box below.", an "Open the fight" link and "The menu, as printed" (`pause.text`) in a fold. Session 4 replaces its body with the picker and keeps `id="pause"`: `ui.openPause()` (the Fight tab's "To the pause" button, shown on the fight the game stands paused on while no continuation is published) scrolls to it.
+- **The option chips' plumbing is in**: `ui.fill(text)` sets `ui.prefill`, and the Answer box takes the words (say mode), focuses and never sends. Session 4 only parses an `options:` display into chips that call `ui.fill`.
+- **`data-paused` and `data-over` are set on `:root`** (`data-over` holds the `over` word, or `true` for a plain `--status ended`) with no styling yet; the answer box already closes with "GAME OVER" when `status` is `ended`.
+- **The store never sends a pause** unless `state.pause.fight` is set, equals the move's `fight`, and the game is not over (`TableStore.send`). `model.cleanBody` mirrors `clean_move` whole or nothing; `readMove` is as strict as `clean_move` (a kind is required, `seq` a whole number of at least 1; dream defaulted the kind and read the seq off the id). `nextSeq` still counts a malformed move document's seq (its body's, or its id's digits), so the page never writes over one.
+- **One prose renderer**, `panels/prose.ts` (a file the plan's table did not name), sets a turn for the Story and the Chronicle alike through `model.proseBlocks` (paragraphs; fences as `<pre class="display">`; `[fight]` by `page.fight_markers`' rule, a spare marker left as text; unplaced fights after). The in-place card is `rpg-fight-chip` (the plan's `rpg-fight-card` name was not used): "a fight: TITLE, won" / "the fight goes on: TITLE, PAUSED after round N". Session 4's options chips hook into `proseBlocks`' `display` block (a display whose first line starts `options:`).
+- **The chronicle** says every move with `moveWords` (answered and waiting alike, so an ooc reads "(to the DM) ..."), labels DM / You / Sent / Level, and a level line reads "NAME reaches level N." (derived from `levels`, no feature text).
+- **The Fight tab**: the rounds fold with the newest open and an "Open every round" toggle; each printed line is a `.ln` span, so `rpg-fight .main .ln` textContent is the log line for line (the e2e compares it with `ui/fight-short.txt`); a second half shows its first half folded above; a first half links "The fight goes on >" once its continuation is published. Stepping is "< Earlier" / "Later >".
+- **Layout numbers**: three zones at >= 1241px (party 400px, drawer 440px), two below (drawer 420px), one with the bar at <= 900px. `--mono-size` is 13px, 12.5px at <= 380px; a display inside a party card drops its box so 40 columns fit 360px. The e2e's `displaysFit` asserts no display is clipped or scrolled at every width it shoots.
+- **The e2e** plays seed 5 (Mansur and his companion Yusuf at Sidi Farhan) under `DIR/home`; the prose goes through `DIR/home/ui/scene.md`. Session 4 extends `web/e2e.mjs` in place (its `publish`, `phoneTab`, `displaysFit`, `smallTargets` helpers).
+- `web/app/.gitignore` came along from dream (node_modules, dist, .angular, out-tsc); `npm ci` worked against dream's lock with only the name changed.
+
 ---
 
 ## SESSION 4 — The pause picker, Map, Quests, Record, level-up, option chips, marks

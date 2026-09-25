@@ -2230,11 +2230,39 @@ a pointer: what the file is, how it's run, where its docs are.
   URL]` promotes `pending/` to `last/`, advances the record, appends the
   turn to `ui/transcript.md`, and clears the sent fights from the queue.
   The docstring is the manual; `web/README.md` has the keeper's turn.
-- `web/` — **the player's page** (the page arc). So far only
-  `web/README.md`: the Python half -- the files, the documents, the fights
-  kept, the keeper's turn, the pins. The Angular page, its build, the
-  local server and the e2e land with session 3. `web/out/`, `web/dist/`
-  and the build dirs are gitignored.
+- `web/` — **the player's page** (the page arc; dream's `web/` ported).
+  `web/out/`, `web/dist/`, `web/app/node_modules/` and the build dirs are
+  gitignored; `web/app/package-lock.json` is committed.
+  - `web/README.md` — the manual: the Python half (the files, the
+    documents, the fights kept, the keeper's turn, the pins) and the page
+    (layout, build, run locally, test, adding to the page).
+  - `web/app/` — **the Angular 20 page** (session 3; standalone, signals,
+    zoneless, `outputHashing: none`, builds exactly `main.js` and
+    `styles.css`). `src/app/model.ts` reads section 2's documents
+    defensively and mirrors the Python: `cleanBody` / `readMove` =
+    `page.clean_move` (a pause move whole or nothing), `moveWords` =
+    `page.move_words`, `proseBlocks` = `page.fight_markers`' `[fight]`
+    rule; `store.ts` (`TableStore`) subscribes once and sends
+    `moves/mNNNN` with the next seq, never a pause move without the
+    paused fight's published id; `app.ts` the shell (three zones, two,
+    one with the phone's bottom bar; `data-paused` / `data-over`);
+    `panels/` story, prose, answer, chronicle, party, fight, fights,
+    fight-chip; `drawer/tabs.ts` the tab list (Fight on the bar, Fights
+    under More). Node lives only here; Python stays stdlib.
+  - `web/page.html` + `web/build-artifact.mjs` — the published page
+    (content only, no `<head>`) and its assembly into `web/dist/`,
+    failing on a stray bundle.
+  - `web/dev/` — the local page, never published: `serve.mjs` (the built
+    page plus a fake `db` store over server-sent events, pinned like
+    ArtifactData; `?readonly`, `?nodb`, `?theme=dark`), `fake-db.js` (the
+    `window.claude.use("db")` shim), `db.mjs` (the keeper's `list` /
+    `get` / `batch` / `dump`; `RPG2_TABLE` picks the server).
+  - `web/e2e.mjs` — the page played end to end against the fake store
+    with the real `session.py` / `publish.py` / `page.py` under a temp
+    `RPG2_HOME` (playwright-core): opening, two moves, a keeper's turn, a
+    fight placed by `[fight]` and its tab equal to `ui/fight-short.txt`,
+    the party equal to `ui/party.txt`, layout at 412 / 360 / 1100 / 1440
+    light and dark, the fallbacks; screenshots to `DIR/shots`.
 - `test_page.py` — **the player's page contract suite, parts 1 and 2**
   (2026-09-25): the projection (JSON, under 256 KiB, ASCII, each `text`
   its ui page), the secrets (no `rng`/`world` key, no untaken posting or
@@ -2435,6 +2463,10 @@ python page.py moves web/out/read/moves.json --state web/out/read/state.json
 python publish.py --prose ui/scene.md --moves M.json --state S.json
 python publish.py --sent [--url URL]  # the keeper's publish (web/README.md)
 RPG2_HOME=/tmp/g python session.py new  # a game under another base dir
+cd web/app && npm ci && npx ng build && node ../build-artifact.mjs
+                                      # the player's page -> web/dist/
+node web/e2e.mjs [--out DIR]          # the page end to end, fake store
+node web/dev/serve.mjs --batch B.json # the page locally (web/README.md)
 ```
 
 Use `PYTHONIOENCODING=utf-8` when piping output (Windows cp1250 default).

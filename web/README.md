@@ -5,9 +5,10 @@ map, the fights and the one mid-fight decision, read from a shared document
 store and answered through it. It is a port of dream's `web/` page and its
 keeper's-turn protocol; `page-plan.md` is the build contract (section 2, the
 data contract, and each shipped session's notes). Section 1 of this file is
-the Python half, which works from the terminal with no page yet; the page
-itself (`web/app/`, the build, the local server, the e2e) arrives with the
-arc's session 3, and dm.md's page-play section with session 5.
+the Python half, which works from the terminal; section 2 is the page itself
+(`web/app/`, the build, the local server, the e2e). The pause picker, the
+Map, Quests and Record tabs arrive with the arc's session 4, and dm.md's
+page-play section with session 5.
 
 ## 1. The Python half
 
@@ -111,3 +112,132 @@ the page wrote since the read: read the moves again. A batch takes at most
 One page is one game: `new` drops `ui/page.json` and `ui/queue/`, and a
 publish with no record neither compares with nor reads from the last
 publish in `web/out/`, so a new game's first publish writes everything.
+
+## 2. The page
+
+An Angular 20 app (standalone components, signals, zoneless), published as
+a claude.ai Artifact with the `db` capability. It renders the store live
+and writes the player's moves to `moves/`; it never writes anything else.
+
+```
+web/
+  app/                    the Angular project
+    src/app/model.ts        the documents and their defensive readers (parse,
+                            never cast); cleanBody / readMove mirror
+                            page.clean_move, moveWords page.move_words, and
+                            proseBlocks page.fight_markers' [fight] rule
+    src/app/store.ts        TableStore, the db bridge: subscribe once, one
+                            write at a time, send() with the next seq
+    src/app/app.ts          the shell: header, three zones (>= 1241px), two
+                            (<= 1240px), one and a bottom bar (<= 900px);
+                            data-paused / data-over on :root
+    src/app/ui.ts           page-local state: the tab, the phone's view, the
+                            fight on show, words for the answer box (prefill)
+    src/app/unread.ts       the unread marks, per viewer in localStorage
+    src/app/panels/         story, prose (the turn's blocks: paragraphs,
+                            displays, fight cards in place), answer,
+                            chronicle, party, fight, fights, fight-chip
+    src/app/drawer/         the drawer; tabs.ts lists its tabs
+    src/styles.css          the tokens (one palette, light and dark), the
+                            layout, the .display class (40 columns, mono)
+  page.html               the published page: content only, no doctype,
+                          <html>, <head> or <body>
+  build-artifact.mjs      page.html + the bundles -> web/dist/
+  dev/                    the local page: serve.mjs (a fake store over
+                          server-sent events), fake-db.js (the
+                          window.claude.use("db") shim), db.mjs (the
+                          keeper's side); never published
+  e2e.mjs                 the page played end to end against the fake store
+```
+
+The page shows what the ui pages show, never more: the DM's turn as
+written (a fenced display in mono at its printed 40-column shape, a
+paragraph that is exactly `[fight]` as the card of the turn's next fight,
+the fights no marker placed after the prose); the party as cards with
+each hero's block and the whole `ui/party.txt` as printed; each fight as
+the player log exactly (`ui/fight-short.txt`), block by block, the rounds
+folded with the newest open, lines coloured by what they say and never
+reworded. A second half shows its paused first half above it, folded.
+
+On a phone (the target: Android at about 412px, 360px the floor) the
+bottom bar is Story, Party, Fight and More, and More opens the other tabs
+(today Fights) with a row of chips. A tab's `bar` flag in
+`src/app/drawer/tabs.ts` gives it a button of its own; session 4 adds the
+Map as the fifth. Chrome copy is ASCII, in writing.md's display register;
+separators are drawn with CSS. Fonts are system stacks, with no external
+host.
+
+### Build
+
+```sh
+cd web/app && npm ci && npx ng build && node ../build-artifact.mjs
+```
+
+`web/dist/` then holds `index.html`, `main.js` and `styles.css`.
+`outputHashing` is `none`, so the bundle names are stable, and `page.html`
+has no `<head>` because the Artifact host supplies the skeleton. The build
+is zoneless, so there is no `polyfills.js`; `build-artifact.mjs` fails if
+any other bundle appears (a lazy chunk would be missing from the publish).
+`node_modules/`, `dist/` and `.angular/` are not committed;
+`package-lock.json` is.
+
+### Run it locally
+
+```sh
+export RPG2_HOME=/tmp/g && mkdir -p $RPG2_HOME
+python session.py new --seed 5 --level 1
+python publish.py --all --prose $RPG2_HOME/ui/scene.md   # a scene you wrote
+node web/dev/serve.mjs --batch $RPG2_HOME/web/out/batch.json   # http://127.0.0.1:4321/
+python publish.py --sent
+```
+
+`serve.mjs` serves `web/dist` in a host-like skeleton with `dev/fake-db.js`
+loaded first: an in-memory store behind the same calls the page makes on
+claude.ai, live over server-sent events, refusing an unpinned write over a
+document it holds as ArtifactData does. Add `?readonly` to refuse writes
+as for a view-only viewer, `?nodb` to see the page with no capability,
+`?theme=dark` to stamp the viewer's theme. Then play the keeper against
+it (`RPG2_TABLE` or `--url` picks another server):
+
+```sh
+mkdir -p $RPG2_HOME/web/out/read
+node web/dev/db.mjs list moves > $RPG2_HOME/web/out/read/moves.json
+node web/dev/db.mjs get game/state > $RPG2_HOME/web/out/read/state.json
+python page.py moves $RPG2_HOME/web/out/read/moves.json --state $RPG2_HOME/web/out/read/state.json
+python publish.py --prose $RPG2_HOME/ui/scene.md --moves $RPG2_HOME/web/out/read/moves.json --state $RPG2_HOME/web/out/read/state.json
+node web/dev/db.mjs batch $RPG2_HOME/web/out/batch.json && python publish.py --sent
+```
+
+### Test
+
+```sh
+node web/e2e.mjs [--out DIR] [--headed]
+```
+
+It needs `web/dist` and a Chromium for `playwright-core`
+(`PLAYWRIGHT_BROWSERS_PATH`, or `CHROMIUM=/path/to/chrome`; it falls back
+to `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`). It rolls its own
+game (`session.py new --seed 5 --level 1`) into `DIR/home` as
+`RPG2_HOME`, never the repo's, and plays it with the real `session.py`,
+`publish.py` and `page.py`: the opening with its displays, a move and a
+question to the DM waiting in the chronicle, the keeper's turn (`page.py
+moves`, a pinned batch, `--sent`, the same batch refused twice, the
+transcript gaining the turn), a fight placed by `[fight]` between two
+displays whose Fight tab is `ui/fight-short.txt` line for line, the party
+cards and the whole sheet as `ui/party.txt`, no side scroll and every
+display unclipped at 412 and 360, the bottom bar's thumb-sized buttons,
+mid and wide widths, light and dark, and the read-only and no-db
+fallbacks. Screenshots go to `DIR/shots`.
+
+### Adding to the page
+
+- **A drawer tab**: one standalone component in `src/app/panels/`, reading
+  `TableStore`, and its entry in `src/app/drawer/tabs.ts`; give it a
+  signature in `unread.ts` for its mark. The phone's bar is five buttons at
+  most.
+- **A document or collection**: a reader in `model.ts` (fall back, never
+  cast), then one line in `store.ts`: `readonly x = this.doc('game/x',
+  readX)`. It is subscribed once, at connect.
+- **A move of a new kind**: `MoveBody` and `cleanBody` in `model.ts`,
+  `MOVE_KINDS` and `clean_move` in `page.py`, and a checker like
+  `pause_args` that raises `MoveRefused`.

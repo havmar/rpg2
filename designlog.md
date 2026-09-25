@@ -8908,3 +8908,83 @@ version is known, `delete` of every move read pinned to its version,
 write-once `chronicle/` and `fights/` sets unpinned, under 50 writes.
 `page-plan.md`'s "Session 2 notes / deviations" carries all of this for
 Session 3.
+
+## 2026-09-25 (C) — The player's page, session 3: the Angular page
+
+The third of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`): the
+page itself. dream's `web/` is ported to rpg2's documents, and the basic
+loop plays through it against a local fake store with the real
+`session.py`, `publish.py` and `page.py`.
+
+### What shipped
+
+- **`web/app/`**, the Angular 20 project (dream's `package.json`, lock,
+  `angular.json`, tsconfigs and zoneless bootstrap, renamed `rpg2-page` /
+  project `rpg2` / prefix `rpg`). `model.ts` reads section 2's documents
+  field by field and mirrors the Python (`cleanBody` / `readMove` =
+  `clean_move`, `moveWords` = `move_words`, `proseBlocks` =
+  `fight_markers`); `store.ts` is dream's bridge as `TableStore`; `app.ts`
+  the shell; `ui.ts`, `unread.ts`, the drawer; panels story, prose,
+  answer, chronicle, party, fight, fights, fight-chip; `styles.css` one
+  palette, light and dark, system fonts.
+- **`web/page.html`, `web/build-artifact.mjs`**: the published page and its
+  assembly into `web/dist/` (index.html, main.js, styles.css).
+- **`web/dev/`**: dream's fake store, shim and keeper CLI (`RPG2_TABLE`).
+- **`web/e2e.mjs`**: the page played end to end (seven parts, below).
+- **Docs**: `web/README.md` section 2 (layout, build, run locally, test,
+  adding to the page); develop.md's `web/` entry and Running lines;
+  plan.md's arc entry; `page-plan.md`'s "Session 3 notes / deviations".
+
+### The calls the build settled
+
+- **The page shows the printed surfaces as printed.** A display is the
+  game's own text in mono with `white-space: pre`, at a size where 40
+  columns fit a 360px phone (13px; 12.5px at 380px and under); the fight
+  is the player log line for line, cut only where the log's own blocks
+  and round headers cut it, coloured by what a line says (`SLAIN`,
+  `DOWN`, `!! `, `dmg!`) and never reworded; the party is cards drawn
+  from the sheet's numbers (HP in digits, as the sheet prints it) plus
+  each hero's block and the whole `ui/party.txt` as printed.
+- **One prose renderer for the Story and the Chronicle**
+  (`panels/prose.ts`, not in the plan's table): paragraphs, fenced
+  displays, and fight cards where `[fight]` stands by `page.py`'s rule
+  to the letter; a spare marker stays as text, as the transcript keeps
+  it; fights no marker placed follow the prose.
+- **The bar is four buttons until the Map exists** (Story, Party, Fight,
+  More with Fights under it). A placeholder Map tab would have been a
+  button to nothing.
+- **A stand-in for the pause**: while a fight stands paused the Story
+  shows "PAUSED after round N", the trips and the menu as printed, and
+  asks for the answer in words -- honest until session 4's picker, which
+  takes over the same `#pause` anchor the Fight tab's button scrolls to.
+- **The store refuses a pause move the keeper would refuse as stale**
+  (no published paused fight, another fight, the game over), and counts a
+  malformed move document's seq for the next seq, so the page never
+  writes over it. `readMove` is as strict as `clean_move` (dream's
+  defaulted the kind to `say`).
+- **Chrome copy** is the plan's table, ASCII, separators drawn with CSS;
+  headings are mono capitals, bar the fight's title, which keeps the
+  engine's case.
+- **The rounds fold with the newest open**, and one tap opens them all,
+  so a long fight reads on a phone without losing the whole log.
+
+### Verification
+
+`cd web/app && npm ci && npx ng build && node ../build-artifact.mjs`
+green: `main.js` about 196 kB raw (55 kB transferred), `styles.css` 6 kB,
+within dream's budgets, no stray bundle. `node web/e2e.mjs` all ok, on
+its own game (seed 5) under a temp `RPG2_HOME`: the opening with its
+displays in mono and the header's day and place; a say and an ooc
+waiting in the chronicle and stored as `m0001` / `m0002` with their
+known fields only; the keeper's turn (`page.py moves`, a pinned batch,
+`--sent`, the words under the new turn, the queue cleared, the same
+batch refused 409, `ui/transcript.md` gaining the turn); `session.py
+fight 2 --type wolf` published with `[fight]` between two displays, the
+card in place, the Fight tab's lines equal to `ui/fight-short.txt`, the
+newest round open, the Fights list; the PC's and the companion's cards
+and the whole sheet equal to `ui/party.txt`; no side scroll and no
+clipped display at 412 and 360 (light and dark), 1100 and 1440; the
+bar's buttons and the story's buttons at least 44px tall (the bar's
+60px); the read-only and no-db fallbacks. The screenshots at 412 and 360
+were read by eye in both themes. The Python suite is untouched:
+`python -m unittest discover -p "test_*.py"` **1350 OK**.
