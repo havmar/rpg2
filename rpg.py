@@ -2014,6 +2014,15 @@ class CombatLog(list):
         self.player_path = (Path(player_path)
                             if player_path is not None else None)
         self.continuing = continuing
+        # The player's page (2026-09-25, page-plan.md session 2): where the
+        # rounds sit in `.player` -- one [start, end] per stretch of rounds
+        # (an open stretch is [start]) -- so a fight can be cut into its
+        # opening, rounds and closing without parsing a line; and how the
+        # fight came out, set by the session layer before it prints ("won",
+        # "lost", "unresolved", "retreated", "paused"). Pure bookkeeping:
+        # nothing in the engine reads either.
+        self.round_spans: list[list[int]] = []
+        self.outcome: str | None = None
         self._debug_flushed = 0
         self._player_flushed = 0
         self._debug_file_started = False
@@ -2065,6 +2074,8 @@ class CombatLog(list):
 
     def round_start(self, rnd: int) -> None:
         self._close_round()
+        if not self.round_spans or len(self.round_spans[-1]) == 2:
+            self.round_spans.append([len(self.player)])
         self._round = rnd
         super().append(f"  Round {rnd}:")      # the full log keeps them all
 
@@ -2073,6 +2084,8 @@ class CombatLog(list):
         called at every exit from the round loop (end, standstill, pause)."""
         self._close_round()
         self._flush_quiet_run()
+        if self.round_spans and len(self.round_spans[-1]) == 1:
+            self.round_spans[-1].append(len(self.player))
 
     # -- emitters --------------------------------------------------------- #
 

@@ -485,6 +485,25 @@ Read these before Session 2; designlog 2026-09-25 has the full record.
 
 A complete terminal keeper's turn in a temp `RPG2_HOME`: `new`, write a prose file, `publish.py --all --prose`, `--sent`, a fight, publish again. The output batch files validate.
 
+### Session 2 notes / deviations (2026-09-25, as built)
+
+Read these before Session 3; designlog 2026-09-25 (B) has the full record.
+
+- **The fight document** is `{v, id, day, where, coord, title, outcome, continues, rounds, blocks}` -- `coord` added beside `where` (the party's Tile coordinate, as in `game/state`). Block kinds are `opening`, `rounds`, `between`, `closing`; empty blocks are left out. A second half (`continues` set) has **no `opening`**: it starts with `rounds` (resume, a run-down retreat) or is one `closing` block (a clean escape, a mercy). A log with no rounds at all is one `opening` block. `between` needs two stretches of rounds in one process, which the engine does not produce today; the page should still render it.
+- **`title`** is the fight's `===` banner without its rules (joined when fitted over two lines); a fight with no banner (the bare `fight N --type X` command) is named by its first log line, the roster's ("2x Wolf -- fangs"). A second half takes its first half's title (read off `ui/fight-short.txt`, which holds the whole fight by then).
+- **`[fight]` markers** (`page.fight_markers`): a line that is exactly `[fight]` after trimming, outside a ``` fence, with a blank line (or the start/end of the prose) on both sides. The Story renderer must use the same rule. Spare markers are left as written (publish warns on stderr); fights the prose did not place follow it.
+- **`game/state.pause.fight` can be null while a pause stands**: when fights wait in the queue unpublished (a publish without `--prose`), the page does not hold the paused fight, so there is nothing to point at. The picker should not offer a send with a null fight (the keeper would refuse it as stale).
+- **Move words** (`page.move_words`, used for the transcript's `>` lines) -- Session 3's `moveWords` should say the same: say = the text; ooc = `(to the DM) TEXT`; pause fight on = `At the pause: Amina drinks a healing potion; Nasir goes berserk; fight on` (drink = "drinks a stamina draught", heal = "drinks a healing potion", berserk = "goes berserk", warbreath = "draws the war-breath", vanish = "vanishes"); retreat = `At the pause: retreat`, or `At the pause: retreat -- Nasir blinks the party out` / `-- Amina breaks a smoke vial`.
+- **Only the newest pause move of a turn is weighed** (`page.moves_report`): it is played as printed or REFUSED; every earlier pause move of the turn is "superseded by" it, even when the newest is refused -- the player's latest word governs, and an older choice is never played in its place. Moves at or under `lastSeq` print "answered by an earlier turn; deleted". `page.py moves` without `--state` reads the last publish's `game/state`.
+- **`read_moves` lives in `page.py`** (both `publish.py` and `page.py moves` read moves); `publish.py` keeps the batch, pin, `sent` and file machinery verbatim. **`--queue` is dropped**: the queue is always `ui/queue/` under `RPG2_HOME`.
+- **`web/out/` defaults to `RPG2_HOME/web/out`** (the repo's own in play, gitignored): one home is one game, so a temp home keeps its publish output beside its save. The batch's `file_path`s are absolute. **Note for the e2e**: `RPG2_HOME` must exist before `session.py new` (the save's directory is not created -- older behaviour, untouched).
+- **The page's record holds `game/` versions only** (the plan's example listed a `fights/` version; fights are write-once and never pinned, as in dream).
+- **No record, no last**: a publish with no `ui/page.json` (a new game: `new` drops it) neither compares with nor reads the handshake from `web/out/last/`, so a new game's first publish writes every singleton, unpinned, and starts at `t0001` / `f0001`.
+- **`--sent` appends the turn to `ui/transcript.md`**: `## turn N (day D)`, a blank line, one `> ` line per answered move (`move_words`, superseded pause moves included -- they are what the player sent), a blank line, the prose with each placed `[fight]` paragraph written `[fight f0003: TITLE, OUTCOME]` and unplaced fights after it.
+- **Every session fight is kept**, chat play included (the queue is gitignored; `new` empties it). A game moved from chat to the page mid-way would publish the whole backlog on its first `--prose` publish: Session 5's protocol should say to empty `ui/queue/` before the first publish of a game already under way.
+- **`test_gates._run` now sandboxes the fight pages** (`UI_DIR` and both snapshot paths patched to a temp dir): its retreat test used to append to the repo's `ui/fight-short.txt`, which is how Session 1's `sheet` came to commit stray `ui/fight-*.txt` (removed this session).
+- Test count: `test_page.py` 52 tests (37 + 15); `test_ui_logs.py` +1; the full discover run 1350 OK.
+
 ---
 
 ## SESSION 3 — The Angular page: scaffold, store, Story, Answer, Chronicle, Party, Fight, Fights

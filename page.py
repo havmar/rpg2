@@ -49,11 +49,34 @@ Decisions this module makes that the plan left open:
 * **A malformed pause move is not a move**: a choice, escape or action
   outside the fixed sets makes ``clean_move`` return None rather than
   playing half of what the page sent.
+
+The fights (session 2). ``session.print_combat`` calls ``keep_fight`` for
+every session fight, so none is forgotten: the process's player log --
+exactly what it appended to ui/fight-short.txt -- goes to ``ui/queue/`` as
+blocks cut at the log's own round spans (``CombatLog.round_spans``), never
+by parsing a line, with the outcome the session stamped on it. A paused
+fight's second half is its own queue entry (``continuing``), and so its
+own write-once ``fights/`` document, which ``publish.py`` links to the
+first half (``continues``). ``queued_fights`` reads the queue and
+``fight_doc`` makes the published document.
+
+The keeper's check (session 2). ``python page.py moves MOVES.json
+[--state STATE.json]`` reads the moves as ArtifactData returned them and
+prints, for each, what the DM does with it: the words of a ``say`` or an
+``ooc``; the exact ``session.py`` command a ``pause`` move asks for, or
+its refusal; a superseded pause; a document that is not a move. It never
+runs anything.
 """
 from __future__ import annotations
 
+import argparse
 import contextlib
 import io
+import json
+import re
+import shlex
+import sys
+from pathlib import Path
 from typing import Any, Iterable
 
 import places
@@ -65,7 +88,11 @@ __all__ = ["VIEW_VERSION", "STATUSES", "MOVE_KINDS", "MOVE_TEXT_MAX",
            "player_view", "state_view", "party_view", "map_view",
            "quests_view", "record_view", "member_sheet", "pause_view",
            "level_up_view", "game_over", "wrapped", "chronicle_id",
-           "chronicle_entry", "clean_move", "MoveRefused", "pause_args"]
+           "chronicle_entry", "clean_move", "MoveRefused", "pause_args",
+           "FIGHT_OUTCOMES", "FIGHT_MARKER", "queue_dir", "record_path",
+           "default_out", "keep_fight", "fight_blocks", "fight_title",
+           "queued_fights", "fight_id", "fight_doc", "fight_markers",
+           "move_words", "read_json", "read_moves", "moves_report"]
 
 VIEW_VERSION = 1
 
@@ -578,3 +605,316 @@ def pause_args(move: dict[str, Any], state: dict, *,
     except ValueError as refused:
         raise MoveRefused(str(refused)) from None
     return ["retreat", f"--{cleaned['escape']}", hero.name]
+
+
+# ---------------------------------------------------------------- the fights
+#: How a kept fight came out (``CombatLog.outcome``, set by the session).
+FIGHT_OUTCOMES = ("won", "lost", "unresolved", "retreated", "paused")
+
+#: A prose paragraph that is exactly this is the place of the turn's next
+#: fight (the page draws the fight's card there).
+FIGHT_MARKER = "[fight]"
+
+_ROUND = re.compile(r"^Round (\d+)(?:-(\d+))?:")
+
+
+def queue_dir() -> Path:
+    """Where ``keep_fight`` queues fights: ui/queue/ under RPG2_HOME, read
+    off ``session.UI_DIR`` at call time so the suites' sandboxes hold."""
+    return session.UI_DIR / "queue"
+
+
+def record_path() -> Path:
+    """The page's record: ui/page.json (its url and the version of each
+    ``game/`` document as the last sent batch left it)."""
+    return session.UI_DIR / "page.json"
+
+
+def default_out() -> Path:
+    """Where ``publish.py`` writes: web/out/ under RPG2_HOME (the repo's
+    own, gitignored, in play; a temp home keeps its own)."""
+    return session.RPG2_HOME / "web" / "out"
+
+
+def fight_blocks(lines: list[str], spans: list[list[int]],
+                 continuing: bool = False) -> list[dict[str, Any]]:
+    """A player log cut at its round spans: what came before the first
+    round (``opening``), each stretch of rounds (``rounds``), anything
+    between two stretches (``between``) and what came after the last
+    (``closing``). Empty blocks are left out; the blocks' lines, joined,
+    are ``lines`` exactly. A log with no rounds at all is one block: the
+    ``closing`` of a paused fight's second half (a clean escape), else the
+    ``opening``."""
+    blocks: list[dict[str, Any]] = []
+    cursor = 0
+    for i, span in enumerate(spans):
+        start = span[0]
+        end = span[1] if len(span) > 1 else len(lines)
+        if start > cursor:
+            blocks.append({"kind": "opening" if i == 0 else "between",
+                           "lines": lines[cursor:start]})
+        if end > start:
+            blocks.append({"kind": "rounds", "lines": lines[start:end]})
+        cursor = max(cursor, end)
+    if cursor < len(lines):
+        kind = "closing" if spans or continuing else "opening"
+        blocks.append({"kind": kind, "lines": lines[cursor:]})
+    return blocks
+
+
+def fight_title(lines: Iterable[str]) -> str:
+    """The fight's banner (``=== The Thing in the Well ===``, which may be
+    fitted over two lines), without its rules. A fight with no banner (the
+    bare ``fight`` command) is named by its first line, the roster's
+    ("2x Wolf -- fangs"); "" when the log is empty."""
+    lines = list(lines)
+    parts: list[str] = []
+    for line in lines:
+        if not parts and not line.startswith("==="):
+            continue
+        parts.append(line)
+        if line.rstrip().endswith("==="):
+            break
+    if not parts:
+        return lines[0].strip() if lines else ""
+    return " ".join(parts).strip().strip("=").strip()
+
+
+def keep_fight(state: dict, log) -> Path | None:
+    """Queue this process's part of a fight for the page (``print_combat``
+    calls it). The document is rendered first -- a bug in it raises, as
+    the ui pages' do -- and then written to ``ui/queue/qNNN.json``, where a
+    disk error is swallowed: the page must never break the game. Returns
+    the file, or None when it could not be written.
+
+    A paused fight's second half (``log.continuing``: resume, retreat)
+    takes the first half's title from ui/fight-short.txt, which holds the
+    whole fight by then."""
+    lines = list(log.player)
+    head = lines
+    if log.continuing and log.player_path is not None:
+        try:
+            head = log.player_path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            head = lines
+    rounds = [max(int(m.group(1)), int(m.group(2) or 0))
+              for m in map(_ROUND.match, lines) if m]
+    if log.outcome not in FIGHT_OUTCOMES:
+        raise ValueError(f"the fight's outcome {log.outcome!r} is not one "
+                         f"of {', '.join(FIGHT_OUTCOMES)}")
+    doc = {
+        "day": state["clock"].day,
+        "where": session.location_line(state),
+        "coord": _coord(_party_tile(state)),
+        "title": fight_title(head),
+        "outcome": log.outcome,
+        "continuing": bool(log.continuing),
+        "rounds": max(rounds, default=0),
+        "blocks": fight_blocks(lines, log.round_spans, log.continuing),
+    }
+    text = json.dumps(doc, indent=2, ensure_ascii=False) + "\n"
+    try:
+        queue = queue_dir()
+        queue.mkdir(parents=True, exist_ok=True)
+        taken = [int(p.stem[1:]) for p in queue.glob("q*.json")
+                 if p.stem[1:].isdigit()]
+        path = queue / f"q{max(taken, default=0) + 1:03d}.json"
+        path.write_text(text, encoding="utf-8")
+    except OSError:
+        return None
+    return path
+
+
+def queued_fights(queue: str | Path | None = None
+                  ) -> list[tuple[Path, dict[str, Any]]]:
+    """The fights ``keep_fight`` queued, oldest first, as (file, doc)."""
+    queue = Path(queue) if queue is not None else queue_dir()
+    if not queue.is_dir():
+        return []
+    files = sorted((p for p in queue.glob("q*.json") if p.stem[1:].isdigit()),
+                   key=lambda p: int(p.stem[1:]))
+    return [(p, json.loads(p.read_text(encoding="utf-8"))) for p in files]
+
+
+def fight_id(n: int) -> str:
+    """``fights/f0001``'s id: ``f`` and the fight's number to four digits."""
+    return f"f{int(n):04d}"
+
+
+def fight_doc(queued: dict[str, Any], fid: str,
+              continues: str | None) -> dict[str, Any]:
+    """The published ``fights/fNNNN`` document from a queue entry:
+    ``continues`` names the paused fight a second half finishes."""
+    return {
+        "v": VIEW_VERSION,
+        "id": fid,
+        "day": queued["day"],
+        "where": queued["where"],
+        "coord": queued["coord"],
+        "title": queued["title"],
+        "outcome": queued["outcome"],
+        "continues": continues,
+        "rounds": queued["rounds"],
+        "blocks": queued["blocks"],
+    }
+
+
+def fight_markers(prose: str) -> list[int]:
+    """The line numbers of the prose's fight markers: a paragraph that is
+    exactly ``[fight]``, outside a code fence."""
+    lines = prose.split("\n")
+    marks, fenced = [], False
+    for i, line in enumerate(lines):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced or line.strip() != FIGHT_MARKER:
+            continue
+        before = lines[i - 1].strip() if i > 0 else ""
+        after = lines[i + 1].strip() if i + 1 < len(lines) else ""
+        if not before and not after:
+            marks.append(i)
+    return marks
+
+
+# ---------------------------------------------------------------- moves, read
+_ACTION_WORDS = {"drink": "{} drinks a stamina draught",
+                 "heal": "{} drinks a healing potion",
+                 "berserk": "{} goes berserk",
+                 "warbreath": "{} draws the war-breath",
+                 "vanish": "{} vanishes"}
+_ESCAPE_WORDS = {"blink": "{} blinks the party out",
+                 "smoke": "{} breaks a smoke vial"}
+
+
+def move_words(move: dict[str, Any]) -> str:
+    """A cleaned move as the player's words, for the transcript's ``>``
+    lines (the page says a pause move the same way):
+    "At the pause: Amina drinks a healing potion; fight on"."""
+    if move["kind"] == "say":
+        return move["text"]
+    if move["kind"] == "ooc":
+        return f"(to the DM) {move['text']}"
+    if move["choice"] == "fight_on":
+        said = [_ACTION_WORDS[a["action"]].format(a["hero"])
+                for a in move.get("actions") or []]
+        return "At the pause: " + "; ".join(said + ["fight on"])
+    if move.get("escape"):
+        return ("At the pause: retreat -- "
+                + _ESCAPE_WORDS[move["escape"]].format(move["hero"]))
+    return "At the pause: retreat"
+
+
+def read_json(path: str | Path):
+    """A JSON file, or None when there is none."""
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None
+
+
+def read_moves(path: str | Path) -> list[dict[str, Any]]:
+    """The moves as read: a list, an object by id, or a directory of files.
+
+    Each comes back with an ``id`` and, where it has one, a whole ``seq``; a
+    document with neither cannot be named, so it is skipped. Sorted by
+    seq (dream's publish.py, verbatim bar the file reads)."""
+    path = Path(path)
+    if path.is_dir():
+        raw: Any = {p.stem: read_json(p) for p in sorted(path.glob("*.json"))}
+    else:
+        raw = read_json(path)
+    if isinstance(raw, dict):
+        raw = [dict(doc, id=doc.get("id") or key) for key, doc in raw.items()
+               if isinstance(doc, dict)]
+    moves = []
+    for doc in raw or []:
+        if not isinstance(doc, dict):
+            continue
+        doc = dict(doc)
+        try:
+            doc["seq"] = int(doc.get("seq"))
+        except (TypeError, ValueError):
+            doc["seq"] = None
+        ident = doc.get("id") or doc.get("doc_id") or (
+            f"m{doc['seq']:04d}" if doc["seq"] is not None else None)
+        if not isinstance(ident, str):
+            print(f"  a move with no id and no seq is skipped: {doc}",
+                  file=sys.stderr)
+            continue
+        doc["id"] = ident
+        moves.append(doc)
+    moves.sort(key=lambda m: (m["seq"] is None, m["seq"] or 0, m["id"]))
+    return moves
+
+
+def moves_report(moves: list[dict[str, Any]], state: dict, *,
+                 last_seq: int = 0,
+                 paused_fight: str | None = None) -> list[str]:
+    """What the DM does with each move read, one line each (the keeper's
+    check; nothing is run). A move at or under ``last_seq`` was answered
+    by an earlier turn. Of this turn's pause moves only the newest is
+    played -- as the command printed, or refused with the reason to answer
+    in the fiction; the earlier ones are superseded by it."""
+    cleaned = {m["id"]: clean_move(m) for m in moves}
+    pauses = [m["id"] for m in moves
+              if cleaned[m["id"]] is not None
+              and cleaned[m["id"]]["kind"] == "pause"
+              and cleaned[m["id"]]["seq"] > last_seq]
+    newest = pauses[-1] if pauses else None
+    out = []
+    for move in moves:
+        ident, move_ = move["id"], cleaned[move["id"]]
+        if move_ is None:
+            out.append(f"{ident} not a move; deleted unanswered")
+        elif move_["seq"] <= last_seq:
+            out.append(f"{ident} answered by an earlier turn; deleted")
+        elif move_["kind"] in ("say", "ooc"):
+            text = move_["text"].replace("\n", "\n    ")
+            out.append(f"{ident} {move_['kind']}: {text}")
+        elif ident != newest:
+            out.append(f"{ident} superseded by {newest}")
+        else:
+            try:
+                argv = pause_args(move_, state, paused_fight=paused_fight)
+            except MoveRefused as refused:
+                reason = str(refused).rstrip(".")
+                out.append(f"{ident} pause REFUSED: {reason} "
+                           f"(answer it in the fiction)")
+            else:
+                out.append(f"{ident} pause -> python session.py "
+                           f"{shlex.join(argv)}")
+    return out
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        prog="page.py",
+        description="The keeper's check: what each move read asks for.")
+    sub = parser.add_subparsers(dest="command", required=True)
+    cmd = sub.add_parser(
+        "moves", help="print what the DM does with each move (runs nothing)")
+    cmd.add_argument("moves", type=Path,
+                     help="the moves as read: a list, an object by id, or "
+                          "a directory of mNNNN.json")
+    cmd.add_argument("--state", type=Path,
+                     help="game/state as read (default: the last publish, "
+                          "web/out/last/game/state.json under RPG2_HOME)")
+    args = parser.parse_args(argv)
+    published = read_json(args.state or default_out() / "last" / "game"
+                          / "state.json")
+    published = published if isinstance(published, dict) else {}
+    pause = published.get("pause")
+    paused_fight = pause.get("fight") if isinstance(pause, dict) else None
+    moves = read_moves(args.moves)
+    if not moves:
+        print("No moves.")
+        return
+    report = moves_report(moves, session.load(),
+                          last_seq=int(published.get("lastSeq") or 0),
+                          paused_fight=paused_fight)
+    print("\n".join(report))
+
+
+if __name__ == "__main__":
+    main()

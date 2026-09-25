@@ -1,5 +1,7 @@
-"""Contract suite for THE PLAYER'S PAGE, part 1 (2026-09-25, page-plan.md's
-session 1): the projection (`page.py`) and the session refactors under it.
+"""Contract suite for THE PLAYER'S PAGE (2026-09-25, page-plan.md): part 1
+(session 1) the projection (`page.py`) and the session refactors under it;
+part 2 (session 2) the fights kept, `publish.py`, the page's record and
+the keeper's move check.
 
 What is pinned here:
 
@@ -18,6 +20,14 @@ What is pinned here:
 - **The chronicle entry** and **the level-up** block.
 - **RPG2_HOME**: the game runs under another base directory, and `sheet`
   there commits nothing.
+- **Part 2.** A fight's queue entry is its player log exactly, cut at the
+  round spans, with its outcome; a paused fight's second half is its own
+  entry; two fights are two entries. `publish.py` (by subprocess, under a
+  temp RPG2_HOME) pins every `game/` write, deletes every move read,
+  numbers the fights after `lastFight` with `continues` on a second half,
+  keeps the page's record and the transcript on `--sent`, and stops at 50
+  writes. `page.py moves` prints the argv, a refusal, a superseded move,
+  a non-move. `new` drops the record and the queue.
 
 Run:  python -m unittest -v test_page.py
 """
@@ -32,8 +42,10 @@ import random
 import re
 import subprocess
 import sys
+import shlex
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 import page
@@ -826,6 +838,401 @@ class TheBaseDirectory(unittest.TestCase):
             self.skipTest("RPG2_HOME is set for this run")
         self.assertEqual(session.RPG2_HOME, REPO)
         self.assertEqual(session.REPO_DIR, REPO)
+
+
+# =========================================================================== #
+# PART 2 (session 2): the fights kept, publish.py, the record, the moves
+# =========================================================================== #
+
+def queue() -> list[tuple[Path, dict]]:
+    return page.queued_fights()
+
+
+def joined(doc: dict) -> list[str]:
+    """A fight's blocks, joined back into its lines."""
+    return [line for block in doc["blocks"] for line in block["lines"]]
+
+
+def calm_fight(kind: str = "wolf", count: int = 1) -> dict:
+    """A fight that runs to its end without pausing, in the current
+    sandbox: the first seed whose party does not stop against it."""
+    for seed in range(1, 20):
+        fresh(seed)
+        run("fight", str(count), "--type", kind)
+        state = session.load()
+        if not state["pending"]:
+            return state
+    raise AssertionError(f"every seed paused against {count} {kind}")
+
+
+class TheRoundSpans(unittest.TestCase):
+    def test_spans_mark_the_rounds_in_the_player_log(self):
+        log = rpg.CombatLog()
+        log.play("opening", "=== A Fight ===")
+        log.round_start(1)
+        log.play("hit", "Amina hits.")
+        log.round_start(2)
+        log.play("parry", "A parry.", quiet=True)
+        log.round_start(3)
+        log.play("hit", "Nasir hits.")
+        log.finish_rounds()
+        log.finish_rounds()                     # a second close is a no-op
+        log.play("tally", "Purse 3s; day 1.")
+        self.assertEqual(log.round_spans, [[1, 6]])
+        self.assertEqual(log.player[1:6], ["Round 1:", "Amina hits.",
+                                           "Round 2: nothing lands.",
+                                           "Round 3:", "Nasir hits."])
+        self.assertIsNone(log.outcome)
+        blocks = page.fight_blocks(log.player, log.round_spans)
+        self.assertEqual([b["kind"] for b in blocks],
+                         ["opening", "rounds", "closing"])
+        self.assertEqual(joined({"blocks": blocks}), log.player)
+
+    def test_blocks_between_two_stretches_and_without_rounds(self):
+        lines = ["a", "R1", "b", "R2", "c"]
+        blocks = page.fight_blocks(lines, [[1, 2], [3, 4]])
+        self.assertEqual([b["kind"] for b in blocks],
+                         ["opening", "rounds", "between", "rounds",
+                          "closing"])
+        self.assertEqual(joined({"blocks": blocks}), lines)
+        self.assertEqual([b["kind"] for b in page.fight_blocks(["x"], [])],
+                         ["opening"])
+        self.assertEqual([b["kind"] for b in
+                          page.fight_blocks(["x"], [], continuing=True)],
+                         ["closing"])
+
+    def test_the_title_is_the_banner(self):
+        self.assertEqual(page.fight_title(
+            ["=== The reckoning:", "the Watch ===", "Guard 1"]),
+            "The reckoning: the Watch")
+        self.assertEqual(page.fight_title(
+            ["=== The Thing in the Well ===", "(a level-1 fight)"]),
+            "The Thing in the Well")
+        self.assertEqual(page.fight_title(["2x Wolf -- fangs", "DEX 4"]),
+                         "2x Wolf -- fangs")
+        self.assertEqual(page.fight_title([]), "")
+
+
+class TheFightsKept(unittest.TestCase):
+    def test_a_fight_is_queued_as_its_player_log(self):
+        with sandbox() as root:
+            state = calm_fight("wolf", 2)
+            kept = queue()
+            self.assertEqual(len(kept), 1)
+            path, doc = kept[0]
+            self.assertEqual(path.name, "q001.json")
+            short = ui_lines(root / "ui" / "fight-short.txt")
+            self.assertEqual(joined(doc), short)
+            kinds = [b["kind"] for b in doc["blocks"]]
+            self.assertEqual(kinds[0], "opening")
+            self.assertEqual(kinds[-1], "closing")
+            self.assertIn("rounds", kinds)
+            rounds = [b for b in doc["blocks"] if b["kind"] == "rounds"]
+            self.assertTrue(rounds[0]["lines"][0].startswith("Round "))
+            self.assertGreaterEqual(doc["rounds"], 1)
+            tally = session.tally_lines(state)
+            self.assertEqual(doc["blocks"][-1]["lines"][-len(tally):], tally)
+            self.assertIn(doc["outcome"], ("won", "unresolved"))
+            self.assertFalse(doc["continuing"])
+            self.assertEqual(doc["day"], state["clock"].day)
+            self.assertEqual(doc["where"], session.location_line(state))
+            self.assertEqual(doc["title"], short[0])
+            json.dumps(doc).encode("ascii")
+
+    def test_a_paused_fight_and_its_second_half(self):
+        with sandbox() as root:
+            real_pause()                        # new empties the queue
+            short = root / "ui" / "fight-short.txt"
+            (_, first), = queue()
+            self.assertEqual(first["outcome"], "paused")
+            self.assertEqual(joined(first), ui_lines(short))
+            self.assertFalse(first["continuing"])
+            before = len(ui_lines(short))
+            run("resume")
+            kept = queue()
+            self.assertEqual(len(kept), 2)
+            second = kept[1][1]
+            self.assertTrue(second["continuing"])
+            self.assertEqual(joined(second), ui_lines(short)[before:])
+            self.assertIn(second["outcome"],
+                          ("won", "lost", "unresolved", "paused"))
+            self.assertEqual(second["title"], first["title"])
+            self.assertNotEqual(second["blocks"][0]["kind"], "opening")
+
+    def test_a_clean_retreat_is_retreated(self):
+        with sandbox():
+            real_pause()
+            with unittest.mock.patch("session.attempt_retreat",
+                                     return_value=True):
+                run("retreat")
+            doc = queue()[-1][1]
+            self.assertEqual(doc["outcome"], "retreated")
+            self.assertTrue(doc["continuing"])
+            self.assertIsNone(session.load()["pending"])
+
+    def test_two_fights_are_two_entries(self):
+        with sandbox() as root:
+            calm_fight("wolf", 1)               # new empties the queue
+            first = ui_lines(root / "ui" / "fight-short.txt")
+            run("fight", "1", "--type", "wolf")
+            kept = queue()
+            self.assertEqual([p.name for p, _ in kept],
+                             ["q001.json", "q002.json"])
+            self.assertEqual(joined(kept[0][1]), first)
+            self.assertEqual(joined(kept[1][1]),
+                             ui_lines(root / "ui" / "fight-short.txt"))
+
+    def test_a_bare_log_is_not_kept(self):
+        with sandbox():
+            fresh(3)
+            state = session.load()
+            log = rpg.CombatLog()                   # no ui page: a bench's
+            log.play("x", "x")
+            with contextlib.redirect_stdout(io.StringIO()):
+                session.print_combat(log, state)
+            self.assertEqual(queue(), [])
+
+    def test_new_drops_the_record_and_the_queue(self):
+        with sandbox() as root:
+            calm_fight("wolf", 1)
+            (root / "ui" / "page.json").write_text('{"url": "x"}')
+            self.assertTrue(queue())
+            fresh(4)
+            self.assertFalse((root / "ui" / "page.json").exists())
+            self.assertFalse((root / "ui" / "queue").exists())
+
+    def test_the_record_is_committed_by_sheet(self):
+        self.assertIn("ui/page.json", session.UI_COMMIT_PATHS)
+
+
+class TheMoveCheck(unittest.TestCase):
+    """`page.py moves`: what the DM does with each move read."""
+
+    def setUp(self):
+        self._sandbox = sandbox()
+        self._sandbox.__enter__()
+        self.state = crafted_pause(fresh(3), "normal")
+        self.pc, self.companion = self.state["party"]
+        self.companion.hp, self.companion.down = 5, False
+        self.pc.items["healing"] = 1
+        self.companion.items["healing"] = 0
+
+    def tearDown(self):
+        self._sandbox.__exit__(None, None, None)
+
+    def report(self, moves, last_seq=3):
+        for i, m in enumerate(moves):
+            m.setdefault("id", f"m{m.get('seq', 90 + i):04d}")
+        return page.moves_report(moves, self.state, last_seq=last_seq,
+                                 paused_fight="f0003")
+
+    def test_each_kind_of_line(self):
+        pc, companion = self.pc.name, self.companion.name
+        lines = self.report([
+            {"seq": 2, "kind": "say", "text": "old"},
+            {"seq": 4, "kind": "say", "text": "  go on  "},
+            {"seq": 5, "kind": "ooc", "text": "why?"},
+            pause_move(seq=6, actions=[{"hero": pc, "action": "heal"}]),
+            pause_move(seq=7, actions=[{"hero": pc, "action": "heal"}]),
+            {"seq": 8, "kind": "order"},
+        ])
+        self.assertEqual(lines, [
+            "m0002 answered by an earlier turn; deleted",
+            "m0004 say: go on",
+            "m0005 ooc: why?",
+            "m0006 superseded by m0007",
+            f"m0007 pause -> python session.py resume --heal "
+            f"{shlex.quote(pc)}",
+            "m0008 not a move; deleted unanswered",
+        ])
+        refused = self.report([pause_move(
+            seq=9, actions=[{"hero": companion, "action": "heal"}])])
+        self.assertEqual(refused, [
+            f"m0009 pause REFUSED: {companion} carries no healing potion "
+            f"(answer it in the fiction)"])
+        stale = self.report([pause_move(seq=9, fight="f0002")])
+        self.assertIn("REFUSED: that pause is over", stale[0])
+
+    def test_the_command_printed_is_what_resume_reads(self):
+        line, = self.report([pause_move(
+            seq=6, actions=[{"hero": self.pc.name, "action": "heal"}])])
+        argv = shlex.split(line.split(" -> python session.py ", 1)[1])
+        args = session.build_parser().parse_args(argv)
+        self.assertEqual(args.heal, [self.pc.name])
+
+    def test_move_words(self):
+        pc = self.pc.name
+        self.assertEqual(page.move_words(page.clean_move(pause_move(
+            actions=[{"hero": pc, "action": "heal"}]))),
+            f"At the pause: {pc} drinks a healing potion; fight on")
+        self.assertEqual(page.move_words(page.clean_move(pause_move(
+            choice="retreat", escape="smoke", hero=pc))),
+            f"At the pause: retreat -- {pc} breaks a smoke vial")
+        self.assertEqual(page.move_words(page.clean_move(
+            {"seq": 1, "kind": "ooc", "text": "hi"})), "(to the DM) hi")
+
+
+# --------------------------------------------------------------------------- #
+# publish.py, by subprocess, under a temp RPG2_HOME
+# --------------------------------------------------------------------------- #
+
+class ThePublish(unittest.TestCase):
+    """dream's publish test, rpg2's way: the game is played in the sandbox
+    (whose root is laid out as an RPG2_HOME), publish.py runs over it."""
+
+    def py(self, *argv, check=True):
+        env = dict(os.environ, RPG2_HOME=str(self.root),
+                   PYTHONIOENCODING="utf-8")
+        return subprocess.run([sys.executable, *argv], cwd=REPO, env=env,
+                              capture_output=True, text=True, check=check)
+
+    def publish(self, *extra):
+        self.py("publish.py", "--out", str(self.out), *extra)
+        return json.loads((self.out / "batch.json").read_text())
+
+    def sent(self, *extra):
+        self.py("publish.py", "--sent", "--out", str(self.out), *extra)
+
+    def doc(self, path):
+        return json.loads((self.out / f"{path}.json").read_text())
+
+    @staticmethod
+    def targets(batch):
+        return [(w["op"], f"{w['collection']}/{w['doc_id']}",
+                 w.get("if_version")) for w in batch]
+
+    def write(self, name, doc):
+        path = self.root / name
+        path.write_text(json.dumps(doc) if not isinstance(doc, str) else doc)
+        return str(path)
+
+    def test_the_keepers_turn(self):
+        with sandbox() as root:
+            self.root, self.out = root, root / "out"
+            state = real_pause()
+            self.assertEqual(len(queue()), 1)
+            pc = state["party"][0]
+            pc.items["healing"] = 1
+            session.save(state)
+            prose = self.write("prose.md", "The troll comes.\n\n[fight]\n\n"
+                               "It stands over you.\n")
+            moves = self.write("moves.json", [
+                {"id": "m0003", "version": 1, "seq": 3, "kind": "say",
+                 "text": "I walk."},
+                {"id": "m0002", "version": 2, "seq": 2, "kind": "say",
+                 "text": "answered already"}])
+            read = self.write("state.json", {"v": 1, "lastSeq": 2,
+                                             "latest": "t0004",
+                                             "version": 9})
+
+            # the first publish: every singleton, pinned where known
+            batch = self.publish("--prose", prose, "--moves", moves,
+                                 "--state", read)
+            targets = self.targets(batch)
+            self.assertIn(("set", "game/state", 9), targets)
+            self.assertIn(("set", "chronicle/t0005", None), targets)
+            self.assertIn(("set", "fights/f0001", None), targets)
+            self.assertIn(("delete", "moves/m0002", 2), targets)
+            self.assertIn(("delete", "moves/m0003", 1), targets)
+            self.assertGreaterEqual({p for _, p, _ in targets},
+                                    set(page.SINGLETONS))
+            for write in batch:
+                if write["op"] == "set":
+                    self.assertTrue(Path(write["file_path"]).is_file())
+                    self.assertIn(write["collection"],
+                                  ("game", "chronicle", "fights"))
+            game = self.doc("game/state")
+            self.assertEqual((game["lastSeq"], game["latest"],
+                              game["lastFight"]), (3, "t0005", "f0001"))
+            self.assertEqual(game["pause"]["fight"], "f0001")
+            self.assertEqual(game["checkIn"], "when you call from Claude Code")
+            entry = self.doc("chronicle/t0005")
+            self.assertEqual([m["seq"] for m in entry["answered"]], [3])
+            self.assertEqual(entry["fights"], ["f0001"])
+            fight = self.doc("fights/f0001")
+            self.assertEqual((fight["v"], fight["id"], fight["outcome"],
+                              fight["continues"]), (1, "f0001", "paused",
+                                                    None))
+            self.assertNotIn("continuing", fight)
+
+            # the keeper's check reads the published pause
+            pause = pause_move(seq=4, fight="f0001", actions=[
+                {"hero": pc.name, "action": "heal"}])
+            pause["id"] = "m0004"
+            checked = self.py("page.py", "moves",
+                              self.write("moves2.json", [pause]),
+                              "--state", str(self.out / "game" /
+                                             "state.json")).stdout
+            self.assertIn("m0004 pause -> python session.py resume --heal",
+                          checked)
+
+            # --sent: the record, the transcript, the queue
+            self.sent()
+            record = json.loads((root / "ui" / "page.json").read_text())
+            self.assertIsNone(record["url"])
+            self.assertEqual(record["versions"],
+                             dict({p: 1 for p in page.SINGLETONS},
+                                  **{"game/state": 10}))
+            transcript = (root / "ui" / "transcript.md").read_text()
+            self.assertTrue(transcript.startswith(
+                f"## turn 5 (day {state['clock'].day})\n\n> I walk.\n\n"
+                f"The troll comes.\n\n[fight f0001: "))
+            self.assertEqual(queue(), [])
+
+            # the second half: its own document, continuing the first
+            run("resume", "--heal", pc.name)
+            read = self.write("state.json", dict(game, version=10))
+            prose = self.write("prose.md", "You drink and go on.\n")
+            batch = self.publish("--prose", prose, "--state", read)
+            second = self.doc("fights/f0002")
+            self.assertEqual(second["continues"], "f0001")
+            self.assertEqual(self.doc("game/state")["lastFight"], "f0002")
+            self.assertIsNone(self.doc("game/state")["pause"])
+            self.assertIn(("set", "game/state", 10), self.targets(batch))
+            self.sent()
+            self.assertIn("[fight f0002: ",
+                          (root / "ui" / "transcript.md").read_text())
+
+            # a second publish sends only what changed
+            batch = self.publish("--status", "dm_thinking")
+            self.assertEqual([(w["doc_id"], w.get("if_version"))
+                              for w in batch], [("state", 11)])
+            self.sent("--url", "https://claude.ai/artifact/x")
+            record = json.loads((root / "ui" / "page.json").read_text())
+            self.assertEqual(record["url"], "https://claude.ai/artifact/x")
+            self.assertEqual(record["versions"]["game/state"], 12)
+
+            # --all with nothing read: the record pins every one
+            batch = self.publish("--all")
+            self.assertEqual({(w["doc_id"], w.get("if_version"))
+                              for w in batch},
+                             {(p.split("/")[1], record["versions"][p])
+                              for p in page.SINGLETONS})
+
+            # a batch never passes 50 writes
+            many = self.write("many.json", [
+                {"id": f"m{n:04d}", "seq": n, "kind": "say", "text": "x"}
+                for n in range(20, 80)])
+            done = self.py("publish.py", "--out", str(self.out),
+                           "--moves", many, check=False)
+            self.assertNotEqual(done.returncode, 0)
+            self.assertIn("more than one batch takes (50)", done.stderr)
+
+    def test_a_new_game_writes_everything(self):
+        """No record (new dropped it): the last publish is another page's,
+        so nothing is compared with it or read from it."""
+        with sandbox() as root:
+            self.root, self.out = root, root / "out"
+            fresh(3)
+            prose = self.write("prose.md", "You wake.\n")
+            self.publish("--prose", prose)
+            self.sent()
+            fresh(3)                              # the same world, anew
+            batch = self.publish("--prose", prose)
+            self.assertEqual({p for _, p, _ in self.targets(batch)},
+                             set(page.SINGLETONS) | {"chronicle/t0001"})
+            self.assertTrue(all(v is None for _, _, v in
+                                self.targets(batch)))
 
 
 if __name__ == "__main__":

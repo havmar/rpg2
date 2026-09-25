@@ -53,12 +53,10 @@ speaks are words), and **author the physical, derive the human**.
 rpg2's own claude.ai Artifact page for the player, ported from dream's
 `web/` and its publish / keeper's-turn protocol. The build contract is
 **`page-plan.md`** (five serial sessions; read its section 2 and the
-shipped sessions' deviation notes first). Session 1 (the projection,
-`page.py`) is built -- designlog 2026-09-25. What is left:
+shipped sessions' deviation notes first). Sessions 1 (the projection,
+`page.py`) and 2 (the fights kept, `publish.py`, the page record, the
+`page.py moves` check) are built -- designlog 2026-09-25. What is left:
 
-- **Session 2** -- fights kept automatically (`CombatLog.round_spans` /
-  `outcome`, `page.keep_fight` from `print_combat`), `publish.py`, the page
-  record `ui/page.json`, the `page.py moves` checker.
 - **Session 3** -- the Angular page under `web/`: store, Story, Answer,
   Chronicle, Party, Fight, Fights; the first e2e.
 - **Session 4** -- the pause picker, Map, Quests, Record, level-up, option

@@ -84,6 +84,7 @@ import json
 import os
 import random
 import re
+import shutil
 import subprocess
 import textwrap
 from pathlib import Path
@@ -488,6 +489,9 @@ UI_COMMIT_PATHS = (
     "ui/fight-detailed.txt",
     "ui/scene.md",
     "ui/transcript.md",
+    # The player's page's record (publish.py --sent writes it): its url
+    # and each game/ document's version, as the last batch left them.
+    "ui/page.json",
 )
 
 
@@ -1198,7 +1202,7 @@ def new_combat_log(continuing: bool = False) -> CombatLog:
                      continuing=continuing)
 
 
-def print_combat(log: CombatLog) -> None:
+def print_combat(log: CombatLog, state: dict | None = None) -> None:
     """Print THE combat log (2026-07-21: the player-facing level is the only
     combat display -- the DM narrates over it and pastes it as-is; see
     rules.md, "Reading the combat log"). Both levels are also written as
@@ -1206,13 +1210,32 @@ def print_combat(log: CombatLog) -> None:
     ui/fight-detailed.txt carries dice math, modifiers, and stamina readouts
     for post-mortems. group_combat already flushes detailed mechanics at
     resolution/pause; these cursor-safe flushes capture the session tail
-    without duplicating lines."""
+    without duplicating lines.
+
+    With the game's `state`, a session fight is also KEPT for the player's
+    page (2026-09-25, page-plan.md session 2): `page.keep_fight` queues
+    this process's player log, cut at the log's round spans, in
+    ui/queue/ for the next `publish.py`. Every fight is kept, so there is
+    no call for the DM to forget; `new` empties the queue. The import is
+    lazy because page imports session. Like the ui pages, a render bug
+    raises and a disk that will not take the file is ignored."""
     if isinstance(log, CombatLog) and log.player:
         log.flush_debug()
         log.flush_player()
         print("\n".join(log.player))
+        if state is not None and log.player_path is not None:
+            import page
+            page.keep_fight(state, log)
     else:
         print("\n".join(log))
+
+
+def fight_outcome(log: list[str], outcome: str) -> None:
+    """Stamp how the fight came out on a session log, for the page's fight
+    card ("won", "lost", "unresolved", "retreated", "paused"). A plain
+    list (the suites' throwaway logs) carries no stamp."""
+    if isinstance(log, CombatLog):
+        log.outcome = outcome
 
 
 def print_play(log) -> None:
@@ -1565,6 +1588,17 @@ def opening_hook(state: dict) -> list[str]:
     return lines
 
 
+def forget_page() -> None:
+    """One page is one game (the player's page, 2026-09-25): `new` drops
+    the page's record (ui/page.json -- a new game gets a new page) and
+    any fight still queued for the old one (ui/queue/)."""
+    try:
+        (UI_DIR / "page.json").unlink(missing_ok=True)
+        shutil.rmtree(UI_DIR / "queue", ignore_errors=True)
+    except OSError:
+        return
+
+
 def cmd_new(args: argparse.Namespace) -> None:
     if args.level is not None and not 1 <= args.level <= LEVEL_CAP:
         print(f"--level takes a level of 1-{LEVEL_CAP}.")
@@ -1651,6 +1685,7 @@ def cmd_new(args: argparse.Namespace) -> None:
     state["purse"].silver += career_purse(level) + joining_silver(ally)
     kit_log: list[str] = []
     auto_potions(state["party"], kit_log)    # the opening kit, shared out
+    forget_page()
     save(state)
     print(f"New game (seed={args.seed}, level {level}"
           f"{'' if args.level is not None else ' -- rolled'}).")
@@ -2577,7 +2612,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             # Fate's special interrupt consumes the same one-pause budget.
             "normal_pause_used": True,
         }
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)
@@ -4485,11 +4521,15 @@ def finish_encounter(state: dict, log: list[str], foes: list,
     )
     if mercy_fired:
         append_tally(state, log)
-        print_combat(log)
+        fight_outcome(log, "lost")
+        print_combat(log, state)
         save(state)
         return
 
     wiped = party_wiped(party, log)
+    fight_outcome(log, "lost" if wiped
+                  else "unresolved" if any(f.alive for f in foes)
+                  else "won")
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
         log_banner(log,
@@ -4603,7 +4643,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # (War news no longer arrives at fight's end -- it waits for the
         # next settlement scene: board, arrival, tavern, downtime.)
         append_tally(state, log)
-    print_combat(log)
+    print_combat(log, state)
     save(state)
     if (not wiped and pc is not None and not pc.dead
             and pc.level > pc_level_before):
@@ -6375,7 +6415,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
         pending["pause_kind"] = pause.kind
         pending["normal_pause_used"] = True
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)
@@ -6484,7 +6525,9 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             append_tally(state, log)
         elif mercy_fired:
             append_tally(state, log)
-        print_combat(log)
+        fight_outcome(log, "retreated" if escaped and not wiped
+                      and not mercy_fired else "lost")
+        print_combat(log, state)
         save(state)
         if not mercy_fired:
             report_game_over(party, wiped)
@@ -6503,7 +6546,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
         pending["pause_kind"] = pause.kind
         pending["normal_pause_used"] = True
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)

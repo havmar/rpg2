@@ -8794,3 +8794,117 @@ web and no publish yet: `page.py`, the session seams it reads through, and
 (`python -m unittest discover -p "test_*.py"`) **1334 OK** (1297 at the
 gates review, plus these 37), no failures. `page-plan.md`'s "Session 1
 notes / deviations" carries all of the above for Session 2.
+
+## 2026-09-25 (B) — The player's page, session 2: the fights kept and the keeper's publish
+
+The second of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`): the
+whole keeper's turn now works from the terminal, with no page yet. A
+fight is kept for the page without the DM lifting a finger, `publish.py`
+turns a played turn into one pinned ArtifactData batch, and `page.py
+moves` tells the DM what each move from the page asks for.
+
+### What shipped
+
+- **`rpg.py`**: `CombatLog.round_spans` (one `[start, end]` per stretch
+  of rounds in `.player`, opened by `round_start`, closed by
+  `finish_rounds`) and `CombatLog.outcome`. Bookkeeping only; the benches'
+  plain lists and every engine path are untouched.
+- **`session.py`**: `print_combat(log, state)` at all six call sites; after
+  the flush it lazily imports `page` and calls `keep_fight`.
+  `fight_outcome` stamps the outcome -- `paused` in the three pause
+  branches (`resolve_encounter`, `cmd_resume`, the run-down in
+  `cmd_retreat`), `lost` on a mercy or a wipe, `unresolved` when foes
+  still stand, `won` otherwise, `retreated` on a clean escape (whose
+  `pending` is already cleared when it prints). `forget_page` (called by
+  `new`) drops `ui/page.json` and `ui/queue/`; `ui/page.json` joined
+  `UI_COMMIT_PATHS`.
+- **`page.py`**: `keep_fight` (the process's player log to
+  `ui/queue/qNNN.json`, cut by `fight_blocks` at the round spans, titled by
+  `fight_title`, carrying `outcome` and `continuing`), `queued_fights`,
+  `fight_id`, `fight_doc`, `fight_markers`, `move_words`, `read_moves`,
+  `moves_report` and the CLI `python page.py moves MOVES.json [--state
+  STATE.json]`, which prints and never runs.
+- **`publish.py`**, dream's adapted almost line for line: the save loaded
+  under `RPG2_HOME`, the changed singletons, the chronicle entry, the
+  queued fights numbered after `lastFight` (a second half `continues` the
+  first), every `game/` set pinned and every move read deleted, pinned;
+  256 KiB a document, 50 writes a batch. `--sent` advances `ui/page.json`,
+  appends the turn to `ui/transcript.md` and clears the sent fights.
+- **`web/README.md`**, begun with the Python half: the files, the
+  documents, the fights kept, the keeper's turn, the pins.
+- **Housekeeping**: the stray `ui/fight-detailed.txt` / `ui/fight-short.txt`
+  (a gate-plaza fight at Candor, committed by a `sheet` run in the repo
+  home during session 1's testing) are removed. They most likely came
+  from `test_gates`' retreat test, which ran `cmd_retreat` against the
+  repo's own fight pages and appended to them on every run;
+  `test_gates._run` now points `UI_DIR` and both snapshot paths at a
+  temp dir, so no suite writes into `ui/` (the queue included).
+
+### The calls the build settled
+
+- **Blocks come from the spans, never from parsing.** `opening` is what
+  precedes the first round, `rounds` each stretch, `between` what sits
+  between two stretches, `closing` what follows. A second half has no
+  opening; a log with no rounds is one block (`closing` for a second
+  half -- a clean escape -- else `opening`). The invariant, tested: the
+  blocks joined are the lines the process appended to
+  `ui/fight-short.txt`.
+- **The title**: the `===` banner without its rules, joined across two
+  fitted lines; the bare `fight` command has no banner, so its first line
+  (the roster, "2x Wolf -- fangs") names it. A second half reads its title
+  off `ui/fight-short.txt`, which holds the whole fight by then -- no new
+  key in the save.
+- **A render bug in `keep_fight` raises; a disk error is swallowed** --
+  the ui pages' contract. It runs before `save` in `finish_encounter`,
+  so a crash there loses the fight's result, but the save's rng replays
+  the same fight once the bug is fixed, and an unknown outcome is exactly
+  the kind of state the no-soft-readers rule says to let raise.
+- **Every session fight is kept**, chat play included: the queue is
+  gitignored and `new` empties it, and gating it on a page record would
+  lose the fight of a first turn published late. The cost is that a game
+  moved from chat to the page mid-way publishes its backlog on its first
+  `--prose` publish; Session 5's protocol will say to empty the queue
+  first.
+- **The pause's fight id** is the newest published fight while a pause
+  stands, and null while fights still wait in the queue (a publish
+  without `--prose`): the page cannot point at a fight it does not have.
+- **Only the newest pause move of a turn is weighed**, played or refused;
+  earlier ones are superseded even when the newest is refused. The plan's
+  "the newest valid pause move" could be read as falling back to an older
+  choice; playing a choice the player replaced is worse than answering a
+  refusal in the fiction.
+- **`web/out/` lives under `RPG2_HOME`**, like the save and `ui/`: the
+  repo's own in play, a temp home's own in tests. `read_moves` moved to
+  `page.py` (the move check reads moves too); `--queue` is gone.
+- **No record, no last publish**: with no `ui/page.json` (a new game), a
+  publish neither compares with nor reads the handshake from
+  `web/out/last/`, which belongs to the old game's page. dream kept its
+  out dir per save and never met this.
+- **The record holds `game/` versions only** (fights are write-once, as
+  in dream); the plan's example of a `fights/` version was a slip.
+- **The transcript**: `--sent` appends `## turn N (day D)`, a `>` line per
+  answered move in `move_words` (ooc as `(to the DM) ...`, a pause in
+  words), and the prose with each placed `[fight]` written
+  `[fight f0003: TITLE, OUTCOME]`, unplaced fights after it -- the record
+  of what the player received.
+
+### Verification
+
+`test_page.py` 52 tests OK (37 + 15: round spans and blocks, titles, the
+queue's fidelity for a whole fight, a paused one and its second half, a
+clean retreat, two fights, a bare log not kept, `new` dropping the record
+and queue, the move check's lines and its command parsed back by
+`session.py`, move words, and `publish.py` by subprocess through a whole
+keeper's turn plus a new game). `test_ui_logs.py` gained the page.json
+commit-set check. The whole suite (`python -m unittest discover -p
+"test_*.py"`) **1350 OK** (1334 at session 1, plus these 15 and the
+commit-set check), and it leaves the repo's `ui/` untouched. A terminal
+keeper's turn under a temp `RPG2_HOME` -- `new`, `publish.py --all --prose`,
+`--sent`, a fight that paused, `page.py moves` over a heal, a stale and a
+malformed move, `resume` as printed, a publish with the continuation,
+`--sent --url`, `--all` -- produced batches of dream's shape: `set`
+writes with `file_path` and `if_version` on every `game/` document once a
+version is known, `delete` of every move read pinned to its version,
+write-once `chronicle/` and `fights/` sets unpinned, under 50 writes.
+`page-plan.md`'s "Session 2 notes / deviations" carries all of this for
+Session 3.

@@ -55,6 +55,11 @@ class CombatSnapshotTests(unittest.TestCase):
         self.assertIn("ui/scene.md", UI_COMMIT_PATHS)
         self.assertIn("ui/transcript.md", UI_COMMIT_PATHS)
 
+    def test_sheet_commit_set_contains_the_page_record(self):
+        # The player's page's record (publish.py --sent writes it) rides
+        # with the pages: the page's url and its documents' versions.
+        self.assertIn("ui/page.json", UI_COMMIT_PATHS)
+
 
 class ExactQuestLevelTests(unittest.TestCase):
     def test_generated_quests_have_no_blur_and_boards_show_exact_levels(self):

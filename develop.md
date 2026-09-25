@@ -1566,7 +1566,11 @@ a pointer: what the file is, how it's run, where its docs are.
   ceilings in — rules.md's Heaven & Hell add-on part 3), and the batch-sim
   policies (`sim_fight` / `sim_pause_policy`). Stdlib-only and
   self-contained; everything else imports it. All tunable constants sit at
-  the top.
+  the top. **`CombatLog.round_spans` / `outcome`** (2026-09-25, the
+  player's page, session 2) are pure bookkeeping for the page: where each
+  stretch of rounds sits in `.player` (`round_start` opens a span,
+  `finish_rounds` closes it) and how the fight came out (set by the
+  session); nothing in the engine reads either.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
   `make_foe` — six monster families plus the humanoid ladder and, since
   2026-07-14, the three caster rows (hexer/pyromancer/magus), every row
@@ -2167,6 +2171,14 @@ a pointer: what the file is, how it's run, where its docs are.
   `party_status_lines` (the party sheet's tail), `quest_in_hand_lines` /
   `quest_site_marks` (the map's quests in hand), `sin_tally_lines` /
   `hell_suggestions` (the history page's last two sections).
+  **Session 2** (2026-09-25) hooked the fights: `print_combat(log, state)`
+  -- every call site passes the state -- calls `page.keep_fight` after
+  flushing, through a lazy `import page` (page imports session);
+  `fight_outcome(log, outcome)` stamps `won` / `lost` / `unresolved` /
+  `retreated` / `paused` on the log in `resolve_encounter`,
+  `finish_encounter`, `cmd_resume` and `cmd_retreat`; `forget_page` (in
+  `new`) drops `ui/page.json` and `ui/queue/`; and `ui/page.json` joined
+  `UI_COMMIT_PATHS`.
 - `page-plan.md` — **THE PLAYER'S PAGE ARC's build contract** (2026-09-25):
   a port of dream's claude.ai Artifact page to rpg2 in five serial
   sessions -- what exists, the architecture calls, the data contract
@@ -2191,7 +2203,39 @@ a pointer: what the file is, how it's run, where its docs are.
   own checkers or raises `MoveRefused` -- and never runs it. The module
   docstring lists what never crosses and the calls it made. `import
   session` at the top; session never imports page at module level.
-- `test_page.py` — **the player's page contract suite, part 1**
+  **Session 2** added the fights and the keeper's check: `keep_fight(state,
+  log)` (called by `session.print_combat`) queues the process's player log
+  as `ui/queue/qNNN.json`, cut by `fight_blocks` at `CombatLog.round_spans`
+  into opening / rounds / between / closing, titled by `fight_title`, with
+  the log's `outcome` and `continuing`; `queued_fights`, `fight_id`,
+  `fight_doc` (the published `fights/fNNNN`), `fight_markers` (the prose's
+  `[fight]` paragraphs); `move_words` (a move as the player's words, for
+  the transcript); `read_moves` (dream publish.py's reader); the paths
+  `queue_dir` / `record_path` / `default_out`, all read off
+  `session.UI_DIR` / `RPG2_HOME` at call time; and the CLI
+  `python page.py moves MOVES.json [--state STATE.json]`
+  (`moves_report`): one line per move -- the words, the exact
+  `session.py` command a pause move asks for, its refusal, superseded, or
+  not a move. It prints and never runs.
+- `publish.py` — **the keeper's publish** (2026-09-25, the page arc's
+  session 2; dream's `publish.py` adapted almost line for line). Loads the
+  save under `RPG2_HOME`, projects it with `page.player_view`, and writes
+  `web/out/` (under `RPG2_HOME`; `--out` for another): the changed
+  `game/` singletons (every one with `--all`, or with no page record), the
+  chronicle entry and the queued fights (with `--prose`, numbered after
+  `lastFight`, a second half `continues` the first), and `batch.json`, one
+  ArtifactData batch with every `game/` set pinned (`if_version` from
+  `ui/page.json`, `--state`, `--versions`) and every move read deleted,
+  pinned. Caps: 256 KiB a document, 50 writes a batch. `--sent [--url
+  URL]` promotes `pending/` to `last/`, advances the record, appends the
+  turn to `ui/transcript.md`, and clears the sent fights from the queue.
+  The docstring is the manual; `web/README.md` has the keeper's turn.
+- `web/` — **the player's page** (the page arc). So far only
+  `web/README.md`: the Python half -- the files, the documents, the fights
+  kept, the keeper's turn, the pins. The Angular page, its build, the
+  local server and the e2e land with session 3. `web/out/`, `web/dist/`
+  and the build dirs are gitignored.
+- `test_page.py` — **the player's page contract suite, parts 1 and 2**
   (2026-09-25): the projection (JSON, under 256 KiB, ASCII, each `text`
   its ui page), the secrets (no `rng`/`world` key, no untaken posting or
   its giver, no unknown settlement, no unentered room; the map's places
@@ -2202,7 +2246,18 @@ a pointer: what the file is, how it's run, where its docs are.
   duplicate, unknown or down hero, no potion, no teleport 2, no vial, the
   substring trap), `resume`/`retreat` refusing with the save untouched,
   `clean_move`, the chronicle entry, the level-up block, game over, and a
-  whole game under `RPG2_HOME` by subprocess.
+  whole game under `RPG2_HOME` by subprocess. **Part 2** (session 2): the
+  round spans and blocks, a fight's queue entry equal to its
+  `ui/fight-short.txt` with the tally closing it, a paused fight's second
+  half its own entry (and a clean retreat `retreated`), two fights two
+  entries, `new` dropping the record and the queue; `page.py moves`'s
+  lines (argv, refusal, superseded, not a move, answered earlier) and the
+  printed command parsed back by `session.py`; and `publish.py` by
+  subprocess through a whole keeper's turn -- pins, deletions, fight
+  numbering and `continues`, the pause's fight id, `--sent`'s record,
+  transcript and queue, a changed-only second publish, `--url`, `--all`
+  pinned from the record, the 50-write stop, and a new game writing
+  everything.
   `python -m unittest -v test_page.py`.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
@@ -2373,7 +2428,12 @@ python crime.py --seed 1              # the crime catalogue + local marks
 python -m unittest -v test_crime.py   # the crime layer contract
 python -m unittest -v test_history.py # the campaign record + the sin rename
 python -m unittest -v test_start.py   # the start level, the wizard PC, traits
-python -m unittest -v test_page.py    # the player's page: projection, moves
+python -m unittest -v test_page.py    # the player's page: projection, moves,
+                                      # fights kept, publish
+python page.py moves web/out/read/moves.json --state web/out/read/state.json
+                                      # the keeper's check (runs nothing)
+python publish.py --prose ui/scene.md --moves M.json --state S.json
+python publish.py --sent [--url URL]  # the keeper's publish (web/README.md)
 RPG2_HOME=/tmp/g python session.py new  # a game under another base dir
 ```
 
@@ -3564,6 +3624,19 @@ mechanic *does* and *why* is rules.md's job.
   proof line in `quest_detail_lines`, and `lost` in `_reusable_site`'s
   dead-status set. **When adding a quest-status reader, check all four
   values** — the two new ones are the easy miss.
+- **The player's page** (2026-09-25, the page arc; `page-plan.md` is the
+  contract, `web/README.md` the manual) — the projection is `page.py`
+  (`player_view` and the five singleton builders, each calling the
+  functions its ui page is built from; `chronicle_entry`; `clean_move` /
+  `pause_args` over session's `pause_menu_data`, `check_pause_actions`
+  and `check_escape`). The fights reach it on their own:
+  `session.print_combat(log, state)` -> `page.keep_fight`, which cuts the
+  player log at `CombatLog.round_spans` and carries `CombatLog.outcome`
+  (stamped by `session.fight_outcome`) into `ui/queue/`. `publish.py`
+  numbers the queue, projects, pins and writes the batch; `page.py moves`
+  checks the moves. Everything is rooted at `RPG2_HOME` (session's
+  `STATE_PATH` / `UI_DIR`, read at call time by page.py), and `new`
+  (`forget_page`) makes one page one game.
 
 ## Balance / tuning
 
