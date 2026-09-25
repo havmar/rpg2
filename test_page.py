@@ -869,6 +869,30 @@ class TheBaseDirectory(unittest.TestCase):
             out = py("session.py", "sheet")
             self.assertIn("nothing was committed", " ".join(out.split()))
 
+    def test_a_closed_pipe_does_not_cost_the_save(self):
+        # The dress rehearsal's find: `take q01 | head -1` closed the pipe
+        # on the first print, and the command died before its save.
+        with tempfile.TemporaryDirectory() as tmp:
+            env = dict(os.environ, RPG2_HOME=tmp, PYTHONIOENCODING="utf-8")
+            subprocess.run([sys.executable, "session.py", "new", "--seed",
+                            "3", "--level", "1"], cwd=REPO, env=env,
+                           capture_output=True, check=True)
+            opening = json.loads((Path(tmp) / "save.json").read_text(
+                encoding="utf-8"))["world"]["opening_quest"]
+            take = subprocess.Popen([sys.executable, "session.py", "take",
+                                     opening], cwd=REPO, env=env,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            take.stdout.readline()
+            take.stdout.close()                  # the reader goes away
+            err = take.stderr.read()
+            take.stderr.close()
+            self.assertEqual(take.wait(), 0, err)
+            self.assertNotIn(b"BrokenPipeError", err)
+            saved = json.loads((Path(tmp) / "save.json").read_text(
+                encoding="utf-8"))
+            self.assertEqual(saved["active_quest"], opening)
+
     def test_the_default_home_is_the_repo(self):
         if os.environ.get("RPG2_HOME"):
             self.skipTest("RPG2_HOME is set for this run")
@@ -974,6 +998,22 @@ class TheFightsKept(unittest.TestCase):
             self.assertEqual(doc["where"], session.location_line(state))
             self.assertEqual(doc["title"], short[0])
             json.dumps(doc).encode("ascii")
+
+    def test_a_kept_fight_is_forty_columns(self):
+        # With a job in hand the tally names what is ahead in a line far
+        # past 40 columns; the log keeps it wrapped (rpg.fit_width), so the
+        # page's fight is the terminal's.
+        with sandbox() as root:
+            state = fresh(3)
+            run("take", state["world"]["opening_quest"])
+            run("fight", "1", "--type", "wolf")
+            (_, doc), = queue()
+            short = ui_lines(root / "ui" / "fight-short.txt")
+            self.assertEqual(joined(doc), short)
+            self.assertTrue(any(line.startswith("Ahead: ")
+                                for line in short))
+            for line in short:
+                self.assertLessEqual(len(line), session.WRAP_WIDTH, line)
 
     def test_a_paused_fight_and_its_second_half(self):
         with sandbox() as root:

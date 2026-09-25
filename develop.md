@@ -175,8 +175,10 @@ a pointer: what the file is, how it's run, where its docs are.
   design spine** (the "why" behind every number, the log format, the pause,
   weapons, survival, progression). Read it before changing mechanics.
 - `plan.md` — **the sole active roadmap**; it carries NO build contract.
-  Four whole arcs have shipped out of it, THE GATES ARC (design in
-  `gates.md`, now a historical note) whole on 2026-09-12; before it: the
+  Five whole arcs have shipped out of it, THE PLAYER'S PAGE ARC
+  (`page-plan.md`, now a historical note) whole on 2026-09-25; before it
+  THE GATES ARC (design in
+  `gates.md`, now a historical note) whole on 2026-09-12; before that: the
   fixed Europe-map rework across five sessions ending 2026-08-15 (Human
   World Contraction, Fixed Europe Geography, Grid Navigation and Map UI,
   Local Quest Geography, Europe MVP Closure); THE TILE ECONOMY ARC across
@@ -1494,12 +1496,14 @@ a pointer: what the file is, how it's run, where its docs are.
   exemptions. `python -m unittest -v test_turnin.py`.
 - `test_ui_logs.py` — focused contracts for the committed last-fight
   snapshots (new-fight replace, pause/resume append, short/detailed split,
-  `sheet` path registration) and exact quest-level readouts.
+  `sheet` path registration, the player level never wider than 40
+  columns) and exact quest-level readouts.
   `python -m unittest -v test_ui_logs.py`.
 - `scene-example.md` — **the worked scene-page model** (2026-08-05): a game
   start and a fight turn in writing.md's voice and dm.md's scene-page format
   (the one-turn page shown in two successive states, fenced displays, the
-  start+link+end fight shape).
+  start+link+end fight shape), and the fight turn again in page play's
+  shape (`[fight]` for the link; dm.md, Page play).
   Referenced by dm.md and writing.md; it is play-facing copy, so it follows
   the page rules itself (displays fenced at 40 columns, prose unwrapped,
   markdown for structure only, ASCII).
@@ -1570,7 +1574,13 @@ a pointer: what the file is, how it's run, where its docs are.
   player's page, session 2) are pure bookkeeping for the page: where each
   stretch of rounds sits in `.player` (`round_start` opens a span,
   `finish_rounds` closes it) and how the fight came out (set by the
-  session); nothing in the engine reads either.
+  session); nothing in the engine reads either. **`fit_width`** (session
+  5) is the one 40-column wrap rule (`PLAYER_WIDTH`, the continuation
+  hanging two past the indent): `CombatLog._player_add` runs every player
+  line through it, so a line no emitter pre-fitted (the tally's "Ahead:
+  ..." summary ran to 123 columns) reaches `ui/fight-short.txt` and the
+  page wrapped as the terminal showed it, and `session._wrap_block` is
+  it line by line.
 - `sites.py` — **the catalog & the set sites.** The foe catalog (`FOES`,
   `make_foe` — six monster families plus the humanoid ladder and, since
   2026-07-14, the three caster rows (hexer/pyromancer/magus), every row
@@ -2178,16 +2188,20 @@ a pointer: what the file is, how it's run, where its docs are.
   `retreated` / `paused` on the log in `resolve_encounter`,
   `finish_encounter`, `cmd_resume` and `cmd_retreat`; `forget_page` (in
   `new`) drops `ui/page.json` and `ui/queue/`; and `ui/page.json` joined
-  `UI_COMMIT_PATHS`.
-- `page-plan.md` — **THE PLAYER'S PAGE ARC's build contract** (2026-09-25):
-  a port of dream's claude.ai Artifact page to rpg2 in five serial
-  sessions -- what exists, the architecture calls, the data contract
-  (section 2: the five `game/` singletons, `chronicle/`, `fights/`,
-  `moves/`), and each session's files, tests and docs. A shipped
-  session's section STAYS until the arc closes, with a "notes /
-  deviations" addendum under it, because the later sessions build on
-  it -- read the addenda first; session 5 cuts the file down to a
-  historical note, as gates.md was.
+  `UI_COMMIT_PATHS`. **Session 5** (2026-09-25): `_wrap_block` is
+  `rpg.fit_width` line by line (`WRAP_WIDTH` = `PLAYER_WIDTH`), and the
+  module's `print` survives a reader that goes away (`take q01 | head`):
+  the rest of the output goes to the null device and the command runs on
+  to its save, where it used to die before saving.
+- `page-plan.md` — **THE PLAYER'S PAGE ARC's historical note**
+  (2026-09-25). It was the arc's build contract (a port of dream's
+  claude.ai Artifact page in five serial sessions, with a deviations
+  addendum per session); the arc shipped whole the same day, so the file
+  is now a one-page map of where its content went, as gates.md is: dm.md's
+  "Page play", web/README.md (the data contract and the manual), this
+  file's entries, designlog 2026-09-25 and (B)-(E). It stays at the root
+  beside gates.md rather than in `archive/`: nothing in it is unbuilt,
+  and `archive/` keeps displaced roadmaps.
 - `page.py` — **the player's page projection** (2026-09-25, the page arc's
   session 1; dream's `dreamgame/view.py` adapted). The ONLY road from the
   save to the page's shared store, so it copies across only what the
@@ -2229,13 +2243,16 @@ a pointer: what the file is, how it's run, where its docs are.
   pinned. Caps: 256 KiB a document, 50 writes a batch. `--sent [--url
   URL]` promotes `pending/` to `last/`, advances the record, appends the
   turn to `ui/transcript.md`, and clears the sent fights from the queue.
-  The docstring is the manual; `web/README.md` has the keeper's turn.
+  The docstring is the manual; `web/README.md` has the keeper's turn and
+  dm.md's "Page play" the protocol the DM follows.
 - `web/` — **the player's page** (the page arc; dream's `web/` ported).
   `web/out/`, `web/dist/`, `web/app/node_modules/` and the build dirs are
   gitignored; `web/app/package-lock.json` is committed.
   - `web/README.md` — the manual: the Python half (the files, the
-    documents, the fights kept, the keeper's turn, the pins) and the page
-    (layout, build, run locally, test, adding to the page).
+    documents field by field -- the data contract --, the fights kept,
+    the keeper's turn, the pins) and the page (layout, the tabs, the pause
+    picker, build, publish, run locally, test, adding to the page). The
+    DM's protocol is dm.md's "Page play".
   - `web/app/` — **the Angular 20 page** (session 3; standalone, signals,
     zoneless, `outputHashing: none`, builds exactly `main.js` and
     `styles.css`). `src/app/model.ts` reads section 2's documents
@@ -2298,7 +2315,10 @@ a pointer: what the file is, how it's run, where its docs are.
   numbering and `continues`, the pause's fight id, `--sent`'s record,
   transcript and queue, a changed-only second publish, `--url`, `--all`
   pinned from the record, the 50-write stop, and a new game writing
-  everything.
+  everything. **Session 5** added two: a kept fight with a job in hand
+  (the tally's long "Ahead:" line) is 40 columns wide and still equal to
+  `ui/fight-short.txt`, and a command whose reader closes the pipe still
+  saves.
   `python -m unittest -v test_page.py`.
 - `tune.py` — Monte Carlo sweep over barrow layouts plus the
   resource-pressure check (the usual sim policy vs "reckless": no pauses, no
@@ -3669,8 +3689,9 @@ mechanic *does* and *why* is rules.md's job.
   proof line in `quest_detail_lines`, and `lost` in `_reusable_site`'s
   dead-status set. **When adding a quest-status reader, check all four
   values** — the two new ones are the easy miss.
-- **The player's page** (2026-09-25, the page arc; `page-plan.md` is the
-  contract, `web/README.md` the manual) — the projection is `page.py`
+- **The player's page** (2026-09-25, the page arc; `web/README.md` is the
+  manual and the data contract, dm.md's "Page play" the protocol,
+  `page-plan.md` the arc's historical note) — the projection is `page.py`
   (`player_view` and the five singleton builders, each calling the
   functions its ui page is built from; `chronicle_entry`; `clean_move` /
   `pause_args` over session's `pause_menu_data`, `check_pause_actions`
@@ -4287,6 +4308,9 @@ annotations, the equal-cost matrix, and the career curve.
 
 - Stdlib only; keep `rpg.py` self-contained and importable (everything else
   imports it; `sites.py` holds the content so the engine stays generic).
+- Node lives only under `web/` (the player's page: Angular, the local
+  table, the e2e); the Python never needs it, and `page.py` /
+  `publish.py` stay stdlib like the rest.
 - Keep narrative/log output ASCII (no em-dashes or special glyphs) for Windows.
 - `Entity` is `@dataclass(eq=False)` so instances are identity-hashable (used in
   combat sets and the pause's `fired` pairs) — don't switch it back to value

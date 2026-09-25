@@ -8,7 +8,7 @@
  *                    written once (page.py, keep_fight / fight_doc)
  *   moves/mNNNN      one player move each, written by this page
  *
- * The contract is page-plan.md, section 2. Every document arrives from another
+ * The contract is web/README.md, The documents. Every document arrives from another
  * writer and is untrusted: each is read field by field with a fallback, so one
  * malformed document cannot blank the page. Parse, never cast.
  */
@@ -457,7 +457,7 @@ export type PauseChoice = (typeof PAUSE_CHOICES)[number];
 export type PauseAction = (typeof PAUSE_ACTIONS)[number];
 export type Escape = (typeof ESCAPES)[number];
 
-/** What a page sends, before the store gives it a seq (plan section 2). */
+/** What a page sends, before the store gives it a seq (web/README.md, The documents). */
 export type MoveBody =
   | { kind: 'say' | 'ooc'; text: string }
   | {

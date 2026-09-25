@@ -45,6 +45,38 @@ class CombatSnapshotTests(unittest.TestCase):
             self.assertEqual(short.read_text(encoding="utf-8"),
                              "short: next\n")
 
+    def test_the_player_level_is_never_wider_than_the_screen(self):
+        # A line no emitter pre-fitted (the tally's "Ahead: ..." summary
+        # ran to 123 columns) is wrapped as the terminal wraps it, in the
+        # snapshot too: the file, the page and the chat read the same.
+        with tempfile.TemporaryDirectory() as tmp:
+            short = Path(tmp) / "fight-short.txt"
+            log = CombatLog(player_path=short)
+            long = ("Ahead: 2 fight(s) at the roadside camp; the work "
+                    "done pays 30 XP in the field, and the turn-in pays "
+                    "12s, 45 XP at the giver.")
+            log.play(long, long)
+            log.round_start(1)
+            log.play("hit", "  " + long)            # inside a round, indented
+            log.play_tail("tail", "SLAIN.", "They fall.")
+            log.finish_rounds()
+            log.append("x" * 50)                    # one word stands alone
+            log.flush_player()
+            lines = short.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(lines, log.player)
+            self.assertEqual(lines[:4], [
+                "Ahead: 2 fight(s) at the roadside camp;",
+                "  the work done pays 30 XP in the field,",
+                "  and the turn-in pays 12s, 45 XP at the",
+                "  giver."])
+            self.assertEqual(lines[4], "Round 1:")
+            self.assertTrue(lines[5].startswith("  Ahead:"))
+            self.assertTrue(lines[6].startswith("    "))
+            self.assertTrue(lines[-2].endswith(" giver. SLAIN."))  # glued on
+            self.assertEqual(lines[-1], "x" * 50)
+            self.assertTrue(all(len(line) <= 40 for line in lines[:-1]))
+            self.assertEqual(" ".join(l.strip() for l in lines[:4]), long)
+
     def test_sheet_commit_set_contains_both_fight_snapshots(self):
         self.assertIn("ui/fight-short.txt", UI_COMMIT_PATHS)
         self.assertIn("ui/fight-detailed.txt", UI_COMMIT_PATHS)

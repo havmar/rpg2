@@ -1,12 +1,12 @@
 """The projection: the save, cut down to what the player may see.
 
-The player's page (page-plan.md) reads a shared document store that anyone
+The player's page (web/README.md) reads a shared document store that anyone
 who can open the page can read, with the developer tools if not with the
 page. So the DM's secrets are never written to it at all: this module is the
 only road from the save to the store, and it copies across only what the
 player-facing surfaces already show -- the three ui/ pages, the tally, the
-fight's player log, and the pause and level-up menus. Section 2 of the plan
-is the contract.
+fight's player log, and the pause and level-up menus. web/README.md's "The
+documents" is the contract.
 
 ``player_view`` returns the five singleton documents the keeper writes
 (``game/state``, ``game/party``, ``game/map``, ``game/quests``,
@@ -105,7 +105,7 @@ OVER_KINDS = ("wiped", "pc_dead")
 #: What ``checkIn`` says when publish is not told otherwise.
 CHECK_IN = "when you call from Claude Code"
 
-#: What a move from the page can be (plan section 2).
+#: What a move from the page can be (web/README.md, The documents).
 MOVE_KINDS = ("say", "ooc", "pause")
 MOVE_TEXT_MAX = 2000        # the page caps a move there too
 HERO_NAME_MAX = 40

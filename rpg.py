@@ -22,6 +22,7 @@ Run:  python rpg.py [--site hideout] [--seed N]   -> one-shot site run
 from __future__ import annotations
 
 import random
+import textwrap
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
@@ -1948,6 +1949,25 @@ TIE_HIGH_DICE = 8       # either side's raw 2d6 at/above this -> "Clash", else "
 PLAYER_WIDTH = 40
 
 
+def fit_width(line: str) -> list[str]:
+    """One line as the player's screen takes it: unchanged when it fits
+    PLAYER_WIDTH, else hard-wrapped at the spaces with the continuation
+    hanging two columns past the line's own indent (at most half the
+    width). session.py's output wrap is this same rule. It is the player
+    log's safety net (2026-09-25, the player's page): a line an emitter
+    did not pre-fit -- the tally's "Ahead: ..." summary, a long wound or
+    epilogue line -- reaches ui/fight-short.txt and the page wrapped as
+    the terminal showed it, never wider. A word longer than the width
+    stands alone, unbroken."""
+    if len(line) <= PLAYER_WIDTH:
+        return [line]
+    indent = len(line) - len(line.lstrip(" "))
+    cont = " " * min(indent + 2, PLAYER_WIDTH // 2)
+    return textwrap.wrap(line, PLAYER_WIDTH, subsequent_indent=cont,
+                         break_long_words=False,
+                         break_on_hyphens=False) or [""]
+
+
 def fit_lines(parts) -> list[str]:
     """Greedy-pack self-contained fragments into lines <= PLAYER_WIDTH.
     A fragment is never split, so every break falls on a semantic seam
@@ -2038,10 +2058,11 @@ class CombatLog(list):
     # -- player-side internals ------------------------------------------- #
 
     def _player_add(self, line: str, kind: str = "note") -> None:
-        if self._round is not None:
-            self._buf.append((line, kind))
-        else:
-            self.player.append(line)
+        for part in fit_width(line):        # never wider than the screen
+            if self._round is not None:
+                self._buf.append((part, kind))
+            else:
+                self.player.append(part)
 
     def _flush_quiet_run(self) -> None:
         if self._quiet_from is not None:

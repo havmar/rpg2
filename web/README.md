@@ -3,11 +3,13 @@
 rpg2's own claude.ai Artifact page for the player: the story, the party, the
 map, the fights and the one mid-fight decision, read from a shared document
 store and answered through it. It is a port of dream's `web/` page and its
-keeper's-turn protocol; `page-plan.md` is the build contract (section 2, the
-data contract, and each shipped session's notes). Section 1 of this file is
-the Python half, which works from the terminal; section 2 is the page itself
-(`web/app/`, its tabs, the pause picker, the build, the local server, the
-e2e). dm.md's page-play section arrives with the arc's session 5.
+keeper's-turn protocol (THE PLAYER'S PAGE ARC, 2026-09-25: designlog
+2026-09-25 through (E); `page-plan.md` is the arc's historical note).
+**dm.md's "Page play" is how the DM runs a game on it** -- a new game on
+the page, the keeper's turn, the pause; this file is the manual behind
+it. Section 1 is the Python half, which works from the terminal; section
+2 is the page itself (`web/app/`, its tabs, the pause picker, the build,
+publishing, the local table, the e2e).
 
 ## 1. The Python half
 
@@ -41,7 +43,59 @@ sets `RPG2_HOME` to a directory and keeps all of it there.
 singletons, written by `publish.py` only, pinned); `chronicle/tNNNN` (one DM
 turn, written once); `fights/fNNNN` (one fight, or the second half of a
 paused one, written once); `moves/mNNNN` (one player move, written by the
-page, deleted by the keeper). The fields are page-plan.md section 2.
+page, deleted by the keeper). Every document carries `v: 1`, keys are
+camelCase, and none passes 256 KiB. Wherever a ui page exists, the
+document's `text` is that page line for line (`session._wrap_block` of
+the same function), and the structured fields are cut from the same
+calls (`page.py`'s builders name them).
+
+- **`game/state`**: `status` (`awaiting_player`, `dm_thinking`, `ended`
+  -- forced to `ended` when `over` is set), `lastSeq` (the highest move
+  answered), `day`, `where` (the breadcrumb), `coord` (`R09C10`), `land`,
+  `latest` (the newest chronicle id), `lastFight`, `checkIn` (default
+  "when you call from Claude Code"), `over` (`null`, `wiped`,
+  `pc_dead`), `pause` and `levelUp`.
+  - `pause` is `null` or the pause menu as data: `fight` (the published
+    id of the fight that paused; `null` while that fight waits
+    unpublished), `round`, `kind` (`normal` or `fate`), `trips`,
+    `facing` (`name`, `hp`, `maxHp`), `party` (per hero: `hpState`, HP /
+    STA / Power, `penalties`, `conditions`, `wounds`, `healing` and
+    `stamina` potions), `options`
+    (each `choice`, `label`, `cost`; `drink` / `heal` / `berserk` /
+    `warbreath` / `vanish` carry `heroes`, the names that pass resume's
+    checker now; `blink` / `smoke` carry the one `hero`), and `text`
+    (`print_pause_menu` exactly). A Fate pause offers no action.
+  - `levelUp` is `null` or `{hero, points, text}` (the PC's
+    `print_levelup_menu`) while the PC has points banked.
+- **`game/party`**: `day`, `purse`, `slots`, `members` (per hero the
+  sheet's numbers, kit, spells, abilities, moves, conditions, wounds,
+  flags, and `text` = `hero_block_lines`), `status` (the sheet's tail),
+  `text` (`ui/party.txt`).
+- **`game/map`**: `rows` (the 18 bare rows of 30 glyphs, no marks),
+  `coord`, `objectives` (the jobs' squares), `legend` (`[glyph, word]`),
+  `places` (the four gates, then the KNOWN settlements only: `coord`,
+  `name`, `kind`, `land`, `capital`), `here`, `land` (`name`, `lines`),
+  `known`, `holdings`, `text` (`ui/map.txt`).
+- **`game/quests`**: `active`, `quests` (the jobs in hand only: `id`,
+  `name`, `level`, `kind`, `origin`, `status`, `sites` with their
+  `mark`, `road`, `due`, `note`, `cargo`, `dest`, `lines`).
+- **`game/record`**: `quests`, `remarkable` (oldest first), `tally`,
+  `suggestions`, `text` (`ui/history.txt`).
+- **`chronicle/tNNNN`**: `id`, `turn`, `day`, `where`, `coord`, `prose`
+  (`ui/scene.md` as published), `answered` (the moves it answers,
+  cleaned, in seq order), `fights` (their ids), `levels` (each hero's
+  level), `over`.
+- **`fights/fNNNN`**: `id`, `day`, `where`, `coord`, `title` (the
+  `===` banner, or the roster's first line), `outcome` (`won`, `lost`,
+  `unresolved`, `retreated`, `paused`), `continues` (the paused fight a
+  second half finishes, else `null`), `rounds`, `blocks` (`opening`,
+  `rounds`, `between`, `closing`; a second half has no opening). Its
+  lines joined are exactly what the process appended to
+  `ui/fight-short.txt`.
+- **`moves/mNNNN`** (the page's): `{seq, at, kind: "say" | "ooc", text}`
+  or `{seq, at, kind: "pause", fight, choice: "fight_on", actions:
+  [{hero, action}]}` / `{..., choice: "retreat", escape?, hero?}`.
+  `page.clean_move` reads it whole or not at all.
 
 ### Fights are kept on their own
 
@@ -58,9 +112,14 @@ clears what was sent.
 
 ### The keeper's turn
 
+The protocol, in the order the DM runs it, is dm.md's "Page play"; the
+commands are these.
+
 1. Read `moves` (list) and `game/state` (get) with `ArtifactData`, each with
-   its `version` beside its fields, into `web/out/read/moves.json` and
-   `web/out/read/state.json`.
+   its `version` beside its fields, into `web/out/read/moves.json` (a list:
+   each move's fields plus `id` and `version`; `[]` when empty) and
+   `web/out/read/state.json` (the fields plus `version`) -- the shape
+   `node web/dev/db.mjs list moves` / `get game/state` print.
 2. `python page.py moves web/out/read/moves.json --state web/out/read/state.json`
    prints one line per move and runs nothing:
 
@@ -94,7 +153,9 @@ clears what was sent.
    (`## turn N (day D)`, a `>` line per move answered, the prose with each
    `[fight]` named), and clears the sent fights from the queue.
 8. `python session.py sheet` commits the pages, the transcript and the
-   record.
+   record; push the branch. The save and the queue are not committed
+   (dm.md, Page play): a lost container loses the game, and the page
+   keeps showing where it stood.
 
 ### Pins
 
@@ -240,6 +301,27 @@ is zoneless, so there is no `polyfills.js`; `build-artifact.mjs` fails if
 any other bundle appears (a lazy chunk would be missing from the publish).
 `node_modules/`, `dist/` and `.angular/` are not committed;
 `package-lock.json` is.
+
+### Publish
+
+With the `Artifact` tool: `file_path` `web/dist/index.html`, `root`
+`web/dist`, `files` `main.js` and `styles.css`, `capabilities` `{"db":
+{}}`, and an `icon` on the first publish only. Republish the same path in
+the same conversation, or pass the page's `url` (from `ui/page.json`)
+from another, to keep the link; the store keeps the game across
+republishes, so a republish is needed only when `web/` changed.
+
+Then seed the store, once: write the opening to `ui/scene.md`, run
+`python publish.py --all --prose ui/scene.md`, send `web/out/batch.json`
+as one `ArtifactData` batch to the new `url`, and run `python publish.py
+--sent --url <the url>`, which records it in `ui/page.json`. After that a
+publish sends only what changed.
+
+One page is one game: `new` drops `ui/page.json` and `ui/queue/`, so a
+new game is published as a new page, seeded and recorded the same way,
+and the old page stays as the last game left it. A game that began in
+chat play has every fight since `new` in `ui/queue/`: empty it before the
+first publish, or the backlog goes to the page with the first turn.
 
 ### Run it locally
 

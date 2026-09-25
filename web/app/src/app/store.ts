@@ -203,7 +203,7 @@ export class TableStore {
   }
 
   /**
-   * Send one move of any kind (plan section 2). The store gives it the next
+   * Send one move of any kind (web/README.md, The documents). The store gives it the next
    * seq and writes `moves/mNNNN`. Resolves true once the move is durably
    * stored. A pause move is sent only while that very fight stands paused on
    * the page: with no published fight to point at, the keeper would refuse it.

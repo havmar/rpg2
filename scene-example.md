@@ -5,6 +5,7 @@ dm.md's scene-page format -- a game start, then the fight turn that follows
 it. `ui/scene.md` holds ONE turn, rewritten whole every message, so the two
 sections below the rule are two successive states of the page, not one page:
 the first is the whole file after turn 1, the second replaces it after turn 2.
+The last section is turn 2 again, in the page-play shape.
 The engine lines are illustrative, not exact script output; their formats
 follow `ui/fight-short.txt`. Displays sit in code fences at their printed
 40-column shape; prose is plain paragraphs, never hard-wrapped, with no
@@ -112,3 +113,47 @@ Isolde binds her arm herself. "An ordinary rat," she says. "Disappointing."
 Where to?
 
 [party](https://github.com/havmar/rpg2/blob/<branch>/ui/party.txt) | [map](https://github.com/havmar/rpg2/blob/<branch>/ui/map.txt)
+
+---
+
+## The same fight turn in page play
+
+In page play (dm.md, Page play) `ui/scene.md` is published to the player's
+page instead of copied into chat. The file is turn 2's DM text alone: no
+heading, no `>` line (the page shows the player's words), no footer (the
+page has its tabs), and a paragraph that is exactly `[fight]` where the
+fight-log link stood -- the page puts the fight's card there, and the card
+opens the whole log.
+
+    Rosa spits on her palm and shakes on it. The winch lowers you ...
+
+    ```
+    === The Thing in the Well ===
+    the old cellar (L1), room 1/1:
+      the broken cistern
+    2x Grave Rat -- fangs
+    ...
+    ```
+
+    [fight]
+
+    Corvin's fire kills the first rat on the cistern rim. The second ...
+
+    ```
+    The party catches its breath (+1 STA)
+    ...
+    Purse 20s; day 1.
+    ```
+
+    Rosa counts the coin out at the well head. ...
+
+    ```
+      options: the board (1 more job),
+        the letter from below, tavern
+        (1s/head), camp, travel
+    ```
+
+    Where to?
+
+The options display becomes a row of chips on the page; a tap fills the
+answer box and sends nothing.

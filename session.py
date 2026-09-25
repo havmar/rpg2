@@ -86,7 +86,7 @@ import random
 import re
 import shutil
 import subprocess
-import textwrap
+import sys
 from pathlib import Path
 
 from rpg import (
@@ -147,7 +147,7 @@ from rpg import (
     autospend_points,
     ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
     buy_ammo as _buy_ammo, grant_starter_ammo,
-    WINDED_PENALTY, SPENT_PENALTY, fit_lines,
+    WINDED_PENALTY, SPENT_PENALTY, fit_lines, fit_width, PLAYER_WIDTH,
     BLOOD_KINDS,
 )
 import karma
@@ -215,27 +215,32 @@ STATE_PATH = RPG2_HOME / "save.json"
 # original indent. Short lines pass through untouched.
 # --------------------------------------------------------------------------- #
 
-WRAP_WIDTH = 40
+WRAP_WIDTH = PLAYER_WIDTH     # 40
 
 
 def _wrap_block(text: str) -> str:
+    # One rule for every screen: rpg.fit_width, which the combat log's
+    # player level applies line by line too (WRAP_WIDTH is its width).
     out: list[str] = []
     for line in text.split("\n"):
-        if len(line) <= WRAP_WIDTH:
-            out.append(line)
-            continue
-        indent = len(line) - len(line.lstrip(" "))
-        cont = " " * min(indent + 2, WRAP_WIDTH // 2)
-        out.extend(textwrap.wrap(line, WRAP_WIDTH, subsequent_indent=cont,
-                                 break_long_words=False,
-                                 break_on_hyphens=False) or [""])
+        out.extend(fit_width(line))
     return "\n".join(out)
 
 
 def print(*args, sep=" ", end="\n", **kwargs):  # noqa: A001 -- shadowing on
-    """purpose: every print in this module goes out phone-wrapped."""
-    builtins.print(_wrap_block(sep.join(str(a) for a in args)),
-                   end=end, **kwargs)
+    """purpose: every print in this module goes out phone-wrapped.
+
+    A reader that goes away (`session.py take q01 | head`) must not cost
+    the command its save: the prints come first and `save` last, so a
+    broken pipe used to abort the command with the game unchanged. The
+    rest of the output goes to the null device instead, and the command
+    runs to its end (found in the page arc's dress rehearsal)."""
+    try:
+        builtins.print(_wrap_block(sep.join(str(a) for a in args)),
+                       end=end, **kwargs)
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
 
 
 # Off-script foe kinds (`fight N --type ...`): any catalog kind by name, or

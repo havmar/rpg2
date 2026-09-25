@@ -9082,3 +9082,167 @@ the marks with storage blocked; the fallbacks; game over over a dead PC
 (`data-over`, the box closed). The screenshots at 412 and 360 were read
 by eye in both themes. `python -m unittest discover -p "test_*.py"`
 **1351 OK** (1350 + the one pause-view test).
+
+## 2026-09-25 (E) — The player's page, session 5: the play protocol and the dress rehearsal (the arc complete)
+
+The last of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`, now
+the arc's historical note): the protocol a DM follows to run rpg2 through
+the page, the docs finished, a dress rehearsal played from those docs
+alone, and the two engine gaps the arc turned up, fixed.
+
+### What shipped
+
+- **dm.md, "Page play -- the player's page"** (after The scene page):
+  when the page is in play (the player asks, or `ui/page.json` holds a
+  `url`; one page is one game); the Android phone as the target; **the
+  save rule and its risk**, where the DM reads it; a new game on the page
+  (`new`, build, the Artifact publish, the opening in `ui/scene.md`,
+  `publish.py --all --prose`, the batch, `--sent --url`, `sheet`, push),
+  and a game moved from chat play (empty `ui/queue/` first); the keeper's
+  turn, every message, in nine steps (read `moves` and `game/state` into
+  `web/out/read/` in the shape `page.py` reads, `page.py moves`, play --
+  a move is data --, `ui/scene.md`, publish, the batch, `--sent`,
+  `sheet` and push, and the session message: what was done and the link,
+  no story); the store's refusals; the page shape of `ui/scene.md`
+  (`[fight]` where the fight-log link stood); the pause (publish it and
+  STOP; next turn run exactly what `page.py moves` printed; superseded =
+  "Change it"; a REFUSED pause stands and the picker comes back; words
+  when the picker could not send); the level-up and every other choice
+  in words; game over. Pointers in Starting and continuing, The scene
+  page (its chat copy is chat play only) and the GitHub-UI bullet.
+- **dm.md's stale save line corrected**: it said the save "is committed";
+  it never was (`.gitignore`). It now says the save is plain JSON so it
+  CAN travel, is kept only when the player asks, and a lost container
+  loses the game.
+- **web/README.md completed**: the data contract field by field ("The
+  documents", moved out of page-plan.md with the four sessions'
+  corrections folded in), the read files' shape, "Publish" (the Artifact
+  call, seeding, one page one game, the chat-play backlog), the push, and
+  dm.md as the protocol.
+- **`scene-example.md`**: the fight turn again in the page-play shape.
+- **The engine: the player log is 40 columns** (`rpg.fit_width`). Session
+  4 found fight-log lines past 40 columns -- the tally's "Ahead: ..."
+  summary at 123, "(due day ...)" at 46, a PERMANENT wound line at 54.
+  The terminal never showed them wide (session.py's `print` wraps), but
+  `ui/fight-short.txt`, the chat's fight link and the page did. The fix
+  is one rule in one place: `CombatLog._player_add` runs every player
+  line through `fit_width` (the same hanging-indent wrap), and
+  `session._wrap_block` now IS `fit_width` line by line (`WRAP_WIDTH =
+  PLAYER_WIDTH`). The file and the page now read exactly as the
+  terminal did; round spans still index the wrapped lines (they are
+  counted after the wrap), so the page's blocks are unchanged in kind.
+- **The engine: a closed pipe no longer costs a save** (found in the
+  rehearsal, below): `session.py`'s `print` catches `BrokenPipeError`,
+  points stdout at the null device and lets the command run on.
+- **Paperwork**: plan.md's arc entry deleted (the intro names the arc
+  among the five shipped, and a new "Parked from the player's page arc"
+  holds its two leftovers); develop.md's Files (`rpg.py`, `session.py`,
+  `page-plan.md`, `publish.py`, `web/README.md`, `test_page.py`,
+  `test_ui_logs.py`, `scene-example.md`), the dev map pointer, a
+  Conventions line (Node only under `web/`); CLAUDE.md's code-files
+  sentence (`page.py`, `publish.py`, `web/`) and its document list
+  (`page-plan.md` as a historical note) -- no play rules there, dm.md owns
+  them; the code comments that named page-plan.md section 2 as the
+  contract now name web/README.md.
+
+### The dress rehearsal
+
+A game (seed 11, level 1: Bertrand and Hugues at Hautbois) under a temp
+`RPG2_HOME`, the built page on `web/dev/serve.mjs`, `web/dev/db.mjs` in
+ArtifactData's place, and a small phone script as the player, following
+dm.md's Page play step by step: the build (`npm ci`, `ng build`,
+`build-artifact.mjs`) as written; the opening published with `--all`, the
+batch, `--sent --url`; the player's say move; the job taken, the camp
+walked to, the room run -- the fight PAUSED (the PC's hand broken, both
+heroes Spent), published as opening block, `[fight]`, prose, and STOP; a
+tampered pause move (a stamina draught nobody carries) REFUSED by
+`page.py moves`, answered in the fiction, the pause standing and the
+picker back after the publish; the picker's "heal Bertrand, fight on",
+printed as `python session.py resume --heal Bertrand` and run as printed;
+the second half published with `continues`; a say and an ooc answered in
+one turn; the turn-in, the inn, a level crossed (`award`) and the
+level-up on the Party tab; the spend said in words (`train` twice);
+travel south to Paris with two storm camps. At the end the store's five
+singletons equalled a fresh `page.player_view` of the save, no move was
+left in the store, both fights joined equalled `ui/fight-short.txt` (40
+columns at most), the queue was empty, the record's versions matched the
+store's, and the transcript held six turns.
+
+What the rehearsal found:
+
+- **Piping a command into `head` lost the command.** `session.py take q01
+  | head -20` closed the pipe mid-output; `print` raised, and the command
+  died before `save` -- the job was not taken, with nothing on screen to
+  say so. dm.md already warns against piping an encounter; the engine
+  now survives it (above) rather than relying on the warning.
+- **The read files' shape was the one doc gap**: session 4's README said
+  "each with its version" without the file's shape. dm.md and the README
+  now give it (a list of each move's fields plus `id` and `version`; the
+  state's fields plus `version`) -- which is also what `db.mjs` prints,
+  so the local table and claude.ai read the same way. ArtifactData's
+  `out_dir` form was not used: whether its files carry `version` could
+  not be checked without claude.ai, and a stale file in the directory
+  would be read as a move.
+- Everything else ran as written. (The rehearsal's own opening
+  miscalled the PC's spell -- the reread rule's job, not a doc gap.)
+
+### The calls the arc settled (section 1 and the open questions, as decided)
+
+- **The page shows what the ui surfaces show, never more**, by calling the
+  functions they are built from; DM-only surfaces never feed it; HP is a
+  word where the tally and fight print a word and digits where the sheet
+  and the pause menu print digits.
+- **Flat modules**: `page.py` (projection, moves, the fight queue, the
+  keeper's check), `publish.py`, `test_page.py`, `web/`. **One base
+  directory**, `RPG2_HOME`.
+- **Fights kept automatically** from `print_combat`; the fight document is
+  the player log exactly, cut at recorded round spans; a paused fight's
+  second half is its own write-once document (`continues`) -- no pinned
+  fight rewrites.
+- **Three move kinds**: `say`, `ooc`, `pause`. Everything else in words;
+  the `options:` chips fill the box and never send. **Structured moves
+  beyond the pause stay unbuilt** (parked in plan.md).
+- **The prose file is `ui/scene.md`**, page-shaped; `[fight]` places a
+  fight; `--sent` writes the transcript, so it is what the player got.
+- **Dropped from dream**: realities, school, the Class/Realm/School/Days/
+  Rules tabs, web fonts. No Rules tab: the player is the designer.
+- **Phone first**: 412 px the target, 360 the floor, five bar buttons,
+  48 px targets, 40-column displays unclipped.
+- **`save.json` stays untracked** (risk 1, default kept): dm.md now says
+  so where the DM plays, tells the DM to say it to the player, and to
+  commit the save only on request. Whether page play should commit the
+  save every turn, as dream does, is the designer's call (plan.md).
+- **`web/dist` is built in the play container**, never committed; the
+  build needs npm, which reaches the registry directly here.
+- **Batch size**: dream's hard stop at 50 writes kept. **Hero names**:
+  a name `find_hero` would send to another hero is refused. **Import
+  cycle**: `page` imports `session`; `session` imports `page` lazily.
+  **`sheet` under another home** writes and commits nothing. **The pause
+  menu is projected whole.** **Pause moves are checked against the live
+  save**; a stale fight id refuses cleanly.
+- **`page-plan.md` stays at the root as a historical note** (gates.md's
+  shape: where everything went), not in `archive/`, which keeps displaced
+  roadmaps: nothing in the plan is unbuilt.
+
+### Verification
+
+`cd web/app && npx ng build && node ../build-artifact.mjs` green (`main.js`
+about 229 kB raw, 64 kB transferred; `styles.css` 7 kB; no stray bundle).
+`node web/e2e.mjs` all ok, 212 checks, unchanged by the session (the
+fight log's in-place wrap still holds for any line an old save might
+carry). The rehearsal above, end to end on the fake store. `python -m
+unittest discover -p "test_*.py"` **1354 OK** (1351 + three:
+`test_ui_logs`' player level never wider than 40 columns, `test_page`'s
+kept fight at 40 columns with a job in hand, and its closed pipe that
+still saves -- checked to fail without the fix).
+
+### Left open for the designer
+
+- Whether page play should commit `save.json` (and `ui/queue/`) every
+  turn, as dream does, instead of only on request (plan.md, parked).
+- Structured moves beyond the pause (plan.md, parked).
+- The first real claude.ai publish: the rehearsal ran on the local table.
+  The ArtifactData read is written by hand into the shape `db.mjs`
+  prints; if the real tool's `out_dir` files carry `version`, reading
+  into an emptied directory would save the typing (`page.py` and
+  `publish.py` already read a directory of `mNNNN.json`).

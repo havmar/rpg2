@@ -6,7 +6,7 @@
                       [--check-in TEXT] [--all] [--out DIR]
     python publish.py --sent [--url URL] [--out DIR]
 
-The keeper's turn of THE PLAYER'S PAGE (page-plan.md; dream's publish.py,
+The keeper's turn of THE PLAYER'S PAGE (web/README.md; dream's publish.py,
 adapted). After playing the turn with ``session.py``, run this: it loads the
 save under ``RPG2_HOME`` (``session.load()``), projects it with
 ``page.player_view`` (nothing the player may not know is ever written), and
