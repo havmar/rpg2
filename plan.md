@@ -6,7 +6,7 @@ permanent docs (`rules.md`, `dm.md`, `develop.md`, `benchlog.md`) and the
 build record to `designlog.md`. See develop.md's "Where a finished feature
 is written up".
 
-Four whole arcs have shipped out of this file, and it carries **no build
+Five whole arcs have shipped out of this file, and it carries **no build
 contract at all** again. The fixed Europe map was **BUILT**
 across five sessions ending 2026-08-15 (designlog 2026-08-15 and develop.md
 hold the pointers). **THE TILE ECONOMY ARC** was designed in five rounds
@@ -38,9 +38,15 @@ foreign countries with their own crowns, prices, boards and full card
 packets, and nine human countries that feel all of it. What it built lives
 in rules.md's Heaven & Hell add-on parts 1-5, dm.md's "The gates",
 writing.md's two name rows, develop.md's Files and five dev-map entries,
-and benchlog's five 2026-09-12 entries.
+and benchlog's five 2026-09-12 entries. **THE PLAYER'S PAGE ARC** was
+planned on 2026-09-25 (`page-plan.md`, now a historical note) and **BUILT
+WHOLE the same day across five sessions** -- the projection, the fights
+kept and the keeper's publish, the Angular page, the pause picker and the
+rest of the tabs, and the play protocol with a dress rehearsal (designlog
+2026-09-25 through (E)). rpg2 can be played through its own claude.ai
+Artifact page; dm.md's "Page play" runs it, `web/README.md` is its manual.
 
-What remains below is the roadmap BEYOND all four: main points only, each
+What remains below is the roadmap BEYOND all five: main points only, each
 a future design conversation, none scheduled. Two habits from the earlier
 arcs continue to apply everywhere — **hidden numbers, visible words** (a
 per-tile quantity is a worldgen intermediate; what the game stores and
@@ -191,6 +197,24 @@ them, so each is a cheap sitting whenever the map wants it.
   character` prints which are unused so the fact stays visible; a later
   overlay change may bring any of them back on its own. Only revisit if
   the priority itself starts reading wrong at the table.
+
+## Parked from the player's page arc (2026-09-25)
+
+- **Structured moves beyond the pause.** The page's one structured move is
+  the pause; travel, taking a job, training and learning (the level-up
+  spend), camping and buying are said in words, and the `options:` chips
+  only fill the box. Each could become a move kind -- a map tap that
+  travels, a job card's Take, the level-up menu as a picker -- with its
+  own checker through the command's own gate, as `pause_args` goes
+  through `check_pause_actions` (web/README.md, "Adding to the page").
+  None is scheduled; the designer plays fluent in words.
+- **The save under page play is the designer's call.** rpg2 keeps
+  `save.json` untracked, and the arc kept that rule: in a container that
+  does not persist, a lost container loses the game while the page shows
+  where it stood (dm.md's Page play says so at the table and commits the
+  save only when asked). dream commits its save every turn instead. If
+  page play becomes the usual way to play, decide whether the save (and
+  `ui/queue/`) should ride the end-of-turn commit.
 
 ## Small deferred leftovers (from the Europe build, still true)
 

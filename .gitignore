@@ -14,3 +14,12 @@ save.json
 # Legacy combat workfiles from before the last-fight .txt snapshots.
 fight.log
 ui/fight.log
+
+# The player's page (page-plan.md): the fight queue lives as long as the
+# save; publish output and the web build are regenerated.
+ui/queue/
+web/out/
+web/dist/
+web/app/dist/
+web/app/.angular/
+node_modules/

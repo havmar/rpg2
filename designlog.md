@@ -8714,3 +8714,535 @@ Test suite **1297 OK** (1234 before). The paperwork: rules.md's
 Heaven & Hell add-on parts 1, 2, 4 and 5 where the rules changed, dm.md's
 "The gates", develop.md's Files, tunables and the four gates dev-map
 entries, benchlog 2026-09-13.
+
+## 2026-09-25 — The player's page, session 1: the projection
+
+THE PLAYER'S PAGE ARC ports dream's claude.ai Artifact page to rpg2 in five
+serial sessions; `page-plan.md` is the contract (plan.md carries a short
+pointer entry). This session built the Python half's foundation, with no
+web and no publish yet: `page.py`, the session seams it reads through, and
+`test_page.py`.
+
+### What shipped
+
+- **`page.py`**, adapted from dream's `dreamgame/view.py`: `player_view`
+  and the five singletons (`game/state`, `game/party`, `game/map`,
+  `game/quests`, `game/record`), `chronicle_entry`, `clean_move`,
+  `MoveRefused` and `pause_args`. Every document is built by CALLING the
+  functions the ui pages are built from, and each carries a `text` equal
+  to its page line for line, so the page can never show more than
+  party.txt, map.txt and history.txt already do.
+- **`session.py` seams.** `RPG2_HOME` (env var; `REPO_DIR` is the repo)
+  roots the save and `ui/`; `sheet` under another home writes the pages
+  and commits nothing. The pause menu split into `pause_menu_data` plus a
+  printer that prints exactly it -- byte for byte the old menu, tested
+  against a verbatim copy of the old printer. `resume`'s per-hero checks
+  became `pause_action_refusal` / `check_pause_actions`, and `retreat`'s
+  became `escape_refusal` / `check_escape`; both commands print the
+  checker's `ValueError` text, so their messages are unchanged.
+  `party_status_lines` is the party sheet's tail.
+- **`.gitignore`**: `ui/queue/`, `web/out/`, `web/dist/`, `web/app/dist/`,
+  `web/app/.angular/`, `node_modules/`.
+
+### The calls the build settled
+
+- **`pause.kind` is `"normal"` or `"fate"`**, the engine's own
+  `pause_kind`; the plan's `"wounds"` confused the pause's kind with what
+  tripped it (that is `trips`).
+- **A Fate pause keeps blink and smoke.** The plan had a Fate pause refuse
+  any escape; the old menu printed both at Fate, `retreat` took them, and
+  rules.md's Fate section names the smoke-vial break and the blink-out as
+  clean retreats that pay at the door. The code and the rules won:
+  `pause_args` refuses only pause ACTIONS at Fate.
+- **`retreat --blink` without teleport rank 2 is refused up front** -- the
+  one behaviour change. It used to log "rank 2 needed" inside
+  `blink_escape` and run the honest retreat, parting blows and all, which
+  is a DM typo costing the party a round. The plan required `pause_args`
+  to refuse it with the same checker `retreat` uses, so the check moved
+  into `check_escape`, and both escapes are now validated before anything
+  rolls, as `resume` always did. A blink short of Power is still NOT
+  refused: the door simply fails and the menu prices that.
+- **The paused fight's id is handed in**: `pause_args(move, state, *,
+  paused_fight)`. The save does not know published fight ids; Session 2's
+  `page.py moves` reads it off the published `game/state.pause.fight`.
+- **A malformed pause move is no move at all.** The plan said unknown
+  actions are dropped; dropping one of a player's two pause actions and
+  playing the other is worse than not playing it, so `clean_move` returns
+  None for any pause move with a choice, escape or action outside the
+  fixed sets, a missing hero, or more than eight actions. Say/ooc moves
+  follow dream exactly.
+- **Heroes are named whole**: `pause_args` matches the full name (any
+  case), refuses one `find_hero`'s substring match would send to somebody
+  else, and puts the full name in the argv.
+- **Four more named parts of the pages**, which the plan did not list but
+  the projection needed to avoid copying page logic: `quest_site_marks`
+  and `quest_in_hand_lines` (the map's quests in hand), `sin_tally_lines`
+  and `hell_suggestions` (the history page's last two sections). All three
+  pages were checked identical before and after on a live save.
+- **Map `places`** are the four gates (common knowledge from day one,
+  like the legend) and the known slots, hamlets included; the grid's
+  `rows` are `map_lines` with no party and no objectives, so a settlement
+  letter shows but `@` and `!` travel as `coord` and `objectives`.
+- **`levelUp` is the PC's alone** (companions autolevel), and `over` is
+  read off the save with `report_game_over`'s rule; once over, `pause` and
+  `levelUp` are null and `status` is forced to `ended`.
+
+### Verification
+
+`test_page.py` 37 tests OK; `test_ui_logs`, `test_history`, `test_start`,
+`test_mercy`, `test_turnin` and `test_navigation` OK. The whole suite
+(`python -m unittest discover -p "test_*.py"`) **1334 OK** (1297 at the
+gates review, plus these 37), no failures. `page-plan.md`'s "Session 1
+notes / deviations" carries all of the above for Session 2.
+
+## 2026-09-25 (B) — The player's page, session 2: the fights kept and the keeper's publish
+
+The second of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`): the
+whole keeper's turn now works from the terminal, with no page yet. A
+fight is kept for the page without the DM lifting a finger, `publish.py`
+turns a played turn into one pinned ArtifactData batch, and `page.py
+moves` tells the DM what each move from the page asks for.
+
+### What shipped
+
+- **`rpg.py`**: `CombatLog.round_spans` (one `[start, end]` per stretch
+  of rounds in `.player`, opened by `round_start`, closed by
+  `finish_rounds`) and `CombatLog.outcome`. Bookkeeping only; the benches'
+  plain lists and every engine path are untouched.
+- **`session.py`**: `print_combat(log, state)` at all six call sites; after
+  the flush it lazily imports `page` and calls `keep_fight`.
+  `fight_outcome` stamps the outcome -- `paused` in the three pause
+  branches (`resolve_encounter`, `cmd_resume`, the run-down in
+  `cmd_retreat`), `lost` on a mercy or a wipe, `unresolved` when foes
+  still stand, `won` otherwise, `retreated` on a clean escape (whose
+  `pending` is already cleared when it prints). `forget_page` (called by
+  `new`) drops `ui/page.json` and `ui/queue/`; `ui/page.json` joined
+  `UI_COMMIT_PATHS`.
+- **`page.py`**: `keep_fight` (the process's player log to
+  `ui/queue/qNNN.json`, cut by `fight_blocks` at the round spans, titled by
+  `fight_title`, carrying `outcome` and `continuing`), `queued_fights`,
+  `fight_id`, `fight_doc`, `fight_markers`, `move_words`, `read_moves`,
+  `moves_report` and the CLI `python page.py moves MOVES.json [--state
+  STATE.json]`, which prints and never runs.
+- **`publish.py`**, dream's adapted almost line for line: the save loaded
+  under `RPG2_HOME`, the changed singletons, the chronicle entry, the
+  queued fights numbered after `lastFight` (a second half `continues` the
+  first), every `game/` set pinned and every move read deleted, pinned;
+  256 KiB a document, 50 writes a batch. `--sent` advances `ui/page.json`,
+  appends the turn to `ui/transcript.md` and clears the sent fights.
+- **`web/README.md`**, begun with the Python half: the files, the
+  documents, the fights kept, the keeper's turn, the pins.
+- **Housekeeping**: the stray `ui/fight-detailed.txt` / `ui/fight-short.txt`
+  (a gate-plaza fight at Candor, committed by a `sheet` run in the repo
+  home during session 1's testing) are removed. They most likely came
+  from `test_gates`' retreat test, which ran `cmd_retreat` against the
+  repo's own fight pages and appended to them on every run;
+  `test_gates._run` now points `UI_DIR` and both snapshot paths at a
+  temp dir, so no suite writes into `ui/` (the queue included).
+
+### The calls the build settled
+
+- **Blocks come from the spans, never from parsing.** `opening` is what
+  precedes the first round, `rounds` each stretch, `between` what sits
+  between two stretches, `closing` what follows. A second half has no
+  opening; a log with no rounds is one block (`closing` for a second
+  half -- a clean escape -- else `opening`). The invariant, tested: the
+  blocks joined are the lines the process appended to
+  `ui/fight-short.txt`.
+- **The title**: the `===` banner without its rules, joined across two
+  fitted lines; the bare `fight` command has no banner, so its first line
+  (the roster, "2x Wolf -- fangs") names it. A second half reads its title
+  off `ui/fight-short.txt`, which holds the whole fight by then -- no new
+  key in the save.
+- **A render bug in `keep_fight` raises; a disk error is swallowed** --
+  the ui pages' contract. It runs before `save` in `finish_encounter`,
+  so a crash there loses the fight's result, but the save's rng replays
+  the same fight once the bug is fixed, and an unknown outcome is exactly
+  the kind of state the no-soft-readers rule says to let raise.
+- **Every session fight is kept**, chat play included: the queue is
+  gitignored and `new` empties it, and gating it on a page record would
+  lose the fight of a first turn published late. The cost is that a game
+  moved from chat to the page mid-way publishes its backlog on its first
+  `--prose` publish; Session 5's protocol will say to empty the queue
+  first.
+- **The pause's fight id** is the newest published fight while a pause
+  stands, and null while fights still wait in the queue (a publish
+  without `--prose`): the page cannot point at a fight it does not have.
+- **Only the newest pause move of a turn is weighed**, played or refused;
+  earlier ones are superseded even when the newest is refused. The plan's
+  "the newest valid pause move" could be read as falling back to an older
+  choice; playing a choice the player replaced is worse than answering a
+  refusal in the fiction.
+- **`web/out/` lives under `RPG2_HOME`**, like the save and `ui/`: the
+  repo's own in play, a temp home's own in tests. `read_moves` moved to
+  `page.py` (the move check reads moves too); `--queue` is gone.
+- **No record, no last publish**: with no `ui/page.json` (a new game), a
+  publish neither compares with nor reads the handshake from
+  `web/out/last/`, which belongs to the old game's page. dream kept its
+  out dir per save and never met this.
+- **The record holds `game/` versions only** (fights are write-once, as
+  in dream); the plan's example of a `fights/` version was a slip.
+- **The transcript**: `--sent` appends `## turn N (day D)`, a `>` line per
+  answered move in `move_words` (ooc as `(to the DM) ...`, a pause in
+  words), and the prose with each placed `[fight]` written
+  `[fight f0003: TITLE, OUTCOME]`, unplaced fights after it -- the record
+  of what the player received.
+
+### Verification
+
+`test_page.py` 52 tests OK (37 + 15: round spans and blocks, titles, the
+queue's fidelity for a whole fight, a paused one and its second half, a
+clean retreat, two fights, a bare log not kept, `new` dropping the record
+and queue, the move check's lines and its command parsed back by
+`session.py`, move words, and `publish.py` by subprocess through a whole
+keeper's turn plus a new game). `test_ui_logs.py` gained the page.json
+commit-set check. The whole suite (`python -m unittest discover -p
+"test_*.py"`) **1350 OK** (1334 at session 1, plus these 15 and the
+commit-set check), and it leaves the repo's `ui/` untouched. A terminal
+keeper's turn under a temp `RPG2_HOME` -- `new`, `publish.py --all --prose`,
+`--sent`, a fight that paused, `page.py moves` over a heal, a stale and a
+malformed move, `resume` as printed, a publish with the continuation,
+`--sent --url`, `--all` -- produced batches of dream's shape: `set`
+writes with `file_path` and `if_version` on every `game/` document once a
+version is known, `delete` of every move read pinned to its version,
+write-once `chronicle/` and `fights/` sets unpinned, under 50 writes.
+`page-plan.md`'s "Session 2 notes / deviations" carries all of this for
+Session 3.
+
+## 2026-09-25 (C) — The player's page, session 3: the Angular page
+
+The third of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`): the
+page itself. dream's `web/` is ported to rpg2's documents, and the basic
+loop plays through it against a local fake store with the real
+`session.py`, `publish.py` and `page.py`.
+
+### What shipped
+
+- **`web/app/`**, the Angular 20 project (dream's `package.json`, lock,
+  `angular.json`, tsconfigs and zoneless bootstrap, renamed `rpg2-page` /
+  project `rpg2` / prefix `rpg`). `model.ts` reads section 2's documents
+  field by field and mirrors the Python (`cleanBody` / `readMove` =
+  `clean_move`, `moveWords` = `move_words`, `proseBlocks` =
+  `fight_markers`); `store.ts` is dream's bridge as `TableStore`; `app.ts`
+  the shell; `ui.ts`, `unread.ts`, the drawer; panels story, prose,
+  answer, chronicle, party, fight, fights, fight-chip; `styles.css` one
+  palette, light and dark, system fonts.
+- **`web/page.html`, `web/build-artifact.mjs`**: the published page and its
+  assembly into `web/dist/` (index.html, main.js, styles.css).
+- **`web/dev/`**: dream's fake store, shim and keeper CLI (`RPG2_TABLE`).
+- **`web/e2e.mjs`**: the page played end to end (seven parts, below).
+- **Docs**: `web/README.md` section 2 (layout, build, run locally, test,
+  adding to the page); develop.md's `web/` entry and Running lines;
+  plan.md's arc entry; `page-plan.md`'s "Session 3 notes / deviations".
+
+### The calls the build settled
+
+- **The page shows the printed surfaces as printed.** A display is the
+  game's own text in mono with `white-space: pre`, at a size where 40
+  columns fit a 360px phone (13px; 12.5px at 380px and under); the fight
+  is the player log line for line, cut only where the log's own blocks
+  and round headers cut it, coloured by what a line says (`SLAIN`,
+  `DOWN`, `!! `, `dmg!`) and never reworded; the party is cards drawn
+  from the sheet's numbers (HP in digits, as the sheet prints it) plus
+  each hero's block and the whole `ui/party.txt` as printed.
+- **One prose renderer for the Story and the Chronicle**
+  (`panels/prose.ts`, not in the plan's table): paragraphs, fenced
+  displays, and fight cards where `[fight]` stands by `page.py`'s rule
+  to the letter; a spare marker stays as text, as the transcript keeps
+  it; fights no marker placed follow the prose.
+- **The bar is four buttons until the Map exists** (Story, Party, Fight,
+  More with Fights under it). A placeholder Map tab would have been a
+  button to nothing.
+- **A stand-in for the pause**: while a fight stands paused the Story
+  shows "PAUSED after round N", the trips and the menu as printed, and
+  asks for the answer in words -- honest until session 4's picker, which
+  takes over the same `#pause` anchor the Fight tab's button scrolls to.
+- **The store refuses a pause move the keeper would refuse as stale**
+  (no published paused fight, another fight, the game over), and counts a
+  malformed move document's seq for the next seq, so the page never
+  writes over it. `readMove` is as strict as `clean_move` (dream's
+  defaulted the kind to `say`).
+- **Chrome copy** is the plan's table, ASCII, separators drawn with CSS;
+  headings are mono capitals, bar the fight's title, which keeps the
+  engine's case.
+- **The rounds fold with the newest open**, and one tap opens them all,
+  so a long fight reads on a phone without losing the whole log.
+
+### Verification
+
+`cd web/app && npm ci && npx ng build && node ../build-artifact.mjs`
+green: `main.js` about 196 kB raw (55 kB transferred), `styles.css` 6 kB,
+within dream's budgets, no stray bundle. `node web/e2e.mjs` all ok, on
+its own game (seed 5) under a temp `RPG2_HOME`: the opening with its
+displays in mono and the header's day and place; a say and an ooc
+waiting in the chronicle and stored as `m0001` / `m0002` with their
+known fields only; the keeper's turn (`page.py moves`, a pinned batch,
+`--sent`, the words under the new turn, the queue cleared, the same
+batch refused 409, `ui/transcript.md` gaining the turn); `session.py
+fight 2 --type wolf` published with `[fight]` between two displays, the
+card in place, the Fight tab's lines equal to `ui/fight-short.txt`, the
+newest round open, the Fights list; the PC's and the companion's cards
+and the whole sheet equal to `ui/party.txt`; no side scroll and no
+clipped display at 412 and 360 (light and dark), 1100 and 1440; the
+bar's buttons and the story's buttons at least 44px tall (the bar's
+60px); the read-only and no-db fallbacks. The screenshots at 412 and 360
+were read by eye in both themes. The Python suite is untouched:
+`python -m unittest discover -p "test_*.py"` **1350 OK**.
+
+## 2026-09-25 (D) — The player's page, session 4: the pause picker, the map, the rest of the tabs
+
+The fourth of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`):
+everything rpg2-specific on the page, and the full e2e. The page now
+carries the one mid-fight decision as a structured move, and shows every
+player-facing ui surface.
+
+### What shipped
+
+- **The pause picker** (`web/app/src/app/panels/pause.ts`, in the
+  Story's `#pause`): the pause menu as data (trips, facing, each hero's
+  HP / STA / Power, penalties, conditions, wounds, potions), Fight on
+  with at most one action chip per hero or Retreat with an optional
+  blink / smoke, a summary line in the player's words, Send, "Sent.
+  Waiting on the DM.", and the exact menu in a fold.
+- **The Map** (`panels/map.ts`): an SVG of `game/map.rows` with the
+  party's `@`, the jobs' `!` and the axes every 5; a tap names the
+  square; the HERE, land, known-places and holdings blocks; "Text map"
+  as `ui/map.txt`. **Quests** (`panels/quests.ts`) and **Record**
+  (`panels/record.ts`). The **level-up** block on the Party tab. The
+  **option chips** under an `options:` display (`model.optionChoices`).
+  `data-paused` / `data-over` dressed. Unread marks for map, quests and
+  record. The bar is five: Story, Party, Map, Fight, More.
+- **`web/e2e.mjs`** in eleven parts (below). **`test_page.py`** +1: the
+  pause view offers exactly what `pause_menu_data` does.
+- **Docs**: `web/README.md` (the tabs, the pause picker, the e2e,
+  "Adding to the page" with the pause as the worked move); develop.md's
+  `web/` and `test_page.py` entries and the dev map; plan.md's arc entry;
+  `page-plan.md`'s "Session 4 notes / deviations".
+
+### The calls the build settled
+
+- **The picker can only build what the session would play.** Its chips
+  come from `pause.options` alone, whose `heroes` are the session's own
+  per-hero verdicts (`pause_action_refusal`, the gate
+  `check_pause_actions` applies); a Fate pause offers no action. A picker
+  move `pause_args` refuses therefore means the save moved after the
+  publish -- which `pause_args` answers as it should.
+- **A sent choice can be changed** ("Change it"): the newer pause move
+  supersedes the older, which `page.py moves` already reported. The plan
+  had the picker stop at "Sent"; one mis-tap at the game's one real
+  decision should not need words to undo.
+- **No fight id, no Send**: with `pause.fight` null (the paused fight
+  not yet published) the picker shows the menu and asks for the call in
+  words, as the store would refuse the move anyway.
+- **A new fight turns the Fight tab to it.** The tab kept whichever fight
+  a card last opened; looking at it then cleared the new fight's mark
+  without showing the fight.
+- **Chips only where they can be used**: the Story's latest turn, while
+  the player can answer. The chronicle keeps the display alone.
+- **The fight log never pans**: a line the engine printed past 40
+  columns wraps in place with a hanging indent, the words untouched.
+  Such lines exist -- a lost fight's closing carries the site's "Ahead:
+  ..." summary at 123 columns and a few more at 41-54 -- an engine gap
+  against writing.md's 40 columns, left for a later session.
+- **The map's words are the legend's**: a square reads `COORD --
+  GROUND.` (sea, land, mtns, river; a settlement's square is land), then
+  the party, a job's site, and every known place there with its kind and
+  land. Squares are about 12px on a 412 phone -- below a thumb by
+  nature -- so the text map and the printed blocks carry every fact the
+  drawing does, and the grid takes the arrow keys.
+- **Wide screens open the drawer on the Map**, now the first tab.
+- **Game over greys the page** (`.zones` in grayscale) beside the closed
+  answer box.
+
+### Verification
+
+`cd web/app && npx ng build && node ../build-artifact.mjs` green: `main.js`
+about 229 kB raw (62 kB transferred), `styles.css` 7 kB, no stray bundle.
+`node web/e2e.mjs` all ok, 212 checks in under a minute, on seed 5 under a
+temp `RPG2_HOME`: the opening's option chips filling the box and sending
+nothing; the session 3 loop; a job taken (`take q01`): the Map's 540
+squares, the `@` on `game/state.coord` over the grid's own glyph, taps
+naming the party's square and a city, the `!`, the text map equal to
+`ui/map.txt`, none of the 9 unknown settlements anywhere in
+`/__db/dump`, the Quests card and its printed lines inside `map.txt`,
+the Record's sections and `ui/history.txt`, the Map's mark; a level
+crossed (`award`): the level-up menu as printed, "Mansur reaches level
+2."; a troll that pauses the party (found on copies of the home): the
+Fight and More marks, cleared by looking and kept over a reload, "To the
+pause", a tampered move (Mansur, vanish) REFUSED by `page.py moves` and
+answered in the fiction with the pause still standing, the picker
+offering exactly the menu's heroes (heal to the potion carriers), one
+action a hero, the move in `moves/` with the paused id and its known
+fields only, `page.py moves` printing `python session.py resume --heal
+Mansur`, played, the second half published (`continues`), the picker and
+`data-paused` gone, both halves on the page and together equal to
+`ui/fight-short.txt`; every tab without side scroll or a clipped display
+at 412 and 360, light and dark; the five 48px+ bar buttons; mid and wide;
+the marks with storage blocked; the fallbacks; game over over a dead PC
+(`data-over`, the box closed). The screenshots at 412 and 360 were read
+by eye in both themes. `python -m unittest discover -p "test_*.py"`
+**1351 OK** (1350 + the one pause-view test).
+
+## 2026-09-25 (E) — The player's page, session 5: the play protocol and the dress rehearsal (the arc complete)
+
+The last of THE PLAYER'S PAGE ARC's five sessions (`page-plan.md`, now
+the arc's historical note): the protocol a DM follows to run rpg2 through
+the page, the docs finished, a dress rehearsal played from those docs
+alone, and the two engine gaps the arc turned up, fixed.
+
+### What shipped
+
+- **dm.md, "Page play -- the player's page"** (after The scene page):
+  when the page is in play (the player asks, or `ui/page.json` holds a
+  `url`; one page is one game); the Android phone as the target; **the
+  save rule and its risk**, where the DM reads it; a new game on the page
+  (`new`, build, the Artifact publish, the opening in `ui/scene.md`,
+  `publish.py --all --prose`, the batch, `--sent --url`, `sheet`, push),
+  and a game moved from chat play (empty `ui/queue/` first); the keeper's
+  turn, every message, in nine steps (read `moves` and `game/state` into
+  `web/out/read/` in the shape `page.py` reads, `page.py moves`, play --
+  a move is data --, `ui/scene.md`, publish, the batch, `--sent`,
+  `sheet` and push, and the session message: what was done and the link,
+  no story); the store's refusals; the page shape of `ui/scene.md`
+  (`[fight]` where the fight-log link stood); the pause (publish it and
+  STOP; next turn run exactly what `page.py moves` printed; superseded =
+  "Change it"; a REFUSED pause stands and the picker comes back; words
+  when the picker could not send); the level-up and every other choice
+  in words; game over. Pointers in Starting and continuing, The scene
+  page (its chat copy is chat play only) and the GitHub-UI bullet.
+- **dm.md's stale save line corrected**: it said the save "is committed";
+  it never was (`.gitignore`). It now says the save is plain JSON so it
+  CAN travel, is kept only when the player asks, and a lost container
+  loses the game.
+- **web/README.md completed**: the data contract field by field ("The
+  documents", moved out of page-plan.md with the four sessions'
+  corrections folded in), the read files' shape, "Publish" (the Artifact
+  call, seeding, one page one game, the chat-play backlog), the push, and
+  dm.md as the protocol.
+- **`scene-example.md`**: the fight turn again in the page-play shape.
+- **The engine: the player log is 40 columns** (`rpg.fit_width`). Session
+  4 found fight-log lines past 40 columns -- the tally's "Ahead: ..."
+  summary at 123, "(due day ...)" at 46, a PERMANENT wound line at 54.
+  The terminal never showed them wide (session.py's `print` wraps), but
+  `ui/fight-short.txt`, the chat's fight link and the page did. The fix
+  is one rule in one place: `CombatLog._player_add` runs every player
+  line through `fit_width` (the same hanging-indent wrap), and
+  `session._wrap_block` now IS `fit_width` line by line (`WRAP_WIDTH =
+  PLAYER_WIDTH`). The file and the page now read exactly as the
+  terminal did; round spans still index the wrapped lines (they are
+  counted after the wrap), so the page's blocks are unchanged in kind.
+- **The engine: a closed pipe no longer costs a save** (found in the
+  rehearsal, below): `session.py`'s `print` catches `BrokenPipeError`,
+  points stdout at the null device and lets the command run on.
+- **Paperwork**: plan.md's arc entry deleted (the intro names the arc
+  among the five shipped, and a new "Parked from the player's page arc"
+  holds its two leftovers); develop.md's Files (`rpg.py`, `session.py`,
+  `page-plan.md`, `publish.py`, `web/README.md`, `test_page.py`,
+  `test_ui_logs.py`, `scene-example.md`), the dev map pointer, a
+  Conventions line (Node only under `web/`); CLAUDE.md's code-files
+  sentence (`page.py`, `publish.py`, `web/`) and its document list
+  (`page-plan.md` as a historical note) -- no play rules there, dm.md owns
+  them; the code comments that named page-plan.md section 2 as the
+  contract now name web/README.md.
+
+### The dress rehearsal
+
+A game (seed 11, level 1: Bertrand and Hugues at Hautbois) under a temp
+`RPG2_HOME`, the built page on `web/dev/serve.mjs`, `web/dev/db.mjs` in
+ArtifactData's place, and a small phone script as the player, following
+dm.md's Page play step by step: the build (`npm ci`, `ng build`,
+`build-artifact.mjs`) as written; the opening published with `--all`, the
+batch, `--sent --url`; the player's say move; the job taken, the camp
+walked to, the room run -- the fight PAUSED (the PC's hand broken, both
+heroes Spent), published as opening block, `[fight]`, prose, and STOP; a
+tampered pause move (a stamina draught nobody carries) REFUSED by
+`page.py moves`, answered in the fiction, the pause standing and the
+picker back after the publish; the picker's "heal Bertrand, fight on",
+printed as `python session.py resume --heal Bertrand` and run as printed;
+the second half published with `continues`; a say and an ooc answered in
+one turn; the turn-in, the inn, a level crossed (`award`) and the
+level-up on the Party tab; the spend said in words (`train` twice);
+travel south to Paris with two storm camps. At the end the store's five
+singletons equalled a fresh `page.player_view` of the save, no move was
+left in the store, both fights joined equalled `ui/fight-short.txt` (40
+columns at most), the queue was empty, the record's versions matched the
+store's, and the transcript held six turns.
+
+What the rehearsal found:
+
+- **Piping a command into `head` lost the command.** `session.py take q01
+  | head -20` closed the pipe mid-output; `print` raised, and the command
+  died before `save` -- the job was not taken, with nothing on screen to
+  say so. dm.md already warns against piping an encounter; the engine
+  now survives it (above) rather than relying on the warning.
+- **The read files' shape was the one doc gap**: session 4's README said
+  "each with its version" without the file's shape. dm.md and the README
+  now give it (a list of each move's fields plus `id` and `version`; the
+  state's fields plus `version`) -- which is also what `db.mjs` prints,
+  so the local table and claude.ai read the same way. ArtifactData's
+  `out_dir` form was not used: whether its files carry `version` could
+  not be checked without claude.ai, and a stale file in the directory
+  would be read as a move.
+- Everything else ran as written. (The rehearsal's own opening
+  miscalled the PC's spell -- the reread rule's job, not a doc gap.)
+
+### The calls the arc settled (section 1 and the open questions, as decided)
+
+- **The page shows what the ui surfaces show, never more**, by calling the
+  functions they are built from; DM-only surfaces never feed it; HP is a
+  word where the tally and fight print a word and digits where the sheet
+  and the pause menu print digits.
+- **Flat modules**: `page.py` (projection, moves, the fight queue, the
+  keeper's check), `publish.py`, `test_page.py`, `web/`. **One base
+  directory**, `RPG2_HOME`.
+- **Fights kept automatically** from `print_combat`; the fight document is
+  the player log exactly, cut at recorded round spans; a paused fight's
+  second half is its own write-once document (`continues`) -- no pinned
+  fight rewrites.
+- **Three move kinds**: `say`, `ooc`, `pause`. Everything else in words;
+  the `options:` chips fill the box and never send. **Structured moves
+  beyond the pause stay unbuilt** (parked in plan.md).
+- **The prose file is `ui/scene.md`**, page-shaped; `[fight]` places a
+  fight; `--sent` writes the transcript, so it is what the player got.
+- **Dropped from dream**: realities, school, the Class/Realm/School/Days/
+  Rules tabs, web fonts. No Rules tab: the player is the designer.
+- **Phone first**: 412 px the target, 360 the floor, five bar buttons,
+  48 px targets, 40-column displays unclipped.
+- **`save.json` stays untracked** (risk 1, default kept): dm.md now says
+  so where the DM plays, tells the DM to say it to the player, and to
+  commit the save only on request. Whether page play should commit the
+  save every turn, as dream does, is the designer's call (plan.md).
+- **`web/dist` is built in the play container**, never committed; the
+  build needs npm, which reaches the registry directly here.
+- **Batch size**: dream's hard stop at 50 writes kept. **Hero names**:
+  a name `find_hero` would send to another hero is refused. **Import
+  cycle**: `page` imports `session`; `session` imports `page` lazily.
+  **`sheet` under another home** writes and commits nothing. **The pause
+  menu is projected whole.** **Pause moves are checked against the live
+  save**; a stale fight id refuses cleanly.
+- **`page-plan.md` stays at the root as a historical note** (gates.md's
+  shape: where everything went), not in `archive/`, which keeps displaced
+  roadmaps: nothing in the plan is unbuilt.
+
+### Verification
+
+`cd web/app && npx ng build && node ../build-artifact.mjs` green (`main.js`
+about 229 kB raw, 64 kB transferred; `styles.css` 7 kB; no stray bundle).
+`node web/e2e.mjs` all ok, 212 checks, unchanged by the session (the
+fight log's in-place wrap still holds for any line an old save might
+carry). The rehearsal above, end to end on the fake store. `python -m
+unittest discover -p "test_*.py"` **1354 OK** (1351 + three:
+`test_ui_logs`' player level never wider than 40 columns, `test_page`'s
+kept fight at 40 columns with a job in hand, and its closed pipe that
+still saves -- checked to fail without the fix).
+
+### Left open for the designer
+
+- Whether page play should commit `save.json` (and `ui/queue/`) every
+  turn, as dream does, instead of only on request (plan.md, parked).
+- Structured moves beyond the pause (plan.md, parked).
+- The first real claude.ai publish: the rehearsal ran on the local table.
+  The ArtifactData read is written by hand into the shape `db.mjs`
+  prints; if the real tool's `out_dir` files carry `version`, reading
+  into an emptied directory would save the typing (`page.py` and
+  `publish.py` already read a directory of `mNNNN.json`).

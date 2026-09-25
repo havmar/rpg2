@@ -1,0 +1,150 @@
+/* RPG2: the player's page. Tokens, base type, and the shell's layout.
+   One palette, light and dark: a printed page by day (warm paper, brown-black
+   ink, a rust accent), a terminal at night (near-black, bone ink, amber).
+   Every colour is a token on bare :root, redefined for dark; components use
+   only the tokens. System fonts only: no external host. */
+
+:root {
+  --paper: #f4f1e9; --paper-2: #ebe6da; --paper-3: #ddd6c6;
+  --ink: #1f1c17; --ink-2: #4f493e; --ink-3: #6d6656;
+  --rule: #c9c0ad; --accent: #9a4712; --accent-soft: #f1dfcc; --on-accent: #fffaf3;
+  --good: #2c6a38; --hurt: #a3301e; --warn: #845800;
+  /* the map's ground */
+  --sea: #b9d0d4; --land: #e6dcc3; --mtn: #bfa57c; --river: #6f9fb8;
+  --prose: Georgia, "Noto Serif", serif;
+  --mono: ui-monospace, "Roboto Mono", "Droid Sans Mono", monospace;
+  /* 40 columns of a display fit a 360px phone at this size */
+  --mono-size: 13px;
+  --top-h: 52px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #141311; --paper-2: #1c1a17; --paper-3: #2a2621;
+    --ink: #e9e3d5; --ink-2: #b7ae9b; --ink-3: #8c8574;
+    --rule: #3a352d; --accent: #e59c4f; --accent-soft: #3a2918; --on-accent: #1a1007;
+    --good: #88c48b; --hurt: #f07c68; --warn: #e3b75a;
+    --sea: #1b2c33; --land: #3b352a; --mtn: #62523a; --river: #3d7390;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #141311; --paper-2: #1c1a17; --paper-3: #2a2621;
+  --ink: #e9e3d5; --ink-2: #b7ae9b; --ink-3: #8c8574;
+  --rule: #3a352d; --accent: #e59c4f; --accent-soft: #3a2918; --on-accent: #1a1007;
+  --good: #88c48b; --hurt: #f07c68; --warn: #e3b75a;
+  --sea: #1b2c33; --land: #3b352a; --mtn: #62523a; --river: #3d7390;
+}
+@media (max-width: 380px) { :root { --mono-size: 12.5px; } }
+
+/* ---------- base ---------- */
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.55 var(--prose); overflow-x: hidden;
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--mono); font-weight: 600; margin: 0; line-height: 1.25; }
+h2 { font-size: .95rem; letter-spacing: .1em; text-transform: uppercase; }
+h3 { font-size: .95rem; }
+p { margin: 0; }
+.label { font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.note { color: var(--ink-2); font-size: .9rem; }
+.tag { font-family: var(--mono); font-size: .72rem; border: 1px solid var(--rule); border-radius: 3px; padding: 2px 7px; color: var(--ink-2); background: var(--paper-2); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.boot { padding: 24px 16px; font-family: var(--mono); font-size: .8rem; color: #6d6656; }
+
+/* a display: the game's own 40-column text, as printed */
+.display {
+  font-family: var(--mono); font-size: var(--mono-size); line-height: 1.45; white-space: pre;
+  margin: 0; max-width: 100%; overflow-x: auto; color: var(--ink);
+}
+pre.display { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; box-sizing: border-box; width: fit-content; min-width: 0; }
+
+/* a fold: "the sheet, as printed", "the menu, as printed" */
+details.fold > summary, rpg-party details > summary, rpg-story details > summary {
+  cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: .78rem; color: var(--ink-2);
+}
+details.fold > summary::-webkit-details-marker, rpg-party details > summary::-webkit-details-marker,
+rpg-story details > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before, rpg-party details > summary::before, rpg-story details > summary::before {
+  content: ""; flex: none; width: 0; height: 0; border-style: solid; border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent var(--ink-3); transition: transform .15s;
+}
+details[open] > summary::before { transform: rotate(90deg); }
+
+/* ---------- the shell ---------- */
+.app { min-height: 100%; display: grid; grid-template-rows: auto 1fr; }
+.top {
+  position: sticky; top: 0; z-index: 5; background: var(--paper);
+  border-bottom: 1px solid var(--rule); min-height: var(--top-h); box-sizing: border-box;
+  display: flex; align-items: center; gap: 6px 16px; padding: 8px 20px; min-width: 0;
+}
+.brand { font-family: var(--mono); font-weight: 700; font-size: 1.1rem; letter-spacing: .14em; color: var(--accent); flex: none; }
+.where { display: flex; align-items: center; min-width: 0; font-family: var(--mono); font-size: .82rem; color: var(--ink-2); }
+.where > * + *::before { content: ""; display: inline-block; flex: none; width: 4px; height: 4px; border-radius: 50%; background: var(--ink-3); margin: 0 8px; vertical-align: middle; }
+.where .day { flex: none; white-space: nowrap; }
+.where b { font-weight: 600; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .72rem; color: var(--ink-2); }
+.link .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.link.broken { color: var(--hurt); }
+.link.broken .dot { background: var(--hurt); }
+
+.zones { display: grid; grid-template-columns: 400px minmax(0, 1fr) 440px; min-height: 0; }
+.line, .drawer {
+  background: var(--paper-2); overflow: auto; align-self: start;
+  position: sticky; top: var(--top-h);
+  height: calc(100dvh - var(--top-h));
+  box-sizing: border-box; overscroll-behavior: contain; min-width: 0;
+}
+.line { border-right: 1px solid var(--rule); padding: 18px 16px 40px; }
+.drawer { border-left: 1px solid var(--rule); }
+.line .card, .drawer .card { background: var(--paper); }
+.page { padding: 28px 40px 60px; display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+.notice { max-width: 60ch; }
+.notice p { color: var(--ink-2); line-height: 1.6; }
+
+/* a fight stands paused: the story wears the accent until it is answered */
+:root[data-paused] rpg-story .scene { border-left: 3px solid var(--accent); padding-left: 14px; }
+/* the game is over: the page goes grey, the answer box says GAME OVER */
+:root[data-over] .zones { filter: grayscale(1); }
+:root[data-over] .brand { color: var(--ink-3); }
+
+/* the bottom bar: phones only */
+.bottom { display: none; }
+
+/* ---------- widths ---------- */
+@media (max-width: 1240px) {
+  .zones { grid-template-columns: minmax(0, 1fr) 420px; }
+  .line { display: none; }
+  .page { padding: 24px 28px 60px; }
+}
+@media (max-width: 900px) {
+  :root { --top-h: 0px; }
+  .top { padding: 8px 16px; position: static; min-height: 48px; }
+  .zones { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .page, .line, .drawer { display: none; }
+  .line, .drawer { position: static; height: auto; overflow: visible; border: 0; background: var(--paper); }
+  .app[data-view="story"] .page { display: flex; padding: 18px 16px 40px; gap: 24px; }
+  .app[data-view="party"] .line { display: block; padding: 18px 16px 40px; }
+  .app[data-view="drawer"] .drawer { display: block; }
+  .line .card, .drawer .card { background: var(--paper-2); }
+  .bottom {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    background: var(--paper-2); border-top: 1px solid var(--rule);
+    padding: 2px 2px env(safe-area-inset-bottom, 0px);
+  }
+  .bottom button {
+    position: relative; flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; background: none; padding: 6px 0 8px;
+    font-family: var(--mono); font-size: .72rem; color: var(--ink-2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;
+  }
+  .bottom .unread { position: absolute; top: 6px; left: calc(50% + 10px); width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .bottom svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .bottom button[aria-current="true"] { color: var(--accent); }
+}

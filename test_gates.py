@@ -42,9 +42,11 @@ import copy
 import io
 import json
 import random
+import tempfile
 import unittest
 import unittest.mock
 from contextlib import redirect_stdout
+from pathlib import Path
 
 import dataclasses
 
@@ -109,9 +111,19 @@ def _state(built: dict, area: dict, day: int = 3, level: int = 3) -> dict:
 
 
 def _run(state: dict, func, args: argparse.Namespace) -> str:
+    """One command on a state in memory. The ui pages a fight writes (the
+    two fight snapshots, the page's fight queue) go to a throwaway dir:
+    a suite must never write into the repo's ui/."""
     out = io.StringIO()
-    with unittest.mock.patch("session.load", return_value=state), \
-            unittest.mock.patch("session.save"), redirect_stdout(out):
+    with tempfile.TemporaryDirectory() as tmp, \
+            unittest.mock.patch("session.load", return_value=state), \
+            unittest.mock.patch("session.save"), \
+            unittest.mock.patch("session.UI_DIR", Path(tmp)), \
+            unittest.mock.patch("session.FIGHT_SHORT_PATH",
+                                Path(tmp) / "fight-short.txt"), \
+            unittest.mock.patch("session.FIGHT_DETAILED_PATH",
+                                Path(tmp) / "fight-detailed.txt"), \
+            redirect_stdout(out):
         func(args)
     return out.getvalue()
 

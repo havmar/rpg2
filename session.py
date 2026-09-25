@@ -81,10 +81,12 @@ import argparse
 import builtins
 import dataclasses
 import json
+import os
 import random
 import re
+import shutil
 import subprocess
-import textwrap
+import sys
 from pathlib import Path
 
 from rpg import (
@@ -145,7 +147,7 @@ from rpg import (
     autospend_points,
     ROOM_FIELD, WILD_FIELD, AMMO_LOTS, AMMO_CAPS, RANGED_WEAPONS,
     buy_ammo as _buy_ammo, grant_starter_ammo,
-    WINDED_PENALTY, SPENT_PENALTY, fit_lines,
+    WINDED_PENALTY, SPENT_PENALTY, fit_lines, fit_width, PLAYER_WIDTH,
     BLOOD_KINDS,
 )
 import karma
@@ -197,7 +199,13 @@ from places import (
     refill_ruin_site, close_ruin_site, RUIN_REFILL_DAYS, CITY_STATES,
 )
 
-STATE_PATH = Path(__file__).parent / "save.json"
+# The one base directory (2026-09-25, the player's page): the save and the
+# ui/ pages live under RPG2_HOME, which defaults to this script's folder.
+# Point it elsewhere (a temp dir for a test or a dress rehearsal) and the
+# whole game runs there; `sheet` then writes its pages and commits nothing.
+REPO_DIR = Path(__file__).resolve().parent
+RPG2_HOME = Path(os.environ.get("RPG2_HOME") or REPO_DIR)
+STATE_PATH = RPG2_HOME / "save.json"
 
 # --------------------------------------------------------------------------- #
 # Output wrapping (2026-07-13) -- the designer plays through a coding-agent CLI on
@@ -207,27 +215,32 @@ STATE_PATH = Path(__file__).parent / "save.json"
 # original indent. Short lines pass through untouched.
 # --------------------------------------------------------------------------- #
 
-WRAP_WIDTH = 40
+WRAP_WIDTH = PLAYER_WIDTH     # 40
 
 
 def _wrap_block(text: str) -> str:
+    # One rule for every screen: rpg.fit_width, which the combat log's
+    # player level applies line by line too (WRAP_WIDTH is its width).
     out: list[str] = []
     for line in text.split("\n"):
-        if len(line) <= WRAP_WIDTH:
-            out.append(line)
-            continue
-        indent = len(line) - len(line.lstrip(" "))
-        cont = " " * min(indent + 2, WRAP_WIDTH // 2)
-        out.extend(textwrap.wrap(line, WRAP_WIDTH, subsequent_indent=cont,
-                                 break_long_words=False,
-                                 break_on_hyphens=False) or [""])
+        out.extend(fit_width(line))
     return "\n".join(out)
 
 
 def print(*args, sep=" ", end="\n", **kwargs):  # noqa: A001 -- shadowing on
-    """purpose: every print in this module goes out phone-wrapped."""
-    builtins.print(_wrap_block(sep.join(str(a) for a in args)),
-                   end=end, **kwargs)
+    """purpose: every print in this module goes out phone-wrapped.
+
+    A reader that goes away (`session.py take q01 | head`) must not cost
+    the command its save: the prints come first and `save` last, so a
+    broken pipe used to abort the command with the game unchanged. The
+    rest of the output goes to the null device instead, and the command
+    runs to its end (found in the page arc's dress rehearsal)."""
+    try:
+        builtins.print(_wrap_block(sep.join(str(a) for a in args)),
+                       end=end, **kwargs)
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
 
 
 # Off-script foe kinds (`fight N --type ...`): any catalog kind by name, or
@@ -467,7 +480,7 @@ def _pending_from_dict(d: dict | None, party: list) -> dict | None:
 # never writes those two, it only commits them. `sheet` commits every page
 # that exists so the player and DM can read them as blob pages on the
 # branch. See dm.md.
-UI_DIR = Path(__file__).parent / "ui"
+UI_DIR = RPG2_HOME / "ui"
 PARTY_SHEET_PATH = UI_DIR / "party.txt"
 MAP_SHEET_PATH = UI_DIR / "map.txt"
 HISTORY_SHEET_PATH = UI_DIR / "history.txt"
@@ -481,6 +494,9 @@ UI_COMMIT_PATHS = (
     "ui/fight-detailed.txt",
     "ui/scene.md",
     "ui/transcript.md",
+    # The player's page's record (publish.py --sent writes it): its url
+    # and each game/ document's version, as the last batch left them.
+    "ui/page.json",
 )
 
 
@@ -575,6 +591,17 @@ def party_sheet_lines(state: dict) -> list[str]:
         lines.append("")
         lines.extend(hero_block_lines(party, h))
     lines.append("")
+    lines.extend(party_status_lines(state))
+    return lines
+
+
+def party_status_lines(state: dict) -> list[str]:
+    """The party sheet's tail under the hero blocks: the active quest, the
+    sin meter, the pact, a sighting, rooms left unfinished and a paused
+    fight. Its own function since 2026-09-25 so the player's page
+    (page.py) shows the same lines without the hero blocks."""
+    lines: list[str] = []
+    clock = state["clock"]
     world = state.get("world")
     qid = state.get("active_quest")
     if world and qid and qid in world["quests"]:
@@ -661,8 +688,15 @@ def _quest_site_lines(world: dict, q: dict) -> list[str]:
     cleared / here (with the room) / not yet. These ARE the 'sites the player
     has quests to visit' -- the door banner reveals a site's true level on
     entry, and a taken quest is committed, so levels print plain here."""
+    return [f"  - {s['name']} (L{s['level']}): {mark}"
+            for s, mark in quest_site_marks(world, q)]
+
+
+def quest_site_marks(world: dict, q: dict) -> list[tuple[dict, str]]:
+    """(site, mark) per site of a taken quest -- the progress words
+    `_quest_site_lines` prints and the player's page shows."""
     cur = q.get("next", {"site": 0, "room": 0})
-    lines = []
+    out = []
     for j, s in enumerate(quest_sites(world, q)):
         n = len(site_rooms(world, s))
         if j < cur["site"]:
@@ -672,8 +706,8 @@ def _quest_site_lines(world: dict, q: dict) -> list[str]:
                     if cur["room"] < n else "cleared")
         else:
             mark = f"not yet ({n} room(s))"
-        lines.append(f"  - {s['name']} (L{s['level']}): {mark}")
-    return lines
+        out.append((s, mark))
+    return out
 
 
 def _quest_road_lines(state: dict, quest: dict) -> list[str]:
@@ -785,22 +819,30 @@ def map_sheet_lines(state: dict) -> list[str]:
         lines.append("")
         lines.append("-- quests in hand (where they lead) --")
         for q in taken:
-            origin = world["areas"].get(q.get("origin"))
-            posted = f" @ {origin['name']}" if origin else ""
             lines.append("")
-            if q.get("kind") == "delivery":
-                lines.append(f"[{q['id']}] DELIVERY {q['name']}{posted}")
-                lines.append(f"  - carry {q['cargo']} to {q['dest_name']} "
-                             f"(travel {q['dest']})")
-            else:
-                lines.append(f"[{q['id']}] {q['name']} (L{q['level']}){posted}")
-                lines.extend(_quest_site_lines(world, q))
-            lines.extend(f"  - {line}" for line in _quest_road_lines(state, q))
+            lines.extend(quest_in_hand_lines(state, q))
     hold = conquest.holdings_lines(world, state.get("holdings") or {},
                                    state["clock"].day)
     if hold:
         lines.append("")
         lines.extend(hold)
+    return lines
+
+
+def quest_in_hand_lines(state: dict, q: dict) -> list[str]:
+    """One taken quest on the map page: its head, its sites (or its
+    cargo), and the road days to its next mark."""
+    world = state["world"]
+    origin = world["areas"].get(q.get("origin"))
+    posted = f" @ {origin['name']}" if origin else ""
+    if q.get("kind") == "delivery":
+        lines = [f"[{q['id']}] DELIVERY {q['name']}{posted}",
+                 f"  - carry {q['cargo']} to {q['dest_name']} "
+                 f"(travel {q['dest']})"]
+    else:
+        lines = [f"[{q['id']}] {q['name']} (L{q['level']}){posted}"]
+        lines.extend(_quest_site_lines(world, q))
+    lines.extend(f"  - {line}" for line in _quest_road_lines(state, q))
     return lines
 
 
@@ -899,7 +941,18 @@ def history_sheet_lines(state: dict) -> list[str]:
 
     section("QUESTS DONE", entries("quest"), "no job finished yet")
     section("REMARKABLE", entries("remarkable"), "nothing yet")
+    section("THE TALLY OF SIN", sin_tally_lines(state), "no sin on the books")
+    section("SUGGESTIONS", [f"  {c['key']} -- {c['name']}: {c['line']}"
+                            for c in hell_suggestions(state)],
+            "hell is not advertising -- `case` lists everything anyway")
+    return lines
 
+
+def sin_tally_lines(state: dict) -> list[str]:
+    """THE TALLY OF SIN's body on the history page: every committed crime
+    category, then the sin meter. (Its own function since 2026-09-25, so
+    the player's page reads the same lines.)"""
+    day = state["clock"].day
     crimes = state.get("crimes") or crime.new_crimes()
     rows = crime.tally_rows(crimes)
     tally = []
@@ -917,18 +970,19 @@ def history_sheet_lines(state: dict) -> list[str]:
         tally.append(f"  {karma.karma_line(k, party_level(state), day)}")
         tally.append(f"  lifetime sin {k.get('sin_total', 0)} / penance "
                      f"{k.get('penance_total', 0)}")
-    section("THE TALLY OF SIN", tally, "no sin on the books")
+    return tally
 
-    # Seeded off the world and the day: the same page rewritten twice in
-    # one day shows the same three, and tomorrow advertises differently
-    # (catalogue order would sell the same two petty crimes forever).
-    feed = crime.suggestions(
-        crimes, rng=crime.mark_rng(world_seed(state), "history", day,
-                                   "suggestions"))
-    section("SUGGESTIONS", [f"  {c['key']} -- {c['name']}: {c['line']}"
-                            for c in feed],
-            "hell is not advertising -- `case` lists everything anyway")
-    return lines
+
+def hell_suggestions(state: dict) -> list[dict]:
+    """The history page's SUGGESTIONS: the crime categories hell is
+    advertising today. Seeded off the world and the day: the same page
+    rewritten twice in one day shows the same three, and tomorrow
+    advertises differently (catalogue order would sell the same two petty
+    crimes forever)."""
+    crimes = state.get("crimes") or crime.new_crimes()
+    return crime.suggestions(
+        crimes, rng=crime.mark_rng(world_seed(state), "history",
+                                   state["clock"].day, "suggestions"))
 
 
 def _write_party_sheet(state: dict) -> None:
@@ -989,9 +1043,15 @@ def cmd_sheet(args: argparse.Namespace) -> None:
     day = state["clock"].day
     where = (current_area(state)["name"]
              if state.get("position") else "nowhere")
+    if RPG2_HOME.resolve() != REPO_DIR:
+        # A game played outside the repo (RPG2_HOME elsewhere) has no
+        # branch to commit to: the pages are written and that is all.
+        print(f"UI pages written under {RPG2_HOME} -- RPG2_HOME is not the "
+              f"repo, so nothing was committed.")
+        return
     paths = list(UI_COMMIT_PATHS)
     try:
-        root = Path(__file__).parent
+        root = REPO_DIR
         paths = [path for path in paths if (root / path).exists()]
         subprocess.run(["git", "add", *paths], cwd=root, check=False,
                        capture_output=True, timeout=15)
@@ -1129,12 +1189,10 @@ def role_tag(party: list, h) -> str:
 
 def find_hero(party: list, name: str):
     """Substring hero lookup, None (with a message) instead of a crash."""
-    for h in party:
-        if name.lower() in h.name.lower():
-            return h
-    print(f"No hero matches {name!r}. Party: "
-          + ", ".join(h.name for h in party))
-    return None
+    hero = _hero_named(party, name)
+    if hero is None:
+        print(_no_hero(party, name))
+    return hero
 
 
 def new_combat_log(continuing: bool = False) -> CombatLog:
@@ -1149,7 +1207,7 @@ def new_combat_log(continuing: bool = False) -> CombatLog:
                      continuing=continuing)
 
 
-def print_combat(log: CombatLog) -> None:
+def print_combat(log: CombatLog, state: dict | None = None) -> None:
     """Print THE combat log (2026-07-21: the player-facing level is the only
     combat display -- the DM narrates over it and pastes it as-is; see
     rules.md, "Reading the combat log"). Both levels are also written as
@@ -1157,13 +1215,32 @@ def print_combat(log: CombatLog) -> None:
     ui/fight-detailed.txt carries dice math, modifiers, and stamina readouts
     for post-mortems. group_combat already flushes detailed mechanics at
     resolution/pause; these cursor-safe flushes capture the session tail
-    without duplicating lines."""
+    without duplicating lines.
+
+    With the game's `state`, a session fight is also KEPT for the player's
+    page (2026-09-25, page-plan.md session 2): `page.keep_fight` queues
+    this process's player log, cut at the log's round spans, in
+    ui/queue/ for the next `publish.py`. Every fight is kept, so there is
+    no call for the DM to forget; `new` empties the queue. The import is
+    lazy because page imports session. Like the ui pages, a render bug
+    raises and a disk that will not take the file is ignored."""
     if isinstance(log, CombatLog) and log.player:
         log.flush_debug()
         log.flush_player()
         print("\n".join(log.player))
+        if state is not None and log.player_path is not None:
+            import page
+            page.keep_fight(state, log)
     else:
         print("\n".join(log))
+
+
+def fight_outcome(log: list[str], outcome: str) -> None:
+    """Stamp how the fight came out on a session log, for the page's fight
+    card ("won", "lost", "unresolved", "retreated", "paused"). A plain
+    list (the suites' throwaway logs) carries no stamp."""
+    if isinstance(log, CombatLog):
+        log.outcome = outcome
 
 
 def print_play(log) -> None:
@@ -1516,6 +1593,17 @@ def opening_hook(state: dict) -> list[str]:
     return lines
 
 
+def forget_page() -> None:
+    """One page is one game (the player's page, 2026-09-25): `new` drops
+    the page's record (ui/page.json -- a new game gets a new page) and
+    any fight still queued for the old one (ui/queue/)."""
+    try:
+        (UI_DIR / "page.json").unlink(missing_ok=True)
+        shutil.rmtree(UI_DIR / "queue", ignore_errors=True)
+    except OSError:
+        return
+
+
 def cmd_new(args: argparse.Namespace) -> None:
     if args.level is not None and not 1 <= args.level <= LEVEL_CAP:
         print(f"--level takes a level of 1-{LEVEL_CAP}.")
@@ -1602,6 +1690,7 @@ def cmd_new(args: argparse.Namespace) -> None:
     state["purse"].silver += career_purse(level) + joining_silver(ally)
     kit_log: list[str] = []
     auto_potions(state["party"], kit_log)    # the opening kit, shared out
+    forget_page()
     save(state)
     print(f"New game (seed={args.seed}, level {level}"
           f"{'' if args.level is not None else ' -- rolled'}).")
@@ -2053,9 +2142,133 @@ def cmd_status(args: argparse.Namespace) -> None:
         print_pause_menu(state)
 
 
-def print_pause_menu(state: dict) -> None:
-    """The DM-facing pause menu: who tripped it, the board, and every option
-    with its real cost -- presented, like `levelup`, instead of paraphrased."""
+# The pause's checks and its menu (2026-09-25, the player's page): the
+# per-hero gates live in ONE place, so the printed menu, `resume` and
+# `retreat`, and the page's pause moves (page.pause_args) can never
+# disagree about who may do what.
+
+PAUSE_ACTIONS = ("drink", "heal", "berserk", "warbreath", "vanish")
+PAUSE_ACTION_ENGINE = {"warbreath": "war-breath"}   # the flag -> the engine's
+ESCAPES = ("blink", "smoke")
+
+
+def _hero_named(party: list, name: str):
+    """find_hero's substring match, silent: the hero, or None."""
+    for h in party:
+        if name.lower() in h.name.lower():
+            return h
+    return None
+
+
+def _no_hero(party: list, name: str) -> str:
+    return (f"No hero matches {name!r}. Party: "
+            + ", ".join(h.name for h in party))
+
+
+def pause_action_refusal(hero, action: str) -> str | None:
+    """Why this hero cannot take this pause action right now, or None when
+    they can. `action` is the flag's word (PAUSE_ACTIONS)."""
+    if not hero.alive:
+        return f"{hero.name} is not on their feet -- no pause action."
+    if action == "drink" and hero.items.get("stamina", 0) <= 0:
+        return f"{hero.name} carries no stamina draught."
+    if action == "heal" and hero.items.get("healing", 0) <= 0:
+        return f"{hero.name} carries no healing potion."
+    if action == "berserk":
+        if "berserk" not in hero.abilities:
+            return (f"{hero.name} has not learned Berserk "
+                    f"(1 point at the levelup menu).")
+        if hero.hp <= BERSERK_HP_COST:
+            return (f"{hero.name} is too torn up to Berserk "
+                    f"(HP {hero.hp}, must survive the {BERSERK_HP_COST}).")
+    if action == "warbreath":
+        if "war_breath" not in hero.abilities:
+            return (f"{hero.name} has not learned War-Breath "
+                    f"(2 points at the levelup menu).")
+        if hero.cur_power < WAR_BREATH_POWER_COST:
+            return (f"{hero.name} lacks the Power for War-Breath "
+                    f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
+    if action == "vanish":
+        if hero.spell_rank("invisibility") < 2:
+            return (f"{hero.name} doesn't know invisibility at rank 2 "
+                    f"(the vanish).")
+        if hero.cur_power < VANISH_POWER_COST:
+            return (f"{hero.name} lacks the Power to vanish "
+                    f"({hero.cur_power}/{VANISH_POWER_COST}).")
+    return None
+
+
+def check_pause_actions(state: dict, requests: list[tuple[str, str]]
+                        ) -> dict:
+    """`resume`'s pause actions, checked before the fight moves: each
+    (flag word, hero name) request becomes {hero: engine action}, or the
+    first problem raises ValueError(reason). One action per hero; none at
+    all at Fate's pause."""
+    pending = state.get("pending")
+    if not pending:
+        raise ValueError("No paused fight to resume.")
+    party = state["party"]
+    if pending.get("pause_kind") == "fate" and requests:
+        raise ValueError("Fate's bargain allows only `resume` (fight on) "
+                         "or `retreat`.")
+    actions: dict = {}
+    for action, name in requests:
+        if action not in PAUSE_ACTIONS:
+            raise ValueError(f"{action!r} is not a pause action.")
+        hero = _hero_named(party, name)
+        if hero is None:
+            raise ValueError(_no_hero(party, name))
+        if not hero.alive:
+            raise ValueError(pause_action_refusal(hero, action))
+        if hero in actions:
+            raise ValueError(f"{hero.name} can only take ONE pause action.")
+        refusal = pause_action_refusal(hero, action)
+        if refusal:
+            raise ValueError(refusal)
+        actions[hero] = PAUSE_ACTION_ENGINE.get(action, action)
+    return actions
+
+
+def escape_refusal(hero, how: str) -> str | None:
+    """Why this hero cannot lead this escape ("blink" or "smoke"), or None."""
+    if how == "blink":
+        if not hero.alive:
+            return (f"{hero.name} is not on their feet -- no one to tear "
+                    f"the door open.")
+        if hero.spell_rank("teleport") < 2:
+            return (f"{hero.name}'s teleport art can't carry a party out "
+                    f"of a melee (rank 2 needed).")
+        return None
+    if not hero.alive:
+        return f"{hero.name} is not on their feet to throw the vial."
+    if hero.items.get("smoke", 0) <= 0:
+        return f"{hero.name} has no smoke vial."
+    return None
+
+
+def check_escape(state: dict, how: str, name: str):
+    """`retreat --blink/--smoke HERO`, checked before the fight moves: the
+    hero, or ValueError(reason). A blink with too little Power is NOT
+    refused -- the door simply fails to open and the honest retreat runs,
+    as the menu prices it."""
+    if not state.get("pending"):
+        raise ValueError("No paused fight to retreat from.")
+    if how not in ESCAPES:
+        raise ValueError(f"{how!r} is not an escape.")
+    party = state["party"]
+    hero = _hero_named(party, name)
+    if hero is None:
+        raise ValueError(_no_hero(party, name))
+    refusal = escape_refusal(hero, how)
+    if refusal:
+        raise ValueError(refusal)
+    return hero
+
+
+def pause_menu_data(state: dict) -> dict:
+    """The pause menu as data: who tripped it, the board, and every option
+    with its cost and the heroes who may take it. `print_pause_menu`
+    renders exactly this; the player's page projects it (page.py)."""
     pending = state["pending"]
     party = state["party"]
     fate_pause = pending.get("pause_kind") == "fate"
@@ -2064,28 +2277,12 @@ def print_pause_menu(state: dict) -> None:
             "fate": "was spared by Fate"}
     trips = "; ".join(f"{name} {what[kind]}"
                       for kind, name in pending["crossings"])
-    print(f"*** FIGHT PAUSED (after round {pending['round']}): {trips}. ***")
-    if fate_pause:
-        print("  (Fate's bargain spends the encounter's ONE pause; "
-              "only fight on or retreat)")
-        print("  (the price -- one companion -- is owed either way; "
-              "breaking off pays it at the door)")
-    else:
-        print("  (the encounter's ONE pause -- after this it runs to its end, "
-              "the party acting on its standing orders)")
-    standing = [f for f in pending["foes"] if f.alive]
-    print("  Facing: " + ", ".join(
-        f"{f.name} ({f.hp}/{f.max_hp} HP)" for f in standing))
+    facing = [{"name": f.name, "hp": f.hp, "max_hp": f.max_hp}
+              for f in pending["foes"] if f.alive]
+    rows = []
     for h in party:
         if h.dead:
             continue
-        tag = " [DOWN]" if h.down else ""
-        # The pause is a DM-facing menu, so it keeps the digits AND adds the
-        # state word: the retreat decision is priced on both.
-        print(f"  {h.name.split()[0]}{tag}: {h.hp_state} "
-              f"HP {h.hp}/{h.hp_ceiling}"
-              + (f" (max {h.max_hp})" if h.wounds else "")
-              + f" STA {h.cur_sta}/{h.sta} Power {h.cur_power}/{h.power}")
         pens = []
         if h.wound_penalty:
             # "hurt", not "wounds" (slice 3b): this is the HP-derived spiral,
@@ -2096,69 +2293,133 @@ def print_pause_menu(state: dict) -> None:
             pens.append(f"Spent -{SPENT_PENALTY}")
         elif h.winded:
             pens.append(f"Winded -{WINDED_PENALTY}")
-        if pens:
-            print(f"    ({', '.join(pens)} to rolls)")
-        # The tick is priced into the retreat decision: a bleeding hero
-        # loses HP every round the fight goes on, whatever else happens.
-        for ctag in condition_tags(h):
+        rows.append({
+            "name": h.name, "short": h.name.split()[0], "down": h.down,
+            "hp_state": h.hp_state, "hp": h.hp, "hp_ceiling": h.hp_ceiling,
+            "max_hp": h.max_hp, "wounded": bool(h.wounds),
+            "sta": h.cur_sta, "sta_max": h.sta,
+            "power": h.cur_power, "power_max": h.power,
+            "penalties": pens,
+            # The tick is priced into the retreat decision: a bleeding hero
+            # loses HP every round the fight goes on, whatever else happens.
+            "conditions": list(condition_tags(h)),
+            # ...and so are the wounds already recorded: they are what the
+            # party walks out of this room carrying whatever it decides now.
+            "wounds": list(wound_tags(h)),
+            "healing": h.items.get("healing", 0),
+            "stamina": h.items.get("stamina", 0),
+        })
+
+    def able(action: str) -> list[str]:
+        return [h.name for h in party
+                if not h.dead and pause_action_refusal(h, action) is None]
+
+    options = [{"choice": "fight_on", "cmd": "resume", "cost": "fight on"}]
+    if not fate_pause:
+        options.append({"choice": "drink", "cmd": "resume --drink HERO",
+                        "cost": f"stamina draught, "
+                                f"+{STAMINA_DRAUGHT_RESTORE} STA now",
+                        "heroes": able("drink")})
+        options.append({"choice": "heal", "cmd": "resume --heal HERO",
+                        "cost": f"healing potion, +{HEALING_POTION_RESTORE} "
+                                f"HP now (the wound penalty lightens)",
+                        "heroes": able("heal")})
+        if any(not h.dead and "berserk" in h.abilities for h in party):
+            options.append({"choice": "berserk",
+                            "cmd": "resume --berserk HERO",
+                            "cost": f"{BERSERK_HP_COST} HP -> "
+                                    f"+{BERSERK_STA_GAIN} STA (the wound "
+                                    f"penalty deepens; knowers only)",
+                            "heroes": able("berserk")})
+        if any(not h.dead and "war_breath" in h.abilities for h in party):
+            options.append({"choice": "warbreath",
+                            "cmd": "resume --warbreath HERO",
+                            "cost": f"{WAR_BREATH_POWER_COST} Power -> "
+                                    f"+{WAR_BREATH_STA_GAIN} STA "
+                                    f"(knowers only)",
+                            "heroes": able("warbreath")})
+        if any(not h.dead and h.spell_rank("invisibility") >= 2
+               for h in party):
+            options.append({"choice": "vanish",
+                            "cmd": "resume --vanish HERO",
+                            "cost": f"{VANISH_POWER_COST} Power: fade from "
+                                    f"the melee (untargetable; the next "
+                                    f"strike lands as an ambush)",
+                            "heroes": able("vanish")})
+    blinker = next((h for h in party
+                    if not h.dead and h.spell_rank("teleport") >= 2), None)
+    options.append({"choice": "retreat", "cmd": "retreat",
+                    "cost": "parting blows from foes still fit to swing, "
+                            "then one group chase roll"
+                            + (" (the dead do not pursue past their ground)"
+                               if any(f.alive and not f.pursues
+                                      for f in pending["foes"]) else "")})
+    if blinker is not None:
+        options.append({"choice": "blink", "hero": blinker.name,
+                        "cmd": f"retreat --blink {blinker.name.split()[0]}",
+                        "cost": f"teleport out: NO parting blows, no chase "
+                                f"({TELEPORT_ESCAPE_COST} Power; a fizzled "
+                                f"door falls back to the honest retreat)"})
+    smoker = next((h for h in party
+                   if not h.dead and h.items.get("smoke", 0) > 0), None)
+    if smoker is not None:
+        options.append({"choice": "smoke", "hero": smoker.name,
+                        "cmd": f"retreat --smoke {smoker.name.split()[0]}",
+                        "cost": f"smoke vial: NO parting blows, but the "
+                                f"chase still rolls "
+                                f"({smoker.items['smoke']} left)"})
+    return {"round": pending["round"],
+            "kind": "fate" if fate_pause else "normal",
+            "crossings": [list(c) for c in pending["crossings"]],
+            "trips": trips, "facing": facing, "party": rows,
+            "options": options}
+
+
+def print_pause_menu(state: dict) -> None:
+    """The DM-facing pause menu: who tripped it, the board, and every option
+    with its real cost -- presented, like `levelup`, instead of paraphrased.
+    It prints `pause_menu_data`, nothing more."""
+    data = pause_menu_data(state)
+    fate_pause = data["kind"] == "fate"
+    print(f"*** FIGHT PAUSED (after round {data['round']}): "
+          f"{data['trips']}. ***")
+    if fate_pause:
+        print("  (Fate's bargain spends the encounter's ONE pause; "
+              "only fight on or retreat)")
+        print("  (the price -- one companion -- is owed either way; "
+              "breaking off pays it at the door)")
+    else:
+        print("  (the encounter's ONE pause -- after this it runs to its end, "
+              "the party acting on its standing orders)")
+    print("  Facing: " + ", ".join(
+        f"{f['name']} ({f['hp']}/{f['max_hp']} HP)" for f in data["facing"]))
+    for row in data["party"]:
+        tag = " [DOWN]" if row["down"] else ""
+        # The pause is a DM-facing menu, so it keeps the digits AND adds the
+        # state word: the retreat decision is priced on both.
+        print(f"  {row['short']}{tag}: {row['hp_state']} "
+              f"HP {row['hp']}/{row['hp_ceiling']}"
+              + (f" (max {row['max_hp']})" if row["wounded"] else "")
+              + f" STA {row['sta']}/{row['sta_max']} "
+                f"Power {row['power']}/{row['power_max']}")
+        if row["penalties"]:
+            print(f"    ({', '.join(row['penalties'])} to rolls)")
+        for ctag in row["conditions"]:
             print(f"    [{ctag}]")
-        # ...and so are the wounds already recorded: they are what the party
-        # walks out of this room carrying whatever it decides now.
-        for wtag in wound_tags(h):
+        for wtag in row["wounds"]:
             print(f"    - {wtag}")
-        print(f"    healing x{h.items.get('healing', 0)}, "
-              f"stamina x{h.items.get('stamina', 0)}")
+        print(f"    healing x{row['healing']}, "
+              f"stamina x{row['stamina']}")
     if fate_pause:
         print("  The player's call:")
     else:
         print("  The player's call (a pause action "
               f"costs the round: defend at -{PAUSE_ACTION_DEF_PENALTY}):")
-
-    def option(cmd: str, desc: str) -> None:
+    for opt in data["options"]:
         # One option per block: the command on its own line, its cost on
         # an indented one -- nothing wraps mid-flag at 40 columns.
-        print(f"    {cmd}")
-        print(f"      {desc}")
-
-    option("resume", "fight on")
-    if not fate_pause:
-        option("resume --drink HERO",
-               f"stamina draught, +{STAMINA_DRAUGHT_RESTORE} STA now")
-        option("resume --heal HERO",
-               f"healing potion, +{HEALING_POTION_RESTORE} HP now "
-               f"(the wound penalty lightens)")
-        if any(not h.dead and "berserk" in h.abilities for h in party):
-            option("resume --berserk HERO",
-                   f"{BERSERK_HP_COST} HP -> +{BERSERK_STA_GAIN} STA "
-                   f"(the wound penalty deepens; knowers only)")
-        if any(not h.dead and "war_breath" in h.abilities for h in party):
-            option("resume --warbreath HERO",
-                   f"{WAR_BREATH_POWER_COST} Power -> "
-                   f"+{WAR_BREATH_STA_GAIN} STA (knowers only)")
-        if any(not h.dead and h.spell_rank("invisibility") >= 2
-               for h in party):
-            option("resume --vanish HERO",
-                   f"{VANISH_POWER_COST} Power: fade from the melee "
-                   f"(untargetable; the next strike lands as an ambush)")
-    blinker = next((h for h in party
-                    if not h.dead and h.spell_rank("teleport") >= 2), None)
-    option("retreat",
-           "parting blows from foes still fit to swing, then one group "
-           "chase roll"
-           + (" (the dead do not pursue past their ground)"
-              if any(f.alive and not f.pursues for f in pending["foes"])
-              else ""))
-    if blinker is not None:
-        option(f"retreat --blink {blinker.name.split()[0]}",
-               f"teleport out: NO parting blows, no chase "
-               f"({TELEPORT_ESCAPE_COST} Power; a fizzled door falls "
-               f"back to the honest retreat)")
-    smoker = next((h for h in party
-                   if not h.dead and h.items.get("smoke", 0) > 0), None)
-    if smoker is not None:
-        option(f"retreat --smoke {smoker.name.split()[0]}",
-               f"smoke vial: NO parting blows, but the chase still rolls "
-               f"({smoker.items['smoke']} left)")
+        print(f"    {opt['cmd']}")
+        print(f"      {opt['cost']}")
 
 
 def print_levelup_menu(heroes: list) -> None:
@@ -2356,7 +2617,8 @@ def resolve_encounter(state: dict, log: list[str], foes: list,
             # Fate's special interrupt consumes the same one-pause budget.
             "normal_pause_used": True,
         }
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)
@@ -4264,11 +4526,15 @@ def finish_encounter(state: dict, log: list[str], foes: list,
     )
     if mercy_fired:
         append_tally(state, log)
-        print_combat(log)
+        fight_outcome(log, "lost")
+        print_combat(log, state)
         save(state)
         return
 
     wiped = party_wiped(party, log)
+    fight_outcome(log, "lost" if wiped
+                  else "unresolved" if any(f.alive for f in foes)
+                  else "won")
     if not wiped and any(f.alive for f in foes):
         # Unresolved (the fight staggered apart, both sides spent): no award.
         log_banner(log,
@@ -4382,7 +4648,7 @@ def finish_encounter(state: dict, log: list[str], foes: list,
         # (War news no longer arrives at fight's end -- it waits for the
         # next settlement scene: board, arrival, tavern, downtime.)
         append_tally(state, log)
-    print_combat(log)
+    print_combat(log, state)
     save(state)
     if (not wiped and pc is not None and not pc.dead
             and pc.level > pc_level_before):
@@ -6132,62 +6398,13 @@ def cmd_resume(args: argparse.Namespace) -> None:
     party, rng = state["party"], state["rng"]
     living = [h for h in party if not h.dead]
 
-    if (pending.get("pause_kind") == "fate"
-            and any(getattr(args, flag) for flag in
-                    ("drink", "heal", "berserk", "warbreath", "vanish"))):
-        print("Fate's bargain allows only `resume` (fight on) or `retreat`.")
+    requests = [(flag, name) for flag in PAUSE_ACTIONS
+                for name in getattr(args, flag) or []]
+    try:
+        actions = check_pause_actions(state, requests)
+    except ValueError as refused:
+        print(str(refused))
         return
-
-    actions: dict = {}
-    for flag, action in (("drink", "drink"), ("heal", "heal"),
-                         ("berserk", "berserk"),
-                         ("warbreath", "war-breath"),
-                         ("vanish", "vanish")):
-        for name in getattr(args, flag) or []:
-            hero = find_hero(party, name)
-            if hero is None:
-                return
-            if not hero.alive:
-                print(f"{hero.name} is not on their feet -- no pause action.")
-                return
-            if hero in actions:
-                print(f"{hero.name} can only take ONE pause action.")
-                return
-            if action == "drink" and hero.items.get("stamina", 0) <= 0:
-                print(f"{hero.name} carries no stamina draught.")
-                return
-            if action == "heal" and hero.items.get("healing", 0) <= 0:
-                print(f"{hero.name} carries no healing potion.")
-                return
-            if action == "berserk":
-                if "berserk" not in hero.abilities:
-                    print(f"{hero.name} has not learned Berserk "
-                          f"(1 point at the levelup menu).")
-                    return
-                if hero.hp <= BERSERK_HP_COST:
-                    print(f"{hero.name} is too torn up to Berserk "
-                          f"(HP {hero.hp}, must survive the "
-                          f"{BERSERK_HP_COST}).")
-                    return
-            if action == "war-breath":
-                if "war_breath" not in hero.abilities:
-                    print(f"{hero.name} has not learned War-Breath "
-                          f"(2 points at the levelup menu).")
-                    return
-                if hero.cur_power < WAR_BREATH_POWER_COST:
-                    print(f"{hero.name} lacks the Power for War-Breath "
-                          f"({hero.cur_power}/{WAR_BREATH_POWER_COST}).")
-                    return
-            if action == "vanish":
-                if hero.spell_rank("invisibility") < 2:
-                    print(f"{hero.name} doesn't know invisibility at rank 2 "
-                          f"(the vanish).")
-                    return
-                if hero.cur_power < VANISH_POWER_COST:
-                    print(f"{hero.name} lacks the Power to vanish "
-                          f"({hero.cur_power}/{VANISH_POWER_COST}).")
-                    return
-            actions[hero] = action
 
     log = new_combat_log(continuing=True)
     pause = group_combat(living, pending["foes"], rng, log,
@@ -6203,7 +6420,8 @@ def cmd_resume(args: argparse.Namespace) -> None:
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
         pending["pause_kind"] = pause.kind
         pending["normal_pause_used"] = True
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)
@@ -6232,35 +6450,28 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         return
     party, rng, clock = state["party"], state["rng"], state["clock"]
     living = [h for h in party if not h.dead]
+
+    # Both escapes are checked before anything rolls (check_escape), the
+    # way `resume` checks its actions: a bad call aborts, the fight unmoved.
+    try:
+        wizard = (check_escape(state, "blink", args.blink)
+                  if args.blink else None)
+        smoker = (check_escape(state, "smoke", args.smoke)
+                  if args.smoke else None)
+    except ValueError as refused:
+        print(str(refused))
+        return
     log = new_combat_log(continuing=True)
 
     escaped = False
-    if args.blink:
+    if wizard is not None:
         # Teleport rank 2, BLINK OUT: the whole party steps through -- no
         # parting blows, no chase. A fizzled door falls back to the honest
         # retreat below, blows and all.
-        wizard = find_hero(party, args.blink)
-        if wizard is None:
-            return
-        if not wizard.alive:
-            print(f"{wizard.name} is not on their feet -- no one to tear "
-                  f"the door open.")
-            return
         escaped = blink_escape(living, pending["foes"], wizard, rng, log)
-    smoker = None
-    if not escaped and args.smoke:
+    if not escaped:
         # A smoke vial (session C): no parting blows land, but the chase
         # still rolls -- the haze buys the exit, not the legs.
-        smoker = find_hero(party, args.smoke)
-        if smoker is None:
-            return
-        if not smoker.alive:
-            print(f"{smoker.name} is not on their feet to throw the vial.")
-            return
-        if smoker.items.get("smoke", 0) <= 0:
-            print(f"{smoker.name} has no smoke vial.")
-            return
-    if not escaped:
         escaped = attempt_retreat(living, pending["foes"], rng, log,
                                   field=pending.get("field", 0), smoke=smoker)
     participants = [h for h in party
@@ -6319,7 +6530,9 @@ def cmd_retreat(args: argparse.Namespace) -> None:
             append_tally(state, log)
         elif mercy_fired:
             append_tally(state, log)
-        print_combat(log)
+        fight_outcome(log, "retreated" if escaped and not wiped
+                      and not mercy_fired else "lost")
+        print_combat(log, state)
         save(state)
         if not mercy_fired:
             report_game_over(party, wiped)
@@ -6338,7 +6551,8 @@ def cmd_retreat(args: argparse.Namespace) -> None:
         pending["crossings"] = [(k, h.name) for k, h in pause.crossings]
         pending["pause_kind"] = pause.kind
         pending["normal_pause_used"] = True
-        print_combat(log)
+        fight_outcome(log, "paused")
+        print_combat(log, state)
         print()
         print_pause_menu(state)
         save(state)

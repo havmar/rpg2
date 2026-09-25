@@ -54,9 +54,10 @@ the checked-out copy already contains the latest UI or rules changes.
 - `rules.md` — the ruleset: source of truth for mechanics and the design
   spine.
 - `plan.md` — the sole active roadmap. Shipped work is removed from it.
-  It carries NO build contract: four arcs have shipped out of it (the
-  fixed Europe map, the tile economy, the medieval world, and the gates —
-  Heaven & Hell, built whole 2026-09-12). What is left is the roadmap
+  It carries NO build contract: five arcs have shipped out of it (the
+  fixed Europe map, the tile economy, the medieval world, the gates —
+  Heaven & Hell, built whole 2026-09-12 — and the player's page, built
+  whole 2026-09-25). What is left is the roadmap
   beyond them — the spring snapshot and trouble, politics and war,
   fantasy and magic, settlements revisited, the deferred leftovers — each
   a future design conversation, none scheduled.
@@ -69,6 +70,9 @@ the checked-out copy already contains the latest UI or rules changes.
 - `gates.md` — THE GATES ARC's historical note: the arc shipped whole on
   2026-09-12 in five sessions, and the file is now a map of where its
   content went (rules.md's Heaven & Hell add-on, dm.md, develop.md,
+  designlog).
+- `page-plan.md` — THE PLAYER'S PAGE ARC's historical note: a map of
+  where its content went (dm.md's "Page play", web/README.md, develop.md,
   designlog).
 - `archive/plan-pre-europe-2026-08-15.md` — the complete roadmap snapshot
   displaced by the Europe-map reset. It is marked historical and is not
@@ -83,9 +87,9 @@ the checked-out copy already contains the latest UI or rules changes.
 
 The code files (`rpg.py`, `sites.py`, `quests.py`, `people.py`, `places.py`,
 `worldsim.py`, `rulers.py`, `karma.py`, `crime.py`, `conquest.py`,
-`weapons.py`, `econmap.py`, `session.py`, `tune.py`, the
-`bench_*.py` suite) are indexed in develop.md's
-**Files** section — register any new file there.
+`weapons.py`, `econmap.py`, `session.py`, `page.py`, `publish.py`,
+`tune.py`, the `bench_*.py` suite, and `web/`, the player's page) are
+indexed in develop.md's **Files** section — register any new file there.
 
 > Keep THIS file short and register-neutral: it is auto-injected into every
 > agent session, play included. Shared fiction style belongs in writing.md,
